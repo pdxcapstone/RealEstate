@@ -17,6 +17,7 @@ class Migration(migrations.Migration):
             name='Category',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('summary', models.CharField(max_length=128, verbose_name=b'Summary')),
                 ('description', models.TextField(verbose_name=b'Description', blank=True)),
             ],
             options={
@@ -28,7 +29,7 @@ class Migration(migrations.Migration):
             name='CategoryWeight',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('weight', models.PositiveSmallIntegerField(verbose_name=b'Weight', validators=(django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)))),
+                ('weight', models.PositiveSmallIntegerField(help_text=b'0-100', verbose_name=b'Weight', validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)])),
                 ('category', models.ForeignKey(verbose_name=b'Category', to='core.Category')),
             ],
             options={
@@ -63,6 +64,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('categories', models.ManyToManyField(to='core.Category', verbose_name=b'Categories', through='core.CategoryWeight')),
+                ('couple', models.ForeignKey(verbose_name=b'Couple', to='core.Couple')),
                 ('partner', models.OneToOneField(null=True, blank=True, to='core.Homebuyer', verbose_name=b'Partner')),
                 ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],

@@ -21,8 +21,13 @@ class Person(models.Model):
 
 
 class Category(models.Model):
+    summary = models.CharField(max_length=128, verbose_name="Summary")
     description = models.TextField(blank=True, verbose_name="Description")
+
     couple = models.ForeignKey('core.Couple', verbose_name="Couple")
+
+    def __unicode__(self):
+        return self.summary
 
     class Meta:
         verbose_name = "Category"
@@ -30,11 +35,18 @@ class Category(models.Model):
 
 
 class CategoryWeight(models.Model):
-    weight = models.PositiveSmallIntegerField(validators=(MinValueValidator(0),
-                                                          MaxValueValidator(100)),
+    weight = models.PositiveSmallIntegerField(validators=[MinValueValidator(0),
+                                                          MaxValueValidator(100)],
+                                              help_text="0-100",
                                               verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
+
+    def __unicode__(self):
+        return u"{homebuyer} gives {category} a weight of {weight}.".format(
+                homebuyer=unicode(self.homebuyer),
+                category=unicode(self.category),
+                weight=weight)
 
     class Meta:
         verbose_name = "Category Weight"
@@ -43,6 +55,9 @@ class CategoryWeight(models.Model):
 
 class Couple(models.Model):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
+
+    def __unicode__(self):
+        return u", ".join(self.homebuyer_set.values_list('user__username', flat=True))
 
     class Meta:
         verbose_name = "Couple"
@@ -63,6 +78,13 @@ class Grade(models.Model):
     category = models.ForeignKey('core.Category', verbose_name="Category")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
 
+    def __unicode__(self):
+        return (u"{homebuyer} gives {house} a score of {score} for category: "
+                "{category}.".format(homebuyer=unicode(self.homebuyer),
+                                     house=unicode(self.house),
+                                     score=self.score,
+                                     category=unicode(self.category)))
+
     class Meta:
         verbose_name = "Grade"
         verbose_name_plural = "Grades"
@@ -71,6 +93,7 @@ class Grade(models.Model):
 class Homebuyer(Person):
     partner = models.OneToOneField('core.Homebuyer', blank=True, null=True,
                                    verbose_name="Partner")
+    couple = models.ForeignKey('core.Couple', verbose_name="Couple")
     categories = models.ManyToManyField('core.Category', through='core.CategoryWeight',
                                         verbose_name="Categories")
 
