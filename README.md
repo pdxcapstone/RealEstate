@@ -39,3 +39,9 @@ The following instructions are primarily intended for Mac/Linux, but they should
 	```python manage.py runserver```
 
 11. When you are finished and wish to exit the virtualenv, exit by the command: ```deactivate```
+
+## External Documentation
+
+* [Team Django Notes](https://drive.google.com/drive/folders/0B24lwkPmIOELNS1paFlwaHRJYnc)
+* [DB Schema/Notes](https://drive.google.com/drive/folders/0BySvjEj8bWEqfnJFUDU3dW9TY3N5VUJCam5VVE9Xc0dMWlNDWVF4MnNDVjMxODlEQ1NQcnc)
+* [Initial Moc-Ups](https://docs.google.com/uc?authuser=0&id=0B5P01o4Jp1ZlWkFMcDkwODUxdEExd1RxTWl1a2d5elR5TFZv&export=download)
