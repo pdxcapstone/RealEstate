@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!--[if lte IE 6]><html class="preIE7 preIE8 preIE9"><![endif]-->
+<!--[if IE 7]><html class="preIE8 preIE9"><![endif]-->
+<!--[if IE 8]><html class="preIE9"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+ <head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Real Estate{% endblock %}</title>
+
+  <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
+  <meta name="description" content="Real Estate Decisions">
+  <meta name="keywords" content="realestate">
+
+  {% block style %}
+  {% endblock %}
+ </head>
+
+ <body>
+   <a href={% url "admin:index" %}>Admin</a>
+   {% block body %}
+   {% endblock %}
+
+   {% block scripts %}
+   {% endblock %}
+ </body>
+</html>

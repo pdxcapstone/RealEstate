@@ -57,7 +57,12 @@ class Couple(models.Model):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
 
     def __unicode__(self):
-        return u", ".join(self.homebuyer_set.values_list('user__username', flat=True))
+        homebuyers = self.homebuyer_set.values_list('user__username', flat=True)
+        if not homebuyers:
+            homebuyers = ['?', '?']
+        elif homebuyers.count() == 1:
+            homebuyers = [homebuyers.first(), '?']
+        return u" and ".join(homebuyers)
 
     class Meta:
         verbose_name = "Couple"
