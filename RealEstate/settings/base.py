@@ -43,6 +43,7 @@ INSTALLED_APPS = (
 
     # Third party apps
     'django_extensions',
+    'bootstrap3',
 
     # Real Estate apps
     'RealEstate.apps.core',
