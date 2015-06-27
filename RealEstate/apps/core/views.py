@@ -1,6 +1,7 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 from django.views.generic import View
 from django.contrib.auth import authenticate, login
+from django import forms
 
 
 class HomeView(View):
@@ -9,8 +10,10 @@ class HomeView(View):
 
 
 def login_user(request):
-    state = "Please log in below..."
+    state = (False, "")     # Tuple to store status (True if logged in) and message.
     username = password = ''
+    template = "core/auth.html"
+    
     if request.POST:
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -19,10 +22,15 @@ def login_user(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                state = "You're successfully logged in!"
+                state = (True, "You're successfully logged in!")
             else:
-                state = "Your account is not active, please contact the site admin."
+                state = (False, "Your account is not active, please contact the site admin.")
         else:
-            state = "Your username and/or password were incorrect."
+            state = (False, "Your username and/or password were incorrect.")
 
-    return render_to_response('core/auth.html',{'state':state, 'username': username})
+    class LoginForm(forms.Form):
+        username = forms.CharField(label='Username', max_length=100)
+        password = forms.CharField(label='Password', widget=forms.PasswordInput())
+        
+    context = {"form" : LoginForm(), 'state':state, 'username': username}
+    return render(request, template, context)

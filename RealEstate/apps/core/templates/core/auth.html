@@ -1,27 +1,28 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-<title>Log in</title>
-<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-<style>
-body{
-	font-family:Arial,Helvetica,sans-serif;
-	font-size: 12px;
-}
-</style>
-</head>
-<body>
-	{{ state }}
-	<form action="/login/" method="post">
-		{% if next %}
-		<input type="hidden" name="next" value="{{ next }}" />
-		{% endif %}
-		username:
-		<input type="text" name="username" value="{{ username}}" /><br />
-		password:
-		<input type="password" name="password" value="" /><br />
+{% extends "core/base.html" %}
+{% load bootstrap3 %}
 
-		<input type="submit" value="Log In" />
-	</form>
-</body>
-</html>
+{% block body %}
+  <div class="container" style = "margin:5%">
+  <div class="row">
+    <div class="col-sm-3"></div>
+    <div class="col-sm-6">
+      <h1> Login </h1>
+      <div style="margin: 10px 0" class="well" >
+      <form style="margin-bottom:20px" action="/login/" role="form" method="post">
+    	  {% csrf_token %}
+    	  {% bootstrap_form form %}
+    	  <div class="pull-right" style="margin-top: 40px">
+    	    {% buttons submit='Log in' %}{% endbuttons %}
+    	  </div>
+    	</form>
+    	</div>
+    	{% if state.0 %}
+    	  <div class="alert-success" style="padding:10px; margin-top:70px;">{{ state.1 }}</div>
+    	{% elif state.1 %}
+    	  <div class="alert-danger" style="padding:10px; margin-top:70px;">{{ state.1 }}</div>
+    	{% endif %}
+    </div>
+    <div class="col-sm-3"></div>
+  </div>
+	</div>
+{% endblock %}
