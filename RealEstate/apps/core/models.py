@@ -117,7 +117,7 @@ class CategoryWeight(BaseModel):
                 category=self.category,
                 weight=weight)
 
-    def clean(self, *args, **kwargs):
+    def clean(self):
         """
         Ensure the homebuyer is weighting a category that is actually linked
         with them.
@@ -125,7 +125,7 @@ class CategoryWeight(BaseModel):
         if self.homebuyer.couple_id != self.category.couple_id:
             raise ValidationError("Category '{category}' is for a different "
                                   "Homebuyer.".format(category=self.category))
-        return super(CategoryWeight, self).clean(*args, **kwargs)
+        return super(CategoryWeight, self).clean()
 
     class Meta:
         ordering = ['category', 'homebuyer']
@@ -208,7 +208,7 @@ class Grade(BaseModel):
                 self.category.couple_id != self.homebuyer.couple_id):
             raise ValidationError("House, Category, and Homebuyer must all be "
                                   "for the same Couple.")
-        return super(Grade, self).clean(*args, **kwargs)
+        return super(Grade, self).clean()
 
     class Meta:
         ordering = ['homebuyer', 'house', 'category', 'score']
@@ -245,7 +245,7 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                   .format(user=self.user))
 
         self._validate_categories_and_couples()
-        return super(Homebuyer, self).clean(*args, **kwargs)
+        return super(Homebuyer, self).clean()
 
     class Meta:
         ordering = ['user__username']
@@ -277,7 +277,7 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
         Ensure that all related categories are for the correct Couple.
         """
         self._validate_categories_and_couples()
-        return super(House, self).clean(*args, **kwargs)
+        return super(House, self).clean()
 
     def clean_fields(self, exclude=None):
         """
@@ -309,7 +309,7 @@ class Realtor(Person):
             raise ValidationError("{user} is already a Realtor, cannot also "
                                   "have a Homebuyer relation."
                                   .format(user=self.user))
-        return super(Realtor, self).clean(*args, **kwargs)
+        return super(Realtor, self).clean()
 
     class Meta:
         ordering = ['user__username']
