@@ -1,12 +1,21 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% bootstrap_javascript jquery=1 %}
+
+{% block navbarright %}
+  {% if state.0 %}
+    <li><a href="#">Log Out</a></li>
+  {% else %}
+    <li><a href="#">Log In</a></li>
+  {% endif %}
+{% endblock %}
 
 {% block body %}
   <div class="container" style = "margin:5%">
   <div class="row">
     <div class="col-sm-3"></div>
     <div class="col-sm-6">
-      <h1> Login </h1>
+      <h2><strong> Login </strong> </h2>
       <div style="margin: 10px 0" class="well" >
       <form style="margin-bottom:20px" action="/login/" role="form" method="post">
     	  {% csrf_token %}
@@ -26,3 +35,4 @@
   </div>
 	</div>
 {% endblock %}
+
