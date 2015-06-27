@@ -7,7 +7,49 @@ __all__ = ['Category', 'CategoryWeight', 'Couple', 'Grade', 'Homebuyer',
            'House', 'Realtor']
 
 
-class Person(models.Model):
+class ValidateCategoryCoupleMixin(object):
+    """
+    This is mixed in through multiple inheritance because the logic is common
+    to indirectly related objects.
+    """
+    def _validate_categories_and_couples(self):
+        """
+        Homebuyer and House both have a foreign key to Couple, and a M2M with
+        Category.  Since Category itself has a foreign key to Couple, these
+        need to remain consistent.
+        """
+        category_couple_ids = (self.categories
+                               .values_list('couple', flat=True).distinct())
+        if category_couple_ids:
+            if (category_couple_ids.count() > 1 or
+                    self.couple_id not in category_couple_ids):
+                raise ValidationError("Invalid categories for this couple.")
+        return
+
+
+class BaseModel(models.Model):
+    """
+    Abstract base model class for containing logic/fields we will want
+    available in all of our models.
+    """
+    def _validate_min_length(self, fieldname, min_length):
+        """
+        Raises an error if the field length is less than the minimum provided.
+        """
+        field = getattr(self, fieldname, "")
+        if not field or len(field) < min_length:
+            raise ValidationError({
+                fieldname: ["{fieldname} must be at least length {min_length}"
+                            .format(fieldname=fieldname,
+                                    min_length=min_length)]
+            })
+        return
+
+    class Meta:
+        abstract = True
+
+
+class Person(BaseModel):
     """
     Abstract model class representing information that is common to both
     Homebuyer and Realtor.
@@ -21,12 +63,14 @@ class Person(models.Model):
         abstract = True
 
 
-class Category(models.Model):
+class Category(BaseModel):
     """
     Represents a category for a single couple, meaning each couple will define
     their own categories that are important to them rather than every couple
     sharing from the same list.
     """
+    _SUMMARY_MIN_LENGTH = 1
+
     summary = models.CharField(max_length=128, verbose_name="Summary")
     description = models.TextField(blank=True, verbose_name="Description")
 
@@ -35,6 +79,14 @@ class Category(models.Model):
     def __unicode__(self):
         return self.summary
 
+    def clean_fields(self, exclude=None):
+        """
+        Make sure summary is not an empty string, which is what it would be
+        saved in the database as by default.
+        """
+        self._validate_min_length('summary', self._SUMMARY_MIN_LENGTH)
+        return super(Category, self).clean_fields(exclude=exclude)
+
     class Meta:
         ordering = ['summary']
         unique_together = (('summary', 'couple'),)
@@ -42,7 +94,7 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
 
-class CategoryWeight(models.Model):
+class CategoryWeight(BaseModel):
     """
     This is the 'join table' or 'through table' for the many to many
     relationship between Homebuyer and Category, which contains an
@@ -66,10 +118,14 @@ class CategoryWeight(models.Model):
                 weight=weight)
 
     def clean(self, *args, **kwargs):
+        """
+        Ensure the homebuyer is weighting a category that is actually linked
+        with them.
+        """
         if self.homebuyer.couple_id != self.category.couple_id:
             raise ValidationError("Category '{category}' is for a different "
                                   "Homebuyer.".format(category=self.category))
-        super(CategoryWeight, self).clean(*args, **kwargs)
+        return super(CategoryWeight, self).clean(*args, **kwargs)
 
     class Meta:
         ordering = ['category', 'homebuyer']
@@ -78,7 +134,7 @@ class CategoryWeight(models.Model):
         verbose_name_plural = "Category Weights"
 
 
-class Couple(models.Model):
+class Couple(BaseModel):
     """
     Represents a couple in our app, or two prospective Homebuyers.  Operating
     under the assumption that a couple will have exactly one Realtor.
@@ -102,13 +158,22 @@ class Couple(models.Model):
             homebuyers = [homebuyers.first(), '?']
         return u" and ".join(homebuyers)
 
+    def clean(self):
+        """
+        A Couple should be related to no more than 2 Homebuyers.
+        """
+        if self.homebuyer_set.count() > 2:
+            raise ValidationError("Couple instance cannot be related to more "
+                                  "than 2 Homebuyer instances.")
+        return super(Couple, self).clean()
+
     class Meta:
         ordering = ['realtor']
         verbose_name = "Couple"
         verbose_name_plural = "Couples"
 
 
-class Grade(models.Model):
+class Grade(BaseModel):
     """
     Each homebuyer will be related to several House and Category instances via
     a Couple instance.  This model will represent a homebuyer's grade for a
@@ -143,7 +208,7 @@ class Grade(models.Model):
                 self.category.couple_id != self.homebuyer.couple_id):
             raise ValidationError("House, Category, and Homebuyer must all be "
                                   "for the same Couple.")
-        super(Grade, self).clean(*args, **kwargs)
+        return super(Grade, self).clean(*args, **kwargs)
 
     class Meta:
         ordering = ['homebuyer', 'house', 'category', 'score']
@@ -152,24 +217,35 @@ class Grade(models.Model):
         verbose_name_plural = "Grades"
 
 
-class Homebuyer(Person):
+class Homebuyer(Person, ValidateCategoryCoupleMixin):
     """
     Represents an individual homebuyer.  The Homebuyer instance must be part
-    of a couple, but the partner field may be blank if their partner has
-    not yet registered.
+    of a couple, but the partner field may be blank if their partner has not
+    yet registered.
     """
     partner = models.OneToOneField('core.Homebuyer', blank=True, null=True,
                                    verbose_name="Partner")
     couple = models.ForeignKey('core.Couple', verbose_name="Couple")
-    categories = models.ManyToManyField('core.Category', through='core.CategoryWeight',
+    categories = models.ManyToManyField('core.Category',
+                                        through='core.CategoryWeight',
                                         verbose_name="Categories")
 
     def clean(self):
         """
-        Ensure that all related categories are for the correct Couple.
+        Homebuyers and Realtors are mutually exclusive.  User instances have
+        reverse relationships to both models, so only one of those should
+        exist.
+
+        Additionally, ensure that all related categories are for the correct
+        Couple.
         """
-        # TODO
-        super(Homebuyer, self).clean(*args, **kwargs)
+        if hasattr(self.user, 'realtor'):
+            raise ValidationError("{user} is already a Homebuyer, cannot also "
+                                  "have a Realtor relation."
+                                  .format(user=self.user))
+
+        self._validate_categories_and_couples()
+        return super(Homebuyer, self).clean(*args, **kwargs)
 
     class Meta:
         ordering = ['user__username']
@@ -177,13 +253,15 @@ class Homebuyer(Person):
         verbose_name_plural = "Homebuyers"
 
 
-class House(models.Model):
+class House(BaseModel, ValidateCategoryCoupleMixin):
     """
     Represents a single house in the database for a particular couple.
     Different couples might have the same house in their list of options, but
     these will be separate database objects because they might have nicknamed
     them differently.
     """
+    _NICKNAME_MIN_LENGTH = 1
+
     nickname = models.CharField(max_length=128, verbose_name="Nickname")
     address = models.TextField(blank=True, verbose_name="Address")
 
@@ -191,15 +269,23 @@ class House(models.Model):
     categories = models.ManyToManyField('core.Category', through='core.Grade',
                                         verbose_name="Categories")
 
+    def __unicode__(self):
+        return self.nickname
+
     def clean(self):
         """
         Ensure that all related categories are for the correct Couple.
         """
-        # TODO
-        super(Homebuyer, self).clean(*args, **kwargs)
+        self._validate_categories_and_couples()
+        return super(House, self).clean(*args, **kwargs)
 
-    def __unicode__(self):
-        return self.nickname
+    def clean_fields(self, exclude=None):
+        """
+        Make sure summary is not an empty string, which is what it would be
+        saved in the database as by default.
+        """
+        self._validate_min_length('nickname', self._NICKNAME_MIN_LENGTH)
+        return super(House, self).clean_fields(exclude=exclude)
 
     class Meta:
         ordering = ['nickname']
@@ -209,6 +295,22 @@ class House(models.Model):
 
 
 class Realtor(Person):
+    """
+    Represents a realtor.  Each Couple instance has a required foreign key to
+    Realtor, so each Realtor serves zero or more couples.
+    """
+    def clean(self):
+        """
+        Homebuyers and Realtors are mutually exclusive.  User instances have
+        reverse relationships to both models, so only one of those should
+        exist.
+        """
+        if hasattr(self.user, 'homebuyer'):
+            raise ValidationError("{user} is already a Realtor, cannot also "
+                                  "have a Homebuyer relation."
+                                  .format(user=self.user))
+        return super(Realtor, self).clean(*args, **kwargs)
+
     class Meta:
         ordering = ['user__username']
         verbose_name = "Realtor"
