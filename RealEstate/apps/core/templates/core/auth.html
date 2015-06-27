@@ -2,14 +2,6 @@
 {% load bootstrap3 %}
 {% bootstrap_javascript jquery=1 %}
 
-{% block navbarright %}
-  {% if state.0 %}
-    <li><a href="#">Log Out</a></li>
-  {% else %}
-    <li><a href="#">Log In</a></li>
-  {% endif %}
-{% endblock %}
-
 {% block body %}
   <div class="container" style = "margin:5%">
   <div class="row">
@@ -35,4 +27,3 @@
   </div>
 	</div>
 {% endblock %}
-

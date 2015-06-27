@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import View
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django import forms
 
 
@@ -9,7 +9,7 @@ class HomeView(View):
         return render(request, 'core/homebuyerHome.html', {})
 
 
-def login_user(request):
+def login_view(request):
     state = (False, "")     # Tuple to store status (True if logged in) and message.
     username = password = ''
     template = "core/auth.html"
@@ -34,3 +34,7 @@ def login_user(request):
         
     context = {"form" : LoginForm(), 'state':state, 'username': username}
     return render(request, template, context)
+
+
+def logout_view(request):
+    logout(request)
