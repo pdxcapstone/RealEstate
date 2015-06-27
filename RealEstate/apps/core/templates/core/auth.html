@@ -9,7 +9,7 @@
     <div class="col-sm-6">
       <h2><strong> Login </strong> </h2>
       <div style="margin: 10px 0" class="well" >
-      <form style="margin-bottom:20px" action="/login/" role="form" method="post">
+      <form style="margin-bottom:20px" action="{% url 'auth_login' %}" role="form" method="post">
     	  {% csrf_token %}
     	  {% bootstrap_form form %}
     	  <div class="pull-right" style="margin-top: 40px">
@@ -17,9 +17,7 @@
     	  </div>
     	</form>
     	</div>
-    	{% if state.0 %}
-    	  <div class="alert-success" style="padding:10px; margin-top:70px;">{{ state.1 }}</div>
-    	{% elif state.1 %}
+    	{% if not state.0 and state.1 %}
     	  <div class="alert-danger" style="padding:10px; margin-top:70px;">{{ state.1 }}</div>
     	{% endif %}
     </div>
