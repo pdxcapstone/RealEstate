@@ -18,6 +18,9 @@ class ValidateCategoryCoupleMixin(object):
         Category.  Since Category itself has a foreign key to Couple, these
         need to remain consistent.
         """
+        if not self.pk:
+            return
+
         category_couple_ids = (self.categories
                                .values_list('couple', flat=True).distinct())
         if category_couple_ids:
@@ -158,15 +161,6 @@ class Couple(BaseModel):
             homebuyers = [homebuyers.first(), '?']
         return u" and ".join(homebuyers)
 
-    def clean(self):
-        """
-        A Couple should be related to no more than 2 Homebuyers.
-        """
-        if self.homebuyer_set.count() > 2:
-            raise ValidationError("Couple instance cannot be related to more "
-                                  "than 2 Homebuyer instances.")
-        return super(Couple, self).clean()
-
     class Meta:
         ordering = ['realtor']
         verbose_name = "Couple"
@@ -237,7 +231,7 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         exist.
 
         Additionally, ensure that all related categories are for the correct
-        Couple.
+        Couple, and that the related Couple has no more than 2 homebuyers.
         """
         if hasattr(self.user, 'realtor'):
             raise ValidationError("{user} is already a Homebuyer, cannot also "
@@ -245,6 +239,8 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                   .format(user=self.user))
 
         self._validate_categories_and_couples()
+
+        # TODO: No more than 2 homebuyers per couple
         return super(Homebuyer, self).clean()
 
     class Meta:
