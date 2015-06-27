@@ -231,16 +231,28 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         exist.
 
         Additionally, ensure that all related categories are for the correct
-        Couple, and that the related Couple has no more than 2 homebuyers.
+        Couple, the related Couple has no more than 2 homebuyers, and the
+        partner Couple is in sync.
         """
         if hasattr(self.user, 'realtor'):
             raise ValidationError("{user} is already a Homebuyer, cannot also "
                                   "have a Realtor relation."
                                   .format(user=self.user))
 
-        self._validate_categories_and_couples()
+        # No more than 2 homebuyers per couple.
+        homebuyers = set(self.couple.homebuyer_set
+                         .values_list('id', flat=True).distinct())
+        homebuyers.discard(self.id)
+        if len(homebuyers) > 1:
+            raise ValidationError("Couple already has 2 Homebuyers.")
 
-        # TODO: No more than 2 homebuyers per couple
+        # If a partner is registered, make sure they are related to the same
+        # couple instance.
+        if self.partner and self.partner_couple_id != self.couple_id:
+            raise ValidationError("Partner is attached to a different Couple"
+                                  "instance.")
+
+        self._validate_categories_and_couples()
         return super(Homebuyer, self).clean()
 
     class Meta:
