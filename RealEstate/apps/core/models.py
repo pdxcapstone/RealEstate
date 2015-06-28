@@ -133,6 +133,11 @@ class CategoryWeight(BaseModel):
         Ensure the homebuyer is weighting a category that is actually linked
         with them.
         """
+        foreign_key_ids = (self.homebuyer_id, self.category_id)
+        if not all(foreign_key_ids):
+            raise ValidationError("Homebuyer and Category must exist before "
+                                  "saving a CategoryWeight instance.")
+
         if self.homebuyer.couple_id != self.category.couple_id:
             raise ValidationError("Category '{category}' is for a different "
                                   "Homebuyer.".format(category=self.category))
@@ -206,10 +211,13 @@ class Grade(BaseModel):
         The House, Category, and Homebuyer models all have a ForeignKey to a
         Couple instance, so make sure these are all consistent.
         """
-        ids = set([self.category.couple_id, self.homebuyer.couple_id])
-        if self.house_id:
-            ids.add(self.house.couple_id)
-        if len(ids) > 1:
+        foreign_key_ids = (self.house_id, self.category_id, self.homebuyer_id)
+        if not all(foreign_key_ids):
+            raise ValidationError("House, Category, and Homebuyer must all "
+                                  "exist before saving a Grade instance.")
+        couple_ids = set([self.house.couple_id, self.category.couple_id,
+                          self.homebuyer.couple_id])
+        if len(couple_ids) > 1:
             raise ValidationError("House, Category, and Homebuyer must all be "
                                   "for the same Couple.")
         return super(Grade, self).clean()
