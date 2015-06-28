@@ -21,10 +21,10 @@ class ValidateCategoryCoupleMixin(object):
         if not self.pk:
             return
 
-        category_couple_ids = (self.categories
-                               .values_list('couple', flat=True).distinct())
+        category_couple_ids = set(self.categories
+                                  .values_list('couple', flat=True))
         if category_couple_ids:
-            if (category_couple_ids.count() > 1 or
+            if (len(category_couple_ids) > 1 or
                     self.couple_id not in category_couple_ids):
                 raise ValidationError("Invalid categories for this couple.")
         return
