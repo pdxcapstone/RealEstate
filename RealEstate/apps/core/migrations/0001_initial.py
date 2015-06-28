@@ -70,7 +70,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('categories', models.ManyToManyField(to='core.Category', verbose_name=b'Categories', through='core.CategoryWeight')),
                 ('couple', models.ForeignKey(verbose_name=b'Couple', to='core.Couple')),
-                ('partner', models.OneToOneField(null=True, blank=True, to='core.Homebuyer', verbose_name=b'Partner')),
                 ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={

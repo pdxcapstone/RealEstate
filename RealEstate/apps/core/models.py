@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import IntegrityError, models
 
 __all__ = ['Category', 'CategoryWeight', 'Couple', 'Grade', 'Homebuyer',
            'House', 'Realtor']
@@ -214,11 +214,8 @@ class Grade(BaseModel):
 class Homebuyer(Person, ValidateCategoryCoupleMixin):
     """
     Represents an individual homebuyer.  The Homebuyer instance must be part
-    of a couple, but the partner field may be blank if their partner has not
-    yet registered.
+    of a couple, so this relationship is required.
     """
-    partner = models.OneToOneField('core.Homebuyer', blank=True, null=True,
-                                   verbose_name="Partner")
     couple = models.ForeignKey('core.Couple', verbose_name="Couple")
     categories = models.ManyToManyField('core.Category',
                                         through='core.CategoryWeight',
@@ -231,14 +228,12 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         exist.
 
         Additionally, ensure that all related categories are for the correct
-        Couple, the related Couple has no more than 2 homebuyers, and the
-        partner Couple is in sync.
+        Couple, and the related Couple has no more than 2 homebuyers.
         """
         if hasattr(self.user, 'realtor'):
             raise ValidationError("{user} is already a Homebuyer, cannot also "
                                   "have a Realtor relation."
                                   .format(user=self.user))
-
         # No more than 2 homebuyers per couple.
         homebuyers = set(self.couple.homebuyer_set
                          .values_list('id', flat=True).distinct())
@@ -246,14 +241,23 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         if len(homebuyers) > 1:
             raise ValidationError("Couple already has 2 Homebuyers.")
 
-        # If a partner is registered, make sure they are related to the same
-        # couple instance.
-        if self.partner and self.partner_couple_id != self.couple_id:
-            raise ValidationError("Partner is attached to a different Couple"
-                                  "instance.")
-
         self._validate_categories_and_couples()
         return super(Homebuyer, self).clean()
+
+    @property
+    def partner(self):
+        """
+        Returns the partner Homebuyer instance for this particular Homebuyer,
+        or None if their partner is not yet registered.  If the query returns
+        more than one Homebuyer, something has gone wrong and there are more
+        than two people in the Couple, and needs to be resolved.
+        """
+        related_homebuyers = self.couple.homebuyer_set.exclude(id=self.id)
+        if related_homebuyers.count() > 1:
+            raise IntegrityError("Couple has too many related Homebuyers and "
+                                 "should be resolved immediately. "
+                                 "(Couple ID: {id})".format(id=self.couple_id))
+        return related_homebuyers.first()
 
     class Meta:
         ordering = ['user__username']
