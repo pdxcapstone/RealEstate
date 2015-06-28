@@ -20,6 +20,8 @@ class CategoryWeightInline(admin.TabularInline):
 class GradeInline(admin.TabularInline):
     model = Grade
     extra = 1
+    fields = ('homebuyer', 'category', 'score')
+    radio_fields = {'score': admin.HORIZONTAL}
 
 
 class HomebuyerInline(admin.StackedInline):
@@ -51,11 +53,6 @@ class CategoryAdmin(BaseAdmin):
 class CoupleAdmin(BaseAdmin):
     inlines = [HomebuyerInline, HouseInline, CategoryInline]
     list_display = ('__unicode__', 'realtor')
-
-
-@admin.register(Grade)
-class GradeAdmin(BaseAdmin):
-    radio_fields = {'score': admin.VERTICAL}
 
 
 @admin.register(Homebuyer)

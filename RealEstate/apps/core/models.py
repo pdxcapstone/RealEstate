@@ -48,6 +48,18 @@ class BaseModel(models.Model):
             })
         return
 
+    def clean_fields(self, exclude=None):
+        """
+        Strip all leading/trailing whitespace from CharFields and TextFields.
+        """
+        for field in self._meta.fields:
+            if isinstance(field, (models.CharField, models.TextField)):
+                fieldname = field.name
+                value = getattr(self, fieldname)
+                if value:
+                    setattr(self, fieldname, value.strip())
+        return super(BaseModel, self).clean_fields(exclude=exclude)
+
     class Meta:
         abstract = True
 
@@ -201,10 +213,10 @@ class Grade(BaseModel):
 
     def __unicode__(self):
         return (u"{homebuyer} gives {house} a score of {score} for category: "
-                "{category}.".format(homebuyer=unicode(self.homebuyer),
-                                     house=unicode(self.house),
-                                     score=self.score,
-                                     category=unicode(self.category)))
+                "'{category}'".format(homebuyer=unicode(self.homebuyer),
+                                      house=unicode(self.house),
+                                      score=self.score,
+                                      category=unicode(self.category)))
 
     def clean(self):
         """
