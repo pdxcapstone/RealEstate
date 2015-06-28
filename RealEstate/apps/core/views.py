@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect
 from django import forms
 from .models import House, Homebuyer, Couple
+from django.core.urlresolvers import reverse
 
 
 class HomeView(View):
@@ -12,4 +13,4 @@ class HomeView(View):
           couple = Couple.objects.filter(homebuyer__user=request.user)
           house = House.objects.filter(couple=couple)
           return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
-        return HttpResponseRedirect('/login/')
+        return HttpResponseRedirect(reverse('auth_login'))

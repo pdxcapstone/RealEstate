@@ -19,8 +19,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', include('RealEstate.apps.core.urls'), name='home'),
+    url(r'^$', include('RealEstate.apps.core.urls')),
     url(r'^login/$', 'django.contrib.auth.views.login', name='auth_login'),
-    url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/'}, name='auth_logout'),
-    url(r'^logout/(?P<next_page>)/$', 'django.contrib.auth.views.logout', name='auth_logout_next'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
 ]
