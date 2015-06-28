@@ -118,7 +118,7 @@ class CategoryWeight(BaseModel):
         return u"{homebuyer} gives {category} a weight of {weight}.".format(
                 homebuyer=self.homebuyer,
                 category=self.category,
-                weight=weight)
+                weight=self.weight)
 
     def clean(self):
         """
