@@ -40,7 +40,7 @@
         {% block navbarright %}
         {% endblock %}
         {% if user.is_authenticated %}
-          <li><a href="{% url 'auth_logout' %}?next={% url 'home' %}"> Logout</a>
+          <li><a href="{% url 'auth_logout' %}"> Logout</a>
         {% else %}
           <li><a href="{% url 'auth_login' %}"> Log In</a></li>
         {% endif %}
