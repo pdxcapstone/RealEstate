@@ -261,8 +261,8 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         Couple, and the related Couple has no more than 2 homebuyers.
         """
         if hasattr(self.user, 'realtor'):
-            raise ValidationError("{user} is already a Homebuyer, cannot also "
-                                  "have a Realtor relation."
+            raise ValidationError("{user} is already a Realtor, cannot also "
+                                  "have a Homebuyer relation."
                                   .format(user=self.user))
         # No more than 2 homebuyers per couple.
         homebuyers = set(self.couple.homebuyer_set
@@ -348,8 +348,8 @@ class Realtor(Person):
         exist.
         """
         if hasattr(self.user, 'homebuyer'):
-            raise ValidationError("{user} is already a Realtor, cannot also "
-                                  "have a Homebuyer relation."
+            raise ValidationError("{user} is already a Homebuyer, cannot also "
+                                  "have a Realtor relation."
                                   .format(user=self.user))
         return super(Realtor, self).clean()
 
