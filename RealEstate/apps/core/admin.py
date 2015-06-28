@@ -3,10 +3,22 @@ from django.contrib import admin
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor)
 
+admin.site.site_header = "Real Estate Admin"
+
 
 # Inlines
 class CategoryInline(admin.TabularInline):
     model = Category
+    extra = 1
+
+
+class CategoryWeightInline(admin.TabularInline):
+    model = CategoryWeight
+    extra = 1
+
+
+class GradeInline(admin.TabularInline):
+    model = Grade
     extra = 1
 
 
@@ -22,22 +34,42 @@ class HouseInline(admin.TabularInline):
 
 
 # Custom Model Admins
-class CategoryAdmin(admin.ModelAdmin):
+class BaseAdmin(admin.ModelAdmin):
+    """
+    Admin settings for all models.
+    """
+    save_on_top = True
+
+
+@admin.register(Category)
+class CategoryAdmin(BaseAdmin):
     fields = ('couple', 'summary', 'description')
     list_display = ('summary', 'couple')
 
 
-class CoupleAdmin(admin.ModelAdmin):
+@admin.register(Couple)
+class CoupleAdmin(BaseAdmin):
     inlines = [HomebuyerInline, HouseInline, CategoryInline]
     list_display = ('__unicode__', 'realtor')
 
 
-admin.site.site_header = "Real Estate Admin"
+@admin.register(Grade)
+class GradeAdmin(BaseAdmin):
+    radio_fields = {'score': admin.VERTICAL}
 
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(CategoryWeight)
-admin.site.register(Couple, CoupleAdmin)
-admin.site.register(Grade)
-admin.site.register(Homebuyer)
-admin.site.register(House)
-admin.site.register(Realtor)
+
+@admin.register(Homebuyer)
+class HomebuyerAdmin(BaseAdmin):
+    inlines = [CategoryWeightInline]
+    list_display = ('__unicode__', 'email', 'full_name')
+
+
+@admin.register(House)
+class HouseAdmin(BaseAdmin):
+    inlines = [GradeInline]
+    list_display = ('nickname', 'address')
+
+
+@admin.register(Realtor)
+class RealtorAdmin(BaseAdmin):
+    list_display = ('__unicode__', 'email', 'full_name')
