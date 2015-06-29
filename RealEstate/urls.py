@@ -22,7 +22,7 @@ from RealEstate.apps.core import views
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^login/$', 'django.contrib.auth.views.login', name='auth_login'),
+    url(r'^login/$', views.login, name='auth_login'),
     url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
     url(r'^$', views.HomeView.as_view(), name='home')
 ]
