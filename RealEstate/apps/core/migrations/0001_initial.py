@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import RealEstate.apps.core.models
 from django.conf import settings
 import django.core.validators
 
@@ -21,6 +22,7 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(verbose_name=b'Description', blank=True)),
             ],
             options={
+                'ordering': ['summary'],
                 'verbose_name': 'Category',
                 'verbose_name_plural': 'Categories',
             },
@@ -33,6 +35,7 @@ class Migration(migrations.Migration):
                 ('category', models.ForeignKey(verbose_name=b'Category', to='core.Category')),
             ],
             options={
+                'ordering': ['category', 'homebuyer'],
                 'verbose_name': 'Category Weight',
                 'verbose_name_plural': 'Category Weights',
             },
@@ -43,6 +46,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
             ],
             options={
+                'ordering': ['realtor'],
                 'verbose_name': 'Couple',
                 'verbose_name_plural': 'Couples',
             },
@@ -55,6 +59,7 @@ class Migration(migrations.Migration):
                 ('category', models.ForeignKey(verbose_name=b'Category', to='core.Category')),
             ],
             options={
+                'ordering': ['homebuyer', 'house', 'category', 'score'],
                 'verbose_name': 'Grade',
                 'verbose_name_plural': 'Grades',
             },
@@ -65,13 +70,14 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('categories', models.ManyToManyField(to='core.Category', verbose_name=b'Categories', through='core.CategoryWeight')),
                 ('couple', models.ForeignKey(verbose_name=b'Couple', to='core.Couple')),
-                ('partner', models.OneToOneField(null=True, blank=True, to='core.Homebuyer', verbose_name=b'Partner')),
                 ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
+                'ordering': ['user__username'],
                 'verbose_name': 'Homebuyer',
                 'verbose_name_plural': 'Homebuyers',
             },
+            bases=(models.Model, RealEstate.apps.core.models.ValidateCategoryCoupleMixin),
         ),
         migrations.CreateModel(
             name='House',
@@ -83,9 +89,11 @@ class Migration(migrations.Migration):
                 ('couple', models.ForeignKey(verbose_name=b'Couple', to='core.Couple')),
             ],
             options={
+                'ordering': ['nickname'],
                 'verbose_name': 'House',
                 'verbose_name_plural': 'Houses',
             },
+            bases=(models.Model, RealEstate.apps.core.models.ValidateCategoryCoupleMixin),
         ),
         migrations.CreateModel(
             name='Realtor',
@@ -94,6 +102,7 @@ class Migration(migrations.Migration):
                 ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
+                'ordering': ['user__username'],
                 'verbose_name': 'Realtor',
                 'verbose_name_plural': 'Realtors',
             },
@@ -122,5 +131,21 @@ class Migration(migrations.Migration):
             model_name='category',
             name='couple',
             field=models.ForeignKey(verbose_name=b'Couple', to='core.Couple'),
+        ),
+        migrations.AlterUniqueTogether(
+            name='house',
+            unique_together=set([('nickname', 'couple')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='grade',
+            unique_together=set([('house', 'category', 'homebuyer')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='categoryweight',
+            unique_together=set([('homebuyer', 'category')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='category',
+            unique_together=set([('summary', 'couple')]),
         ),
     ]

@@ -16,10 +16,13 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from RealEstate.apps.core import views
+
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', include('RealEstate.apps.core.urls')),
-    url(r'^login/$', 'django.contrib.auth.views.login', name='auth_login'),
+
+    url(r'^login/$', views.login, name='auth_login'),
     url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
+    url(r'^$', views.HomeView.as_view(), name='home')
 ]
