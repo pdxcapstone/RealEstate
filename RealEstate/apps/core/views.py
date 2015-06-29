@@ -37,3 +37,8 @@ class HomeView(BaseView):
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
         return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
+        
+        
+        
+# API Views
+

@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 
     # Third party apps
     'django_extensions',
@@ -49,6 +50,10 @@ INSTALLED_APPS = (
     'RealEstate.apps.core',
     'RealEstate.apps.pending',
 )
+
+REST_FRAMEWORK = {
+    'PAGE_SIZE': 10
+}
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
