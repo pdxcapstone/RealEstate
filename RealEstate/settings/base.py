@@ -16,6 +16,7 @@ either dev.py or prod.py.
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import datetime
 from os.path import abspath, dirname
 
 BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
@@ -49,11 +50,39 @@ INSTALLED_APPS = (
     # Real Estate apps
     'RealEstate.apps.core',
     'RealEstate.apps.pending',
+    'RealEstate.apps.api'
 )
 
+# REST API settings
+
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 10
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
 }
+
+JWT_AUTH = {
+    'JWT_PAYLOAD_HANDLER':
+    'RealEstate.apps.api.utils.jwt_payload_handler',
+
+    'JWT_RESPONSE_PAYLOAD_HANDLER':
+    'RealEstate.apps.api.utils.jwt_response_payload_handler',
+
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(seconds=3000),
+    'JWT_SECRET_KEY': SECRET_KEY,
+}
+
+# End REST API settings
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -85,7 +114,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'RealEstate.wsgi.application'
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/

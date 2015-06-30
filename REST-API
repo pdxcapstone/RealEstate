@@ -1,0 +1,27 @@
+The app currently supports the following REST APIs:
+
+1. User Authentication:
+	Description: Login the user using username/password pair and gain an access token for
+				 future access.
+	Usage: 		 POST http://<domain>/api/auth/ {username:<username>, password:<password>}
+	Returns: 	 Json document contains an access token valid for 3000 seconds and expirat-
+				 ion time.
+	Status: 	 401 or 403 if credentials are invalid; 200 if successfully logged in.
+
+2. Token Refreshment:
+	Description: Refresh access token before its expiration time to regain time for access.
+	Usage: 		 POST Authorization: JWT <token> http://<domain>/api/refresh/
+				 {token:<token-to-be-refreshed>}
+	Returns: 	 Json document contains an access token valid for 3000 seconds and expirat-
+				 ion time.
+	Status: 	 401 or 403 if token for authorization is invalid; 400 if token to be refr-
+				 eshed is invalid; 200 if successfully refreshed.
+
+3. Getting Current User Info:
+	Description: Getting the information of the user authorized corresponding to the access
+	 			 token.
+	Usage: 		 GET Authorization: JWT <token> http://<domain>/api/get-user/
+	Returns: 	 Json document contains username, userid, email, first name, last name and
+	             expiration time.
+	Status: 	 401 or 403 if token for authorization is invalid; 400 if the user is not
+				 a home buyer; 200 if no error occurs.
