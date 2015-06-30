@@ -40,6 +40,10 @@ The following instructions are primarily intended for Mac/Linux, but they should
 
 11. When you are finished and wish to exit the virtualenv, exit by the command: ```deactivate```
 
+## API Document
+
+* [REST-API](https://github.com/pdxcapstone/RealEstate/blob/api-dev/REST-API)
+
 ## External Documentation
 
 * [Team Django Notes](https://drive.google.com/drive/folders/0B24lwkPmIOELNS1paFlwaHRJYnc)
