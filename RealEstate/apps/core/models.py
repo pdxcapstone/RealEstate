@@ -3,8 +3,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
 
-__all__ = ['Category', 'CategoryWeight', 'Couple', 'Grade', 'Homebuyer',
-           'House', 'Realtor']
+__all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
+           'Homebuyer', 'House', 'Realtor']
 
 
 class ValidateCategoryCoupleMixin(object):
