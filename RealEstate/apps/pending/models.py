@@ -32,7 +32,8 @@ class PendingCouple(BaseModel):
         if pending_homebuyers:
             homebuyer_string = u", ".join(map(unicode, pending_homebuyers))
         return u"{realtor}: {homebuyer_string}".format(
-            realtor=self.realtor, homebuyer_string=homebuyer_string)
+            realtor=self.realtor,
+            homebuyer_string=homebuyer_string)
 
     class Meta:
         ordering = ['realtor']
@@ -59,7 +60,8 @@ class PendingHomebuyer(BaseModel):
 
     def __unicode__(self):
         return u"{email} ({registration_status})".format(
-            email=self.email, registration_status = self.registration_status)
+            email=self.email,
+            registration_status=self.registration_status)
 
     def clean(self):
         """
@@ -75,9 +77,14 @@ class PendingHomebuyer(BaseModel):
 
     @property
     def registration_status(self):
+        """
+        Returns a string representing the registration status of the pending
+        homebuyer.  The homebuyer is considered registered if the email exists
+        in the User table.
+        """
         if User.objects.filter(email=self.email).exists():
-            return "Registered"
-        return "Unregistered"
+            return u"Registered"
+        return u"Unregistered"
 
     class Meta:
         ordering = ['email']
