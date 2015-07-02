@@ -12,4 +12,5 @@ install:
     - pip install -q Django==$DJANGO_VERSION --use-mirrors
 
 script:
+    - python manage.py migrate
     - python manage.py test
