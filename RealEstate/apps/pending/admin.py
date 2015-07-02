@@ -11,8 +11,7 @@ class PendingHomebuyerInline(admin.StackedInline):
     model = PendingHomebuyer
     extra = 1
     max_num = 2
-    fields = ('email', 'first_name', 'last_name', 'registration_token',
-              'registration_status')
+    fields = ('email', 'registration_token', 'registration_status')
     readonly_fields = ('registration_status', 'registration_token')
 
 

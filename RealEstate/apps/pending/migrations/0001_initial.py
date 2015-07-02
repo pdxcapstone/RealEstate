@@ -28,9 +28,7 @@ class Migration(migrations.Migration):
             name='PendingHomebuyer',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('email', models.EmailField(unique=True, max_length=254, verbose_name=b'Email')),
-                ('first_name', models.CharField(max_length=64, verbose_name=b'First Name')),
-                ('last_name', models.CharField(max_length=64, verbose_name=b'Last Name')),
+                ('email', models.EmailField(unique=True, max_length=75, verbose_name=b'Email')),
                 ('registration_token', models.CharField(default=RealEstate.apps.pending.models._generate_registration_token, verbose_name=b'Registration Token', unique=True, max_length=64, editable=False)),
                 ('pending_couple', models.ForeignKey(verbose_name=b'Pending Couple', to='pending.PendingCouple')),
             ],

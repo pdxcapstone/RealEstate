@@ -3,10 +3,11 @@ Model definitions for pending couples and homebuyers, people who have been
 invited to the app but have not yet registered.
 """
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.crypto import get_random_string, hashlib
 
-from RealEstate.apps.core.models import BaseModel, Realtor
+from RealEstate.apps.core.models import BaseModel
 
 
 def _generate_registration_token():
@@ -15,7 +16,7 @@ def _generate_registration_token():
     SHA-256.
     """
     while True:
-        token = hashlib.sha256(get_random_string()).hexdigest()
+        token = hashlib.sha256(get_random_string(length=64)).hexdigest()
         if not PendingHomebuyer.objects.filter(registration_token=token):
             return token
 
@@ -48,8 +49,6 @@ class PendingHomebuyer(BaseModel):
     """
     email = models.EmailField(max_length=75, unique=True,
                               verbose_name="Email")
-    first_name = models.CharField(max_length=30, verbose_name="First Name")
-    last_name = models.CharField(max_length=30, verbose_name="Last Name")
     registration_token = models.CharField(max_length=64,
                                           default=_generate_registration_token,
                                           editable=False,
@@ -70,8 +69,8 @@ class PendingHomebuyer(BaseModel):
         """
         pending_homebuyers = set(self.pending_couple.pendinghomebuyer_set
                                  .values_list('id', flat=True).distinct())
-        pending_homebuyers.discard(self.id)
-        if len(pending_homebuyers) > 1:
+        pending_homebuyers.add(self.id)
+        if len(pending_homebuyers) > 2:
             raise ValidationError("PendingCouple already has 2 Homebuyers.")
         return super(PendingHomebuyer, self).clean()
 
