@@ -1,14 +1,17 @@
 language: python
 
 python:
-    - "2.7"
+  - "2.7"
 
 env:
-    - DJANGO_VERSION=1.8
+  - DJANGO_VERSION=1.8
 
 install:
-    - pip install -r requirements.txt --use-mirrors
-    - pip install -q Django==$DJANGO_VERSION --use-mirrors
+  - pip install -r requirements.txt --use-mirrors
+  - pip install -q Django==$DJANGO_VERSION --use-mirrors
 
 script:
-    - python manage.py test
+  - python manage.py test
+
+notifications:
+  slack: pdx-capstone:IFvGLq7Mzb30ho8B0QBqp3rk
