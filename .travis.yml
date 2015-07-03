@@ -10,9 +10,10 @@ install:
   - pip install -r requirements.txt --use-mirrors
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
   - pip install coveralls
+  - pip install coverage
 
 script:
-  - python manage.py test
+  - python manage.py test  --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
 
 after_success:
   coveralls
