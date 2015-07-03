@@ -1,10 +1,9 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
 
-__all__ = ['Category', 'CategoryWeight', 'Couple', 'Grade', 'Homebuyer',
-           'House', 'Realtor']
+__all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
+           'Homebuyer', 'House', 'Realtor']
 
 
 class ValidateCategoryCoupleMixin(object):
@@ -136,9 +135,9 @@ class CategoryWeight(BaseModel):
 
     def __unicode__(self):
         return u"{homebuyer} gives {category} a weight of {weight}.".format(
-                homebuyer=self.homebuyer,
-                category=self.category,
-                weight=self.weight)
+            homebuyer=self.homebuyer,
+            category=self.category,
+            weight=self.weight)
 
     def clean(self):
         """
