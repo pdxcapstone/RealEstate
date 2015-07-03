@@ -127,8 +127,10 @@ class UserAdmin(UserAdmin):
     save_on_top = True
 
     add_form = UserCreationForm
-    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'last_login')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups', 'last_login')
+    list_display = ('email', 'first_name', 'last_name', 'is_staff',
+                    'last_login')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',
+                   'last_login')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)

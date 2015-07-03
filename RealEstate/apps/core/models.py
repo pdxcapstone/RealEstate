@@ -131,10 +131,10 @@ class CategoryWeight(BaseModel):
     the Couple instance is the same for both the homebuyer and category
     fields.
     """
-    weight = models.PositiveSmallIntegerField(validators=[MinValueValidator(0),
-                                                          MaxValueValidator(100)],
-                                              help_text="0-100",
-                                              verbose_name="Weight")
+    weight = models.PositiveSmallIntegerField(
+        help_text="0-100",
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
 
@@ -391,11 +391,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model which uses email instead of a username for logging in.
     """
-    email = models.EmailField(unique=True, verbose_name="Email Address",
-                              error_messages={
-                                  'unique': ("A user with this email already "
-                                             "exists.")
-                              })
+    email = models.EmailField(
+        unique=True,
+        verbose_name="Email Address",
+        help_text="Required.  Please enter a valid email address.",
+        error_messages={
+            'unique': ("A user with this email already "
+                       "exists.")
+        })
     first_name = models.CharField(max_length=30, default="First",
                                   verbose_name="First Name")
     last_name = models.CharField(max_length=30, default="Last",
