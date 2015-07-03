@@ -4,7 +4,7 @@ invited to the app but have not yet registered.
 """
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string, hashlib
 
 from RealEstate.apps.core.models import BaseModel
@@ -75,15 +75,33 @@ class PendingHomebuyer(BaseModel):
         return super(PendingHomebuyer, self).clean()
 
     @property
-    def registration_status(self):
+    def partner(self):
         """
-        Returns a string representing the registration status of the pending
+        TODO: Same logic as Homebuyer.partner, needs refactor.
+        """
+        pending_homebuyers = (self.pending_couple
+                              .pendinghomebuyer_set.exclude(id=self.id))
+        if pending_homebuyers.count() > 1:
+            raise IntegrityError("PendingCouple has too many related "
+                                 "PendingHomebuyer and should be resolved "
+                                 "immediately. (PendingCouple ID: {id})"
+                                 .format(id=self.pending_couple.id))
+        return pending_homebuyers.first()
+
+    @property
+    def registered(self):
+        """
+        Returns a boolean representing the registration status of the pending
         homebuyer.  The homebuyer is considered registered if the email exists
         in the User table.
         """
         if User.objects.filter(email=self.email).exists():
-            return u"Registered"
-        return u"Unregistered"
+            return True
+        return False
+
+    @property
+    def registration_status(self):
+        return "Registered" if self.registered else "Unregistered"
 
     class Meta:
         ordering = ['email']
