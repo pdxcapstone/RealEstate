@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 
-from .models import House, Homebuyer, Couple
+from .models import Couple, House
 
 
 def login(request, *args, **kwargs):
