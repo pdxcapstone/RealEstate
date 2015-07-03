@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
@@ -357,3 +358,27 @@ class Realtor(Person):
         ordering = ['user__username']
         verbose_name = "Realtor"
         verbose_name_plural = "Realtors"
+
+
+class ProxyUser(User):
+    """
+    Prevents Users from being saved with duplicate emails.  This is only
+    enforced if saved through the admin, and is not enforced in the database
+    level.
+
+    TODO:  Custom user model that uses email for logging in, and requires a
+           the email field to be unique.
+    """
+    def validate_unique(self, exclude=None):
+        super(ProxyUser, self).validate_unique(exclude=exclude)
+        if self.email:
+            if (ProxyUser.objects
+                    .filter(email=self.email)
+                    .exclude(id=self.id)
+                    .exists()):
+                raise ValidationError({'email': "User with this email already exists."})
+
+    class Meta:
+        proxy = True
+        verbose_name = "User"
+        verbose_name_plural = "Users"

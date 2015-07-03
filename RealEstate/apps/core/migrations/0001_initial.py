@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import django.contrib.auth.models
 import RealEstate.apps.core.models
 from django.conf import settings
 import django.core.validators
@@ -10,6 +11,7 @@ import django.core.validators
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('auth', '0006_require_contenttypes_0002'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -70,7 +72,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('categories', models.ManyToManyField(to='core.Category', verbose_name=b'Categories', through='core.CategoryWeight')),
                 ('couple', models.ForeignKey(verbose_name=b'Couple', to='core.Couple')),
-                ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['user__username'],
@@ -99,13 +100,36 @@ class Migration(migrations.Migration):
             name='Realtor',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['user__username'],
                 'verbose_name': 'Realtor',
                 'verbose_name_plural': 'Realtors',
             },
+        ),
+        migrations.CreateModel(
+            name='ProxyUser',
+            fields=[
+            ],
+            options={
+                'verbose_name': 'User',
+                'proxy': True,
+                'verbose_name_plural': 'Users',
+            },
+            bases=('auth.user',),
+            managers=[
+                ('objects', django.contrib.auth.models.UserManager()),
+            ],
+        ),
+        migrations.AddField(
+            model_name='realtor',
+            name='user',
+            field=models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='homebuyer',
+            name='user',
+            field=models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='grade',

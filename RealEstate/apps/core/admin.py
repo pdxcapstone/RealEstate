@@ -1,9 +1,13 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor)
+                                         Grade, Homebuyer, House, ProxyUser,
+                                         Realtor)
 
 admin.site.site_header = "Real Estate Admin"
+admin.site.unregister(User)
 
 
 # Inlines
@@ -97,3 +101,8 @@ class HouseAdmin(BaseAdmin):
 @admin.register(Realtor)
 class RealtorAdmin(BaseAdmin):
     list_display = ('__unicode__', 'email', 'full_name')
+
+
+@admin.register(ProxyUser)
+class UserAdmin(BaseUserAdmin):
+    save_on_top = True
