@@ -1,11 +1,10 @@
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
-           'Homebuyer', 'House', 'Realtor']
+           'Homebuyer', 'House', 'ProxyUser', 'Realtor']
 
 
 class ValidateCategoryCoupleMixin(object):
@@ -70,7 +69,7 @@ class Person(BaseModel):
     Abstract model class representing information that is common to both
     Homebuyer and Realtor.
     """
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
+    user = models.OneToOneField('core.ProxyUser', verbose_name="User")
 
     def __unicode__(self):
         return self.user.username

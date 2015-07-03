@@ -2,12 +2,11 @@
 Model definitions for pending couples and homebuyers, people who have been
 invited to the app but have not yet registered.
 """
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string, hashlib
 
-from RealEstate.apps.core.models import BaseModel
+from RealEstate.apps.core.models import BaseModel, Couple, Homebuyer
 
 
 def _generate_registration_token():
@@ -35,6 +34,20 @@ class PendingCouple(BaseModel):
         return u"{realtor}: {homebuyer_string}".format(
             realtor=self.realtor,
             homebuyer_string=homebuyer_string)
+
+    @property
+    def couple(self):
+        """
+        The real Couple instance for the two Homebuyers.  If neither have
+        registered yet, it will not exist, but will be created after the first
+        person registers.
+        """
+        emails = self.pendinghomebuyer_set.values_list('email', flat=True)
+        homebuyers = Homebuyer.objects.filter(user__email__in=emails)
+        couples = Couple.objects.filter(homebuyer__in=homebuyers)
+        if couples.exists():
+            return couples.first()
+        return None
 
     class Meta:
         ordering = ['realtor']
@@ -75,6 +88,10 @@ class PendingHomebuyer(BaseModel):
         return super(PendingHomebuyer, self).clean()
 
     @property
+    def couple(self):
+        return self.pending_couple.couple
+
+    @property
     def partner(self):
         """
         TODO: Same logic as Homebuyer.partner, needs refactor.
@@ -95,7 +112,7 @@ class PendingHomebuyer(BaseModel):
         homebuyer.  The homebuyer is considered registered if the email exists
         in the User table.
         """
-        if get_user_model().objects.filter(email=self.email).exists():
+        if Homebuyer.objects.filter(user__email=self.email).exists():
             return True
         return False
 

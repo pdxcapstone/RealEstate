@@ -3,16 +3,14 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.contrib.auth.models
-import RealEstate.apps.core.models
-from django.conf import settings
 import django.core.validators
+import RealEstate.apps.core.models
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '0006_require_contenttypes_0002'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
@@ -124,12 +122,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='realtor',
             name='user',
-            field=models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(verbose_name=b'User', to='core.ProxyUser'),
         ),
         migrations.AddField(
             model_name='homebuyer',
             name='user',
-            field=models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL),
+            field=models.OneToOneField(verbose_name=b'User', to='core.ProxyUser'),
         ),
         migrations.AddField(
             model_name='grade',
