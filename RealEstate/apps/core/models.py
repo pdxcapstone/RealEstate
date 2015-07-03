@@ -396,8 +396,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                                   'unique': ("A user with this email already "
                                              "exists.")
                               })
-    first_name = models.CharField(max_length=30, verbose_name="First Name")
-    last_name = models.CharField(max_length=30, verbose_name="Last Name")
+    first_name = models.CharField(max_length=30, default="First",
+                                  verbose_name="First Name")
+    last_name = models.CharField(max_length=30, default="Last",
+                                 verbose_name="Last Name")
     is_staff = models.BooleanField(
         default=False,
         help_text=("Designates whether the user can log into this admin "
@@ -418,6 +420,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = "User"
         verbose_name_plural = "Users"
 
+    def clean(self):
+        if hasattr(self, 'homebuyer') and hasattr(self, 'realtor'):
+            raise ValidationError("User cannot be a Homebuyer and a Realtor.")
+        return super(User, self).clean()
+
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
@@ -427,3 +434,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.first_name
+
+    @property
+    def user_type(self):
+        """
+        Returns a string which represents the user type (Homebuyer or Realtor).
+        If they are registered as both, raise an IntegrityError.  Returns None
+        if registered as neither.
+        """
+        has_homebuyer = hasattr(self, 'homebuyer')
+        has_realtor = hasattr(self, 'realtor')
+        if has_homebuyer:
+            if has_realtor:
+                raise IntegrityError("User {user} is registered as both a "
+                                     "Homebuyer and a Realtor, which is not "
+                                     "valid.".format(user=unicode(self)))
+            return "Homebuyer"
+        elif has_realtor:
+            return "Realtor"
+        return None
