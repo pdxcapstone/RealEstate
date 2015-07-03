@@ -22,6 +22,23 @@ class TestStringMethods(unittest.TestCase):
         realtor = models.Realtor.objects.create(user=user)
         self.assertIsNotNone(realtor.user)
 
+    def test_grade(self):
+        grade = models.Grade(score=5)
+        self.assertEquals(grade.score, 5)
+
+    def test_house(self):
+        house = models.House(nickname='nickname')
+        self.assertEquals(house.nickname, 'nickname')
+
+    def test_categoryweight(self):
+        categoryweight = models.CategoryWeight(weight=99)
+        self.assertEquals(categoryweight.weight,99)
+
+    def test_couple(self):
+        user = User.objects.create(username='foo123', password='foo0')
+        realtor = models.Realtor.objects.create(user=user)
+        couple = models.Couple(realtor=realtor)
+        self.assertEquals(couple.realtor,realtor)
 
 if __name__ == '__main__':
     unittest.main()
