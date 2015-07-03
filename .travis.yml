@@ -12,7 +12,7 @@ install:
   - pip install coveralls
 
 script:
-  - python manage.py test coveralls -v --cov coveralls --cov-report term-missing
+  - python manage.py test coveralls -v --cov
 
 after_success:
   coveralls
