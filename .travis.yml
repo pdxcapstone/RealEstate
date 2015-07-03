@@ -9,9 +9,13 @@ env:
 install:
   - pip install -r requirements.txt --use-mirrors
   - pip install -q Django==$DJANGO_VERSION --use-mirrors
+  - pip install coveralls
 
 script:
-  - python manage.py test
+  - coverage run python manage.py test
+
+after_success:
+  coveralls
 
 notifications:
   slack: pdx-capstone:IFvGLq7Mzb30ho8B0QBqp3rk
