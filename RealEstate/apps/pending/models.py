@@ -28,10 +28,10 @@ class PendingCouple(BaseModel):
 
     def __unicode__(self):
         homebuyer_string = u"No homebuyers specified"
-        pending_homebuyers = self.pendinghomebuyer_set.order_by('email')
+        pending_homebuyers = self.pendinghomebuyer_set.all()
         if pending_homebuyers:
             homebuyer_string = u", ".join(map(unicode, pending_homebuyers))
-        return u"{realtor}: {homebuyer_string}".format(
+        return u"Realtor: {realtor} | Homebuyer(s): {homebuyer_string}".format(
             realtor=self.realtor,
             homebuyer_string=homebuyer_string)
 
@@ -60,8 +60,7 @@ class PendingHomebuyer(BaseModel):
     Represents a Homebuyer that has been invited but not yet registered in the
     database.
     """
-    email = models.EmailField(max_length=75, unique=True,
-                              verbose_name="Email")
+    email = models.EmailField(unique=True, verbose_name="Email")
     registration_token = models.CharField(max_length=64,
                                           default=_generate_registration_token,
                                           editable=False,

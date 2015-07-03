@@ -96,7 +96,7 @@ class Migration(migrations.Migration):
                 ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'ordering': ['user__username'],
+                'ordering': ['user__email'],
                 'verbose_name': 'Homebuyer',
                 'verbose_name_plural': 'Homebuyers',
             },
@@ -125,7 +125,7 @@ class Migration(migrations.Migration):
                 ('user', models.OneToOneField(verbose_name=b'User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'ordering': ['user__username'],
+                'ordering': ['user__email'],
                 'verbose_name': 'Realtor',
                 'verbose_name_plural': 'Realtors',
             },

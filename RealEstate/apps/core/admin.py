@@ -1,6 +1,12 @@
+"""
+Admin customization for core app.
+"""
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor)
+                                         Grade, Homebuyer, House, Realtor,
+                                         User)
+from RealEstate.apps.core.forms import UserCreationForm
 
 admin.site.site_header = "Real Estate Admin"
 
@@ -96,3 +102,33 @@ class HouseAdmin(BaseAdmin):
 @admin.register(Realtor)
 class RealtorAdmin(BaseAdmin):
     list_display = ('__unicode__', 'email', 'full_name')
+
+
+@admin.register(User)
+class UserAdmin(UserAdmin):
+    """
+    Mostly copied from django.contrib.auth.admin.UserAdmin, but overridden to
+    support email login.
+    """
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('first_name', 'last_name')}),
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
+                                    'groups', 'user_permissions')}),
+        ('Important dates', {'fields': ('last_login',)}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'password1', 'password2'),
+        }),
+    )
+    readonly_fields = ('last_login',)
+    save_on_top = True
+
+    add_form = UserCreationForm
+    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'last_login')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups', 'last_login')
+    search_fields = ('first_name', 'last_name', 'email')
+    ordering = ('email',)
+    filter_horizontal = ('groups', 'user_permissions',)

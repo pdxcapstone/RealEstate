@@ -18,5 +18,5 @@ def run():
         print "Superuser already exists {}".format(login_info)
         sys.exit(1)
     User.objects.create_superuser(EMAIL, PASSWORD,
-                                  first_name="First", last_name="Last")
+                                  first_name="Admin", last_name="Admin")
     print "Superuser created {}".format(login_info)

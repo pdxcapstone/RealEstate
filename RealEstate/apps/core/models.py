@@ -75,7 +75,8 @@ class Person(BaseModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
-        return self.user.username
+        name = self.full_name
+        return name if name else self.email
 
     @property
     def email(self):
@@ -180,14 +181,12 @@ class Couple(BaseModel):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
 
     def __unicode__(self):
-        username = 'user__username'
-        homebuyers = (self.homebuyer_set
-                      .values_list(username, flat=True).order_by(username))
+        homebuyers = self.homebuyer_set.all()
         if not homebuyers:
             homebuyers = ['?', '?']
         elif homebuyers.count() == 1:
             homebuyers = [homebuyers.first(), '?']
-        return u" and ".join(homebuyers)
+        return u", ".join(map(unicode, homebuyers))
 
     class Meta:
         ordering = ['realtor']
@@ -216,7 +215,7 @@ class Grade(BaseModel):
 
     def __unicode__(self):
         return (u"{homebuyer} gives {house} a score of {score} for category: "
-                "'{category}'".format(homebuyer=unicode(self.homebuyer),
+                "'{category}'".format(homebuyer=self.homebuyer.full_name,
                                       house=unicode(self.house),
                                       score=self.score,
                                       category=unicode(self.category)))
@@ -267,11 +266,12 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
             raise ValidationError("{user} is already a Realtor, cannot also "
                                   "have a Homebuyer relation."
                                   .format(user=self.user))
+
         # No more than 2 homebuyers per couple.
         homebuyers = set(self.couple.homebuyer_set
                          .values_list('id', flat=True).distinct())
-        homebuyers.discard(self.id)
-        if len(homebuyers) > 1:
+        homebuyers.add(self.id)
+        if len(homebuyers) > 2:
             raise ValidationError("Couple already has 2 Homebuyers.")
 
         self._validate_categories_and_couples()
@@ -293,7 +293,7 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         return related_homebuyers.first()
 
     class Meta:
-        ordering = ['user__username']
+        ordering = ['user__email']
         verbose_name = "Homebuyer"
         verbose_name_plural = "Homebuyers"
 
@@ -357,7 +357,7 @@ class Realtor(Person):
         return super(Realtor, self).clean()
 
     class Meta:
-        ordering = ['user__username']
+        ordering = ['user__email']
         verbose_name = "Realtor"
         verbose_name_plural = "Realtors"
 
