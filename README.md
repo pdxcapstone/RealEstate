@@ -42,7 +42,7 @@ The following instructions are primarily intended for Mac/Linux, but they should
 
 ## API Document
 
-* [REST-API](https://github.com/pdxcapstone/RealEstate/blob/api-dev/REST-API)
+* [REST-API](https://docs.google.com/document/d/1f06a-pnfcYQxcg2cQIeOdPtUgF2YTUOA-gWNyFvrF7o/edit)
 
 ## External Documentation
 
