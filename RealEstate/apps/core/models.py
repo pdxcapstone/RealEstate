@@ -371,7 +371,7 @@ class UserManager(BaseUserManager):
         Creates and saves a User with the given email and password.
         """
         if not email:
-            raise ValueError("The given email must be set.")
+            raise ValueError("Email is a required field.")
         email = self.normalize_email(email)
         user = self.model(email=email, is_staff=is_staff, is_active=True,
                           is_superuser=is_superuser, **extra_fields)
@@ -427,6 +427,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         if hasattr(self, 'homebuyer') and hasattr(self, 'realtor'):
             raise ValidationError("User cannot be a Homebuyer and a Realtor.")
         return super(User, self).clean()
+
+    def clean_fields(self, exclude=None):
+        """
+        Strip whitespace from first and last names.  Email is already
+        normalized by a separate function.
+        """
+        self.first_name = self.first_name.strip()
+        self.last_name = self.last_name.strip()
+        return super(User, self).clean_fields(exclude=exclude)
 
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
