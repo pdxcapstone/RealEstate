@@ -2,7 +2,7 @@
 Model definitions for pending couples and homebuyers, people who have been
 invited to the app but have not yet registered.
 """
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string, hashlib
@@ -95,7 +95,7 @@ class PendingHomebuyer(BaseModel):
         homebuyer.  The homebuyer is considered registered if the email exists
         in the User table.
         """
-        if User.objects.filter(email=self.email).exists():
+        if get_user_model().objects.filter(email=self.email).exists():
             return True
         return False
 

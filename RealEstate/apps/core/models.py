@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
@@ -68,7 +69,7 @@ class Person(BaseModel):
     Abstract model class representing information that is common to both
     Homebuyer and Realtor.
     """
-    user = models.OneToOneField('auth.User', verbose_name="User")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
         return self.user.username
