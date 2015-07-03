@@ -3,7 +3,7 @@ from django.utils import unittest
 import models
 
 
-class TestStringMethods(unittest.TestCase):
+class TestModelsCore(unittest.TestCase):
     def test_category(self):
         category = models.Category(summary='test1', description='test description')
         self.assertEquals(category.summary, 'test1')
