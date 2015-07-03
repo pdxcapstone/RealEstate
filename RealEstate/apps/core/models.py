@@ -1,10 +1,13 @@
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
-           'Homebuyer', 'House', 'ProxyUser', 'Realtor']
+           'Homebuyer', 'House', 'Realtor', 'User']
 
 
 class ValidateCategoryCoupleMixin(object):
@@ -69,7 +72,7 @@ class Person(BaseModel):
     Abstract model class representing information that is common to both
     Homebuyer and Realtor.
     """
-    user = models.OneToOneField('core.ProxyUser', verbose_name="User")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
         return self.user.username
@@ -359,25 +362,68 @@ class Realtor(Person):
         verbose_name_plural = "Realtors"
 
 
-class ProxyUser(User):
-    """
-    Prevents Users from being saved with duplicate emails.  This is only
-    enforced if saved through the admin, and is not enforced in the database
-    level.
+class UserManager(BaseUserManager):
+    use_in_migrations = True
 
-    TODO:  Custom user model that uses email for logging in, and requires a
-           the email field to be unique.
+    def _create_user(self, email, password, is_staff, is_superuser,
+                     **extra_fields):
+        """
+        Creates and saves a User with the given email and password.
+        """
+        if not email:
+            raise ValueError("The given email must be set.")
+        email = self.normalize_email(email)
+        user = self.model(email=email, is_staff=is_staff, is_active=True,
+                          is_superuser=is_superuser, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email, password=None, **extra_fields):
+        return self._create_user(email, password, False, False,
+                                 **extra_fields)
+
+    def create_superuser(self, email, password, **extra_fields):
+        return self._create_user(email, password, True, True, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
     """
-    def validate_unique(self, exclude=None):
-        super(ProxyUser, self).validate_unique(exclude=exclude)
-        if self.email:
-            if (ProxyUser.objects
-                    .filter(email=self.email)
-                    .exclude(id=self.id)
-                    .exists()):
-                raise ValidationError({'email': "User with this email already exists."})
+    Custom user model which uses email instead of a username for logging in.
+    """
+    email = models.EmailField(unique=True, verbose_name="Email Address",
+                              error_messages={
+                                  'unique': ("A user with this email already "
+                                             "exists.")
+                              })
+    first_name = models.CharField(max_length=30, verbose_name="First Name")
+    last_name = models.CharField(max_length=30, verbose_name="Last Name")
+    is_staff = models.BooleanField(
+        default=False,
+        help_text=("Designates whether the user can log into this admin "
+                   "site."),
+        verbose_name="Staff Status")
+    is_active = models.BooleanField(
+        default=True,
+        help_text=("Designates whether this user should be treated as "
+                   "active. Unselect this instead of deleting accounts."),
+        verbose_name="Active")
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     class Meta:
-        proxy = True
         verbose_name = "User"
         verbose_name_plural = "Users"
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    def get_full_name(self):
+        return u"{first} {last}".format(first=self.first_name,
+                                        last=self.last_name).strip()
+
+    def get_short_name(self):
+        return self.first_name

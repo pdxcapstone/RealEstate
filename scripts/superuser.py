@@ -6,17 +6,17 @@ python manage.py runscript superuser
 import sys
 from django.contrib.auth import get_user_model
 
-USERNAME = 'admin'
-PASSWORD = 'admin'
 EMAIL = 'admin@admin.com'
+PASSWORD = 'admin'
 
 
 def run():
     User = get_user_model()
-    login_info = "({username}:{password})".format(
-        username=USERNAME, password=PASSWORD)
-    if User.objects.filter(username=USERNAME).exists():
+    login_info = "({email}:{password})".format(email=EMAIL, password=PASSWORD)
+
+    if User.objects.filter(email=EMAIL).exists():
         print "Superuser already exists {}".format(login_info)
         sys.exit(1)
-    User.objects.create_superuser(USERNAME, EMAIL, PASSWORD)
+    User.objects.create_superuser(EMAIL, PASSWORD,
+                                  first_name="First", last_name="Last")
     print "Superuser created {}".format(login_info)
