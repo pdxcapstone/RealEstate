@@ -112,7 +112,7 @@ class UserAdmin(UserAdmin):
     """
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('first_name', 'last_name')}),
+        ('Personal info', {'fields': ('first_name', 'last_name', 'phone')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
                                     'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
@@ -127,7 +127,7 @@ class UserAdmin(UserAdmin):
     save_on_top = True
 
     add_form = UserCreationForm
-    list_display = ('email', 'first_name', 'last_name', 'is_staff',
+    list_display = ('email', 'first_name', 'last_name', 'phone', 'is_staff',
                     'last_login')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',
                    'last_login')
