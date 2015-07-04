@@ -1,4 +1,4 @@
 Django==1.8.2
 django-extensions==1.5.5
 six==1.9.0
-django-bootstrap3
+django-bootstrap3==5.4.0
