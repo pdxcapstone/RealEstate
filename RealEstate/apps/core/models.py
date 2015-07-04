@@ -419,6 +419,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
+    # These are used to control which URLs are available to different types
+    # of users.
+    _ALL_TYPES_ALLOWED = set(['Homebuyer', 'Realtor'])
+    _HOMEBUYER_ONLY = set(['Homebuyer'])
+    _REALTOR_ONLY = set(['Realtor'])
+
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
@@ -461,7 +467,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 raise IntegrityError("User {user} is registered as both a "
                                      "Homebuyer and a Realtor, which is not "
                                      "valid.".format(user=unicode(self)))
-            return "Homebuyer"
+            return 'Homebuyer'
         elif has_realtor:
-            return "Realtor"
+            return 'Realtor'
         return None

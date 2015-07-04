@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('password', models.CharField(max_length=128, verbose_name='password')),
                 ('last_login', models.DateTimeField(null=True, verbose_name='last login', blank=True)),
                 ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
-                ('email', models.EmailField(unique=True, max_length=254, verbose_name=b'Email Address', error_messages={b'unique': b'A user with this email already exists.'})),
+                ('email', models.EmailField(help_text=b'Required.  Please enter a valid email address.', unique=True, max_length=254, verbose_name=b'Email Address', error_messages={b'unique': b'A user with this email already exists.'})),
                 ('first_name', models.CharField(default=b'First', max_length=30, verbose_name=b'First Name')),
                 ('last_name', models.CharField(default=b'Last', max_length=30, verbose_name=b'Last Name')),
                 ('is_staff', models.BooleanField(default=False, help_text=b'Designates whether the user can log into this admin site.', verbose_name=b'Staff Status')),
