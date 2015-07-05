@@ -31,7 +31,8 @@ class BaseView(View):
 
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type in self._USER_TYPES_ALLOWED:
+        role = request.user.role_object
+        if role and role.role_type in self._USER_TYPES_ALLOWED:
             return super(BaseView, self).dispatch(request, *args, **kwargs)
         raise PermissionDenied
 

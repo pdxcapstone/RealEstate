@@ -292,6 +292,10 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                  "(Couple ID: {id})".format(id=self.couple_id))
         return related_homebuyers.first()
 
+    @property
+    def role_type(self):
+        return 'Homebuyer'
+
     class Meta:
         ordering = ['user__email']
         verbose_name = "Homebuyer"
@@ -355,6 +359,10 @@ class Realtor(Person):
                                   "have a Realtor relation."
                                   .format(user=self.user))
         return super(Realtor, self).clean()
+
+    @property
+    def role_type(self):
+        return 'Realtor'
 
     class Meta:
         ordering = ['user__email']
@@ -456,9 +464,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
     @property
-    def user_type(self):
+    def role_object(self):
         """
-        Returns a string which represents the user type (Homebuyer or Realtor).
+        Returns the object which represents the user type (Homebuyer or Realtor).
         If they are registered as both, raise an IntegrityError.  Returns None
         if registered as neither.
         """
@@ -469,7 +477,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 raise IntegrityError("User {user} is registered as both a "
                                      "Homebuyer and a Realtor, which is not "
                                      "valid.".format(user=unicode(self)))
-            return 'Homebuyer'
+            return self.homebuyer
         elif has_realtor:
-            return 'Realtor'
+            return self.realtor
         return None

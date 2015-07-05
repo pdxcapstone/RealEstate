@@ -3,6 +3,9 @@ Admin customization for core app.
 """
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.core.urlresolvers import reverse
+from django.utils.html import format_html
+
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
                                          User)
@@ -48,6 +51,19 @@ class BaseAdmin(admin.ModelAdmin):
     _READONLY_FIELDS_AFTER_CREATION = ('couple', 'user')
     save_on_top = True
 
+    def _change_link(self, obj, display_text=None):
+        """
+        This method provides an easy mechanism to display a related object in
+        the changelist admin view.
+        """
+        if not obj:
+            return '?'
+        fragments = [obj._meta.app_label, obj._meta.model_name, 'change']
+        change_url = reverse("admin:{}".format('_'.join(fragments)),
+                             args=(obj.id,))
+        display_text = display_text or unicode(obj)
+        return format_html("<a href={}>{}</a>", change_url, display_text)
+
     def get_readonly_fields(self, request, obj=None):
         """
         Make sure the fields defined in _READONLY_FIELDS_AFTER_CREATION are not
@@ -90,7 +106,12 @@ class CoupleAdmin(BaseAdmin):
 class HomebuyerAdmin(BaseAdmin):
     fields = ('user', 'couple')
     inlines = [CategoryWeightInline]
-    list_display = ('__unicode__', 'email', 'full_name')
+    list_display = ('__unicode__', 'email', 'partner_link')
+
+    def partner_link(self, obj):
+        return self._change_link(obj.partner)
+    partner_link.allow_tags = True
+    partner_link.short_description = "Partner"
 
 
 @admin.register(House)
@@ -105,7 +126,7 @@ class RealtorAdmin(BaseAdmin):
 
 
 @admin.register(User)
-class UserAdmin(UserAdmin):
+class UserAdmin(UserAdmin, BaseAdmin):
     """
     Mostly copied from django.contrib.auth.admin.UserAdmin, but overridden to
     support email login.
@@ -127,10 +148,18 @@ class UserAdmin(UserAdmin):
     save_on_top = True
 
     add_form = UserCreationForm
-    list_display = ('email', 'first_name', 'last_name', 'phone', 'is_staff',
-                    'last_login')
+    list_display = ('email', 'homebuyer_realtor_link', 'first_name',
+                    'last_name', 'phone', 'is_staff', 'last_login')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',
                    'last_login')
     search_fields = ('first_name', 'last_name', 'email')
     ordering = ('email',)
     filter_horizontal = ('groups', 'user_permissions',)
+
+    def homebuyer_realtor_link(self, obj):
+        role = obj.role_object
+        if role:
+            return self._change_link(role, display_text=role.role_type)
+        return '?'
+    homebuyer_realtor_link.short_description = "Homebuyer/Realtor"
+

@@ -27,13 +27,10 @@ class PendingCouple(BaseModel):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
 
     def __unicode__(self):
-        homebuyer_string = u"No homebuyers specified"
         pending_homebuyers = self.pendinghomebuyer_set.all()
         if pending_homebuyers:
-            homebuyer_string = u", ".join(map(unicode, pending_homebuyers))
-        return u"Realtor: {realtor} | Homebuyer(s): {homebuyer_string}".format(
-            realtor=self.realtor,
-            homebuyer_string=homebuyer_string)
+            return u", ".join(map(unicode, pending_homebuyers))
+        return u"No homebuyers specified"
 
     @property
     def couple(self):
