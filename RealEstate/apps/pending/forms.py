@@ -47,6 +47,7 @@ class SignupForm(forms.ModelForm):
     """
     registration_token = forms.CharField(min_length=64, max_length=64,
                                          widget=forms.widgets.HiddenInput)
+
     class Meta:
         model = User
         fields = ('registration_token',
