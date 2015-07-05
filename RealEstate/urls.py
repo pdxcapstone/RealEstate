@@ -21,6 +21,12 @@ from RealEstate.apps.core import views
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    
+    # API Urls
+    
+    url(r'^api/', include('RealEstate.apps.api.urls')),
+    
+    # End API Urls
 
     url(r'^login/$', views.login, name='auth_login'),
     url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
