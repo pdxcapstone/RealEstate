@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 
-from .models import Couple, House, Category
+from .models import Couple, House, Category, Grade
 
 
 def login(request, *args, **kwargs):
@@ -46,8 +46,23 @@ class EvalView(BaseView):
     """
     def get(self, request, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
-        house = House.objects.filter(couple=couple)
-        category = Category.objects.filter(couple=couple)
-        context = {'couple': couple, 'house': house, 'category': category}
+        categories = Category.objects.filter(couple=couple)
+
+        # A specific house should be passed into the request, changing next two lines.
+        house = House.objects.filter(couple=couple) 
+        grades = Grade.objects.filter(house=house[0])
+
+        graded = []
+        for category in categories:
+            missing = True
+            for grade in grades:
+                if grade.category.id is category.id:
+                    graded.append((category, grade.score))
+                    missing = False
+                    break
+            if missing:
+                graded.append((category, None))
+
+        context = {'couple': couple, 'house' : house[0], 'grades': graded }
         return render(request, 'core/houseEval.html', context)
         
