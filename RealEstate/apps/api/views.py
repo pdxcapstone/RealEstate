@@ -11,20 +11,20 @@ from .utils import jwt_payload_handler
 from RealEstate.apps.core.models import House, Homebuyer, Couple
 
 class APIUserInfoView(APIView):
-	"""
-	API for checking current user information.
-	"""
-	permission_classes = (IsAuthenticated,)
-	authentication_classes = (JSONWebTokenAuthentication, )
+    """
+    API for checking current user information.
+    """
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (JSONWebTokenAuthentication, )
 
-	def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
 
-		serializer = APIUserSerializer(data=request.data, context={'request': request})
+        serializer = APIUserSerializer(data=request.data, context={'request': request})
 
-		if serializer.is_valid():
-			user = request.user
-			response_data = jwt_payload_handler(user)
+        if serializer.is_valid():
+            user = request.user
+            response_data = jwt_payload_handler(user)
 
-			return Response(response_data)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response_data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

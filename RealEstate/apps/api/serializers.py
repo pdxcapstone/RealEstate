@@ -5,13 +5,13 @@ from RealEstate.apps.core.models import House, Homebuyer, Couple
 
 class APIUserSerializer(serializers.Serializer):
 
-	def validate(self, attrs):
+    def validate(self, attrs):
 
-		user = self.context['request'].user
+        user = self.context['request'].user
 
-		homebuyer = Homebuyer.objects.filter(user=user)
+        homebuyer = Homebuyer.objects.filter(user=user)
 
-		if not homebuyer:
-			msg = _('Only home buyers are allowed to use this functionality.')
-			raise serializers.ValidationError(msg)
-		return user
+        if not homebuyer:
+            msg = _('Only home buyers are allowed to use this functionality.')
+            raise serializers.ValidationError(msg)
+        return user
