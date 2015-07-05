@@ -2,12 +2,11 @@
 Model definitions for pending couples and homebuyers, people who have been
 invited to the app but have not yet registered.
 """
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string, hashlib
 
-from RealEstate.apps.core.models import BaseModel
+from RealEstate.apps.core.models import BaseModel, Couple, Homebuyer
 
 
 def _generate_registration_token():
@@ -29,12 +28,26 @@ class PendingCouple(BaseModel):
 
     def __unicode__(self):
         homebuyer_string = u"No homebuyers specified"
-        pending_homebuyers = self.pendinghomebuyer_set.order_by('email')
+        pending_homebuyers = self.pendinghomebuyer_set.all()
         if pending_homebuyers:
             homebuyer_string = u", ".join(map(unicode, pending_homebuyers))
-        return u"{realtor}: {homebuyer_string}".format(
+        return u"Realtor: {realtor} | Homebuyer(s): {homebuyer_string}".format(
             realtor=self.realtor,
             homebuyer_string=homebuyer_string)
+
+    @property
+    def couple(self):
+        """
+        The real Couple instance for the two Homebuyers.  If neither have
+        registered yet, it will not exist, but will be created after the first
+        person registers.
+        """
+        emails = self.pendinghomebuyer_set.values_list('email', flat=True)
+        homebuyers = Homebuyer.objects.filter(user__email__in=emails)
+        couples = Couple.objects.filter(homebuyer__in=homebuyers)
+        if couples.exists():
+            return couples.first()
+        return None
 
     class Meta:
         ordering = ['realtor']
@@ -47,8 +60,7 @@ class PendingHomebuyer(BaseModel):
     Represents a Homebuyer that has been invited but not yet registered in the
     database.
     """
-    email = models.EmailField(max_length=75, unique=True,
-                              verbose_name="Email")
+    email = models.EmailField(unique=True, verbose_name="Email")
     registration_token = models.CharField(max_length=64,
                                           default=_generate_registration_token,
                                           editable=False,
@@ -75,15 +87,37 @@ class PendingHomebuyer(BaseModel):
         return super(PendingHomebuyer, self).clean()
 
     @property
-    def registration_status(self):
+    def couple(self):
+        return self.pending_couple.couple
+
+    @property
+    def partner(self):
         """
-        Returns a string representing the registration status of the pending
+        TODO: Same logic as Homebuyer.partner, needs refactor.
+        """
+        pending_homebuyers = (self.pending_couple
+                              .pendinghomebuyer_set.exclude(id=self.id))
+        if pending_homebuyers.count() > 1:
+            raise IntegrityError("PendingCouple has too many related "
+                                 "PendingHomebuyer and should be resolved "
+                                 "immediately. (PendingCouple ID: {id})"
+                                 .format(id=self.pending_couple.id))
+        return pending_homebuyers.first()
+
+    @property
+    def registered(self):
+        """
+        Returns a boolean representing the registration status of the pending
         homebuyer.  The homebuyer is considered registered if the email exists
         in the User table.
         """
-        if User.objects.filter(email=self.email).exists():
-            return u"Registered"
-        return u"Unregistered"
+        if Homebuyer.objects.filter(user__email=self.email).exists():
+            return True
+        return False
+
+    @property
+    def registration_status(self):
+        return "Registered" if self.registered else "Unregistered"
 
     class Meta:
         ordering = ['email']

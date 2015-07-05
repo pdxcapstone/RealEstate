@@ -1,9 +1,13 @@
+from django.conf import settings
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import IntegrityError, models
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
-           'Homebuyer', 'House', 'Realtor']
+           'Homebuyer', 'House', 'Realtor', 'User']
 
 
 class ValidateCategoryCoupleMixin(object):
@@ -68,10 +72,11 @@ class Person(BaseModel):
     Abstract model class representing information that is common to both
     Homebuyer and Realtor.
     """
-    user = models.OneToOneField('auth.User', verbose_name="User")
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
-        return self.user.username
+        name = self.full_name
+        return name if name else self.email
 
     @property
     def email(self):
@@ -126,10 +131,10 @@ class CategoryWeight(BaseModel):
     the Couple instance is the same for both the homebuyer and category
     fields.
     """
-    weight = models.PositiveSmallIntegerField(validators=[MinValueValidator(0),
-                                                          MaxValueValidator(100)],
-                                              help_text="0-100",
-                                              verbose_name="Weight")
+    weight = models.PositiveSmallIntegerField(
+        help_text="0-100",
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
 
@@ -176,14 +181,12 @@ class Couple(BaseModel):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
 
     def __unicode__(self):
-        username = 'user__username'
-        homebuyers = (self.homebuyer_set
-                      .values_list(username, flat=True).order_by(username))
+        homebuyers = self.homebuyer_set.all()
         if not homebuyers:
             homebuyers = ['?', '?']
         elif homebuyers.count() == 1:
             homebuyers = [homebuyers.first(), '?']
-        return u" and ".join(homebuyers)
+        return u", ".join(map(unicode, homebuyers))
 
     class Meta:
         ordering = ['realtor']
@@ -212,7 +215,7 @@ class Grade(BaseModel):
 
     def __unicode__(self):
         return (u"{homebuyer} gives {house} a score of {score} for category: "
-                "'{category}'".format(homebuyer=unicode(self.homebuyer),
+                "'{category}'".format(homebuyer=self.homebuyer.full_name,
                                       house=unicode(self.house),
                                       score=self.score,
                                       category=unicode(self.category)))
@@ -263,11 +266,12 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
             raise ValidationError("{user} is already a Realtor, cannot also "
                                   "have a Homebuyer relation."
                                   .format(user=self.user))
+
         # No more than 2 homebuyers per couple.
         homebuyers = set(self.couple.homebuyer_set
                          .values_list('id', flat=True).distinct())
-        homebuyers.discard(self.id)
-        if len(homebuyers) > 1:
+        homebuyers.add(self.id)
+        if len(homebuyers) > 2:
             raise ValidationError("Couple already has 2 Homebuyers.")
 
         self._validate_categories_and_couples()
@@ -289,7 +293,7 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         return related_homebuyers.first()
 
     class Meta:
-        ordering = ['user__username']
+        ordering = ['user__email']
         verbose_name = "Homebuyer"
         verbose_name_plural = "Homebuyers"
 
@@ -353,6 +357,111 @@ class Realtor(Person):
         return super(Realtor, self).clean()
 
     class Meta:
-        ordering = ['user__username']
+        ordering = ['user__email']
         verbose_name = "Realtor"
         verbose_name_plural = "Realtors"
+
+
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+
+    def _create_user(self, email, password, is_staff, is_superuser,
+                     **extra_fields):
+        """
+        Creates and saves a User with the given email and password.
+        """
+        if not email:
+            raise ValueError("Email is a required field.")
+        email = self.normalize_email(email)
+        user = self.model(email=email, is_staff=is_staff, is_active=True,
+                          is_superuser=is_superuser, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email, password=None, **extra_fields):
+        return self._create_user(email, password, False, False,
+                                 **extra_fields)
+
+    def create_superuser(self, email, password, **extra_fields):
+        return self._create_user(email, password, True, True, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    """
+    Custom user model which uses email instead of a username for logging in.
+    """
+    email = models.EmailField(
+        unique=True,
+        verbose_name="Email Address",
+        help_text="Required.  Please enter a valid email address.",
+        error_messages={
+            'unique': ("A user with this email already "
+                       "exists.")
+        })
+    first_name = models.CharField(max_length=30, default="First",
+                                  verbose_name="First Name")
+    last_name = models.CharField(max_length=30, default="Last",
+                                 verbose_name="Last Name")
+    is_staff = models.BooleanField(
+        default=False,
+        help_text=("Designates whether the user can log into this admin "
+                   "site."),
+        verbose_name="Staff Status")
+    is_active = models.BooleanField(
+        default=True,
+        help_text=("Designates whether this user should be treated as "
+                   "active. Unselect this instead of deleting accounts."),
+        verbose_name="Active")
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+
+    def clean(self):
+        if hasattr(self, 'homebuyer') and hasattr(self, 'realtor'):
+            raise ValidationError("User cannot be a Homebuyer and a Realtor.")
+        return super(User, self).clean()
+
+    def clean_fields(self, exclude=None):
+        """
+        Strip whitespace from first and last names.  Email is already
+        normalized by a separate function.
+        """
+        self.first_name = self.first_name.strip()
+        self.last_name = self.last_name.strip()
+        return super(User, self).clean_fields(exclude=exclude)
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    def get_full_name(self):
+        return u"{first} {last}".format(first=self.first_name,
+                                        last=self.last_name).strip()
+
+    def get_short_name(self):
+        return self.first_name
+
+    @property
+    def user_type(self):
+        """
+        Returns a string which represents the user type (Homebuyer or Realtor).
+        If they are registered as both, raise an IntegrityError.  Returns None
+        if registered as neither.
+        """
+        has_homebuyer = hasattr(self, 'homebuyer')
+        has_realtor = hasattr(self, 'realtor')
+        if has_homebuyer:
+            if has_realtor:
+                raise IntegrityError("User {user} is registered as both a "
+                                     "Homebuyer and a Realtor, which is not "
+                                     "valid.".format(user=unicode(self)))
+            return "Homebuyer"
+        elif has_realtor:
+            return "Realtor"
+        return None
