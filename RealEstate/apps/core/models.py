@@ -181,12 +181,16 @@ class Couple(BaseModel):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
 
     def __unicode__(self):
-        homebuyers = self.homebuyer_set.all()
+        return u", ".join(
+            (unicode(hb) if hb else '?' for hb in self._homebuyers()))
+
+    def _homebuyers(self):
+        homebuyers = self.homebuyer_set.order_by('id')
         if not homebuyers:
-            homebuyers = ['?', '?']
+            homebuyers = (None, None)
         elif homebuyers.count() == 1:
-            homebuyers = [homebuyers.first(), '?']
-        return u", ".join(map(unicode, homebuyers))
+            homebuyers = (homebuyers.first(), None)
+        return homebuyers
 
     class Meta:
         ordering = ['realtor']

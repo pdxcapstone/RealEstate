@@ -99,19 +99,47 @@ class CategoryAdmin(BaseAdmin):
 @admin.register(Couple)
 class CoupleAdmin(BaseAdmin):
     inlines = [HomebuyerInline, HouseInline, CategoryInline]
-    list_display = ('__unicode__', 'realtor')
+    list_display = ('__unicode__', 'realtor_link', 'homebuyer_one',
+                    'homebuyer_two')
+
+    def _homebuyer_link(self, obj, first=True):
+        try:
+            homebuyer_one, homebuyer_two = obj._homebuyers()
+        except ValueError:
+            return "Too many Homebuyers for Couple."
+        hb = homebuyer_one if first else homebuyer_two
+        return self._change_link(hb)
+
+    def homebuyer_one(self, obj):
+        return self._homebuyer_link(obj)
+    homebuyer_one.short_description = "First Homebuyer"
+
+    def homebuyer_two(self, obj):
+        return self._homebuyer_link(obj, first=False)
+    homebuyer_two.short_description = "Second Homebuyer"
+
+    def realtor_link(self, obj):
+        return self._change_link(obj.realtor)
+    realtor_link.short_description = "Realtor"
 
 
 @admin.register(Homebuyer)
 class HomebuyerAdmin(BaseAdmin):
     fields = ('user', 'couple')
     inlines = [CategoryWeightInline]
-    list_display = ('__unicode__', 'email', 'partner_link')
+    list_display = ('__unicode__', 'user_link', 'partner_link', 'couple_link')
+
+    def couple_link(self, obj):
+        return self._change_link(obj.couple)
+    couple_link.short_description = "Couple"
 
     def partner_link(self, obj):
         return self._change_link(obj.partner)
-    partner_link.allow_tags = True
     partner_link.short_description = "Partner"
+
+    def user_link(self, obj):
+        return self._change_link(obj.user)
+    user_link.short_description = "User"
 
 
 @admin.register(House)
@@ -122,7 +150,15 @@ class HouseAdmin(BaseAdmin):
 
 @admin.register(Realtor)
 class RealtorAdmin(BaseAdmin):
-    list_display = ('__unicode__', 'email', 'full_name')
+    list_display = ('__unicode__', 'user_link', 'phone')
+
+    def phone(self, obj):
+        return obj.user.phone
+    phone.short_description = "Phone Number"
+
+    def user_link(self, obj):
+        return self._change_link(obj.user)
+    user_link.short_description = "User"
 
 
 @admin.register(User)
