@@ -16,13 +16,17 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
-from RealEstate.apps.core import views
+from RealEstate.apps.core import views as CoreViews
+from RealEstate.apps.pending import views as PendingViews
 
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^login/$', CoreViews.login, name='auth_login'),
+    url(r'^logout/$',
+        'django.contrib.auth.views.logout_then_login', name='auth_logout'),
 
-    url(r'^login/$', views.login, name='auth_login'),
-    url(r'^logout/$', 'django.contrib.auth.views.logout_then_login', name='auth_logout'),
-    url(r'^$', views.HomeView.as_view(), name='home')
+    url(r'^invite/$',
+        PendingViews.InviteHomebuyerView.as_view(), name='invite'),
+    url(r'^$', CoreViews.HomeView.as_view(), name='home'),
 ]

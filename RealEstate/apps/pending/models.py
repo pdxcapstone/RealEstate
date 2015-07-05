@@ -119,6 +119,10 @@ class PendingHomebuyer(BaseModel):
     def registration_status(self):
         return "Registered" if self.registered else "Unregistered"
 
+    def send_email_invite(self):
+        print "Emailing {email}...".format(email=self.email)
+        return
+
     class Meta:
         ordering = ['email']
         verbose_name = "Pending Homebuyer"
