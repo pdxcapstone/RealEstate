@@ -2,7 +2,12 @@
 Model definitions for pending couples and homebuyers, people who have been
 invited to the app but have not yet registered.
 """
+from urllib import urlencode
+
+from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError, models
 from django.utils.crypto import get_random_string, hashlib
 
@@ -57,6 +62,15 @@ class PendingHomebuyer(BaseModel):
     Represents a Homebuyer that has been invited but not yet registered in the
     database.
     """
+    _HOMEBUYER_INVITE_MESSAGE = """
+        Hello,
+
+        You have been invited to the Real Estate app.
+        Register at the following link:
+            {signup_link}
+
+    """
+
     email = models.EmailField(unique=True, verbose_name="Email")
     registration_token = models.CharField(max_length=64,
                                           default=_generate_registration_token,
@@ -70,6 +84,18 @@ class PendingHomebuyer(BaseModel):
         return u"{email} ({registration_status})".format(
             email=self.email,
             registration_status=self.registration_status)
+
+    def _signup_link(self, host):
+        """
+        Construct the sign up link based on the host and registration_token
+        for the PendingHomebuyer instance.
+        """
+        return u'{host}{signup_url}?{query_string}'.format(
+            host=host,
+            signup_url=reverse('signup'),
+            query_string=urlencode({
+                'registration_token': self.registration_token
+            }))
 
     def clean(self):
         """
@@ -116,9 +142,20 @@ class PendingHomebuyer(BaseModel):
     def registration_status(self):
         return "Registered" if self.registered else "Unregistered"
 
-    def send_email_invite(self):
-        print "Emailing {email}...".format(email=self.email)
-        return
+    def send_email_invite(self, request):
+        """
+        Sends out the email to the potential homebuyer, which includes a link
+        to their custom signup page.  Does nothing if they are already
+        registered.
+        """
+        if self.registered:
+            return None
+
+        message = self._HOMEBUYER_INVITE_MESSAGE.format(
+            signup_link=self._signup_link(request.get_host()))
+        return send_mail('Real Estate Invite', message,
+                         settings.EMAIL_HOST_USER, [self.email],
+                         fail_silently=False)
 
     class Meta:
         ordering = ['email']

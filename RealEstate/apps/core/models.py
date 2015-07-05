@@ -470,9 +470,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def role_object(self):
         """
-        Returns the object which represents the user type (Homebuyer or Realtor).
-        If they are registered as both, raise an IntegrityError.  Returns None
-        if registered as neither.
+        Returns the object which represents the user type (Homebuyer or
+        Realtor).  If they are registered as both, raise an IntegrityError.
+        Returns None if registered as neither.
         """
         has_homebuyer = hasattr(self, 'homebuyer')
         has_realtor = hasattr(self, 'realtor')

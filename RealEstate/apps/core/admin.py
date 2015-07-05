@@ -198,4 +198,3 @@ class UserAdmin(UserAdmin, BaseAdmin):
             return self._change_link(role, display_text=role.role_type)
         return '?'
     homebuyer_realtor_link.short_description = "Homebuyer/Realtor"
-

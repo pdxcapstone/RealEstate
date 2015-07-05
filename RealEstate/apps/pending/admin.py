@@ -2,8 +2,6 @@
 Admin customization for pending couples/homebuyers.
 """
 from django.contrib import admin
-from django.core.urlresolvers import reverse
-from django.utils.html import format_html
 
 from RealEstate.apps.core.admin import BaseAdmin
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
