@@ -29,8 +29,8 @@ SECRET_KEY = '(&ezozkvk9p^g(s#%01)8rsdk!vj)owrrmni&hq#%$qt!dq+(k'
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'core.User'
 
-# Application definition
 
 INSTALLED_APPS = (
     # Default Django apps
