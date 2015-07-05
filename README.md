@@ -42,9 +42,16 @@ The following instructions are primarily intended for Mac/Linux, but they should
 
 11. When you are finished and wish to exit the virtualenv, exit by the command: ```deactivate```
 
-12. Optional: Create a superuser in order to login to the RealEstate application: 
-    
+12. Optional: Create a superuser in order to login to the RealEstate application:
+
     ```python manage.py createsuperuser```
+
+## API Document
+
+* [REST-API](https://docs.google.com/document/d/1f06a-pnfcYQxcg2cQIeOdPtUgF2YTUOA-gWNyFvrF7o/edit)
+
+=======
+
 
 ## External Documentation
 

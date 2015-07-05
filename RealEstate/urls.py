@@ -22,10 +22,11 @@ from RealEstate.apps.pending import views as PendingViews
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/', include('RealEstate.apps.api.urls')),
+
     url(r'^login/$', CoreViews.login, name='auth_login'),
     url(r'^logout/$',
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
-
     url(r'^invite/$',
         PendingViews.InviteHomebuyerView.as_view(), name='invite'),
     url(r'^$', CoreViews.HomeView.as_view(), name='home'),
