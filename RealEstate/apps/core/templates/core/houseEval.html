@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+
+{% block body %}
+    <h2><strong> Evaluation for {{house.0}}</strong> </h2>
+    <h4><em>{{house.0.address}}</em></h4>
+
+  	<ul style="margin-top:50px" class="list-group">
+	  	{% for cat in category %}
+			<li class="list-group-item">
+				<h4>{{cat}}</h4> 
+				<p>{{cat.description}}</p>
+	   	 	</li>
+	  	{% endfor %}
+  	</ul>
+{% endblock %}

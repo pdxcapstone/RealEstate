@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 
-from .models import Couple, House
+from .models import Couple, House, Category
 
 
 def login(request, *args, **kwargs):
@@ -37,3 +37,17 @@ class HomeView(BaseView):
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
         return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
+
+
+class EvalView(BaseView):
+    """
+    View for the Home Evaluation Page. Currently, this page is decoupled 
+    from the rest of the app and uses static elements in the database.
+    """
+    def get(self, request, *args, **kwargs):
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        house = House.objects.filter(couple=couple)
+        category = Category.objects.filter(couple=couple)
+        context = {'couple': couple, 'house': house, 'category': category}
+        return render(request, 'core/houseEval.html', context)
+        
