@@ -15,3 +15,11 @@ class APIUserSerializer(serializers.Serializer):
             msg = _('Only home buyers are allowed to use this functionality.')
             raise serializers.ValidationError(msg)
         return user
+
+class APIHouseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = House
+        depth = 1
+        fields = ('id', 'nickname', 'address')
+
