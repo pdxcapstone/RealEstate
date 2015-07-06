@@ -1,12 +1,11 @@
 from django.contrib import messages
-from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views.generic import View
 
 from RealEstate.apps.core.models import User
 from RealEstate.apps.core.views import BaseView
-from RealEstate.apps.pending.forms import InviteHomebuyerForm
+from RealEstate.apps.pending.forms import InviteHomebuyerForm, SignupForm
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 
 
@@ -51,11 +50,32 @@ class InviteHomebuyerView(BaseView):
                     realtor=request.user.realtor)
                 self._invite_homebuyer(request, pending_couple, first_email)
                 self._invite_homebuyer(request, pending_couple, second_email)
-            return redirect(reverse('invite'))
+            return redirect('invite')
 
         context = {'invite_homebuyer_form': form}
         return render(request, self.template_name, context)
 
 
 class SignupView(View):
-    pass
+    template_name = 'pending/signup.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            return redirect('home')
+        return super(SignupView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        token = request.GET.get('registration_token')
+        if token:
+            pending_homebuyer_filter = PendingHomebuyer.objects.filter(
+                registration_token=token)
+            if pending_homebuyer_filter.exists():
+                pending_homebuyer = pending_homebuyer_filter.first()
+                context = {
+                    'signup_form': SignupForm(initial={
+                        'registration_token': token,
+                        'email': pending_homebuyer.email
+                    })
+                }
+                return render(request, self.template_name, context)
+        return redirect('auth_login')

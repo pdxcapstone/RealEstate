@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
@@ -16,7 +15,7 @@ def login(request, *args, **kwargs):
     Django login view.
     """
     if request.user.is_authenticated():
-        return redirect(reverse('home'))
+        return redirect('home')
     return auth_login(request, *args, **kwargs)
 
 
