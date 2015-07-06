@@ -46,12 +46,27 @@ class SignupForm(forms.ModelForm):
     this form will then create their User/Homebuyer instances.
     """
     registration_token = forms.CharField(min_length=64, max_length=64,
-                                         widget=forms.widgets.HiddenInput)
+                                         widget=forms.HiddenInput)
+    password_confirmation = forms.CharField(label="Password Confirmation",
+                                            widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ('registration_token',
-                  'email', 'first_name', 'last_name', 'phone')
+        fields = ('registration_token', 'email', 'password',
+                  'password_confirmation', 'first_name', 'last_name', 'phone')
+
+    def clean(self):
+        """
+        Ensure password matches password_confirmation.
+        """
+        cleaned_data = super(SignupForm, self).clean()
+        password = cleaned_data.get('password')
+        password_confirmation = cleaned_data.get('password_confirmation')
+        if (password and password_confirmation and
+                password != password_confirmation):
+            self.add_error('password_confirmation',
+                           ValidationError("Passwords do not match."))
+        return cleaned_data
 
     def clean_email(self):
         """

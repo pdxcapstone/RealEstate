@@ -86,6 +86,8 @@ class SignupFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('registration_token', form.errors)
         self.assertIn('email', form.errors)
+        self.assertIn('password', form.errors)
+        self.assertIn('password_confirmation', form.errors)
         self.assertIn('first_name', form.errors)
         self.assertIn('last_name', form.errors)
 
@@ -101,10 +103,20 @@ class SignupFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn('registration_token', form.errors)
 
+    def test_passwords_dont_match_invalid(self):
+        form = SignupForm({
+            'password': 'foo',
+            'password_confirmation': 'bar',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('password_confirmation', form.errors)
+
     def test_new_email_matching_token_valid(self):
         form = SignupForm({
             'registration_token': self.pending_homebuyer.registration_token,
             'email': 'new@new.com',
+            'password': 'foo',
+            'password_confirmation': 'foo',
             'first_name': 'f',
             'last_name': 'l',
         })
