@@ -90,12 +90,9 @@ class PendingHomebuyer(BaseModel):
         Construct the sign up link based on the host and registration_token
         for the PendingHomebuyer instance.
         """
-        return u'{host}{signup_url}?{query_string}'.format(
-            host=host,
-            signup_url=reverse('signup'),
-            query_string=urlencode({
-                'registration_token': self.registration_token
-            }))
+        url = reverse('signup',
+                      kwargs={'registration_token': self.registration_token})
+        return host + url
 
     def clean(self):
         """

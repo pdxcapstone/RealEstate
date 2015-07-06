@@ -6,6 +6,7 @@
     <div class="col-sm-3"></div>
     <div class="col-sm-6">
       <h2 style="margin-top:50px"><strong> Login </strong> </h2>
+      {% bootstrap_messages %}
       <div style="margin: 10px 0" class="well" >
         <form style="margin-bottom:20px" action="{% url 'auth_login' %}" role="form" method="post">
           {% csrf_token %}

@@ -45,15 +45,16 @@ class SignupForm(forms.ModelForm):
     Potential homebuyers will use this form to sign up.  The view that uses
     this form will then create their User/Homebuyer instances.
     """
-    registration_token = forms.CharField(min_length=64, max_length=64,
-                                         widget=forms.HiddenInput)
     password_confirmation = forms.CharField(label="Password Confirmation",
                                             widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ('registration_token', 'email', 'password',
-                  'password_confirmation', 'first_name', 'last_name', 'phone')
+        fields = ('email', 'password', 'password_confirmation',
+                  'first_name', 'last_name', 'phone')
+        widgets = {
+            'password': forms.PasswordInput,
+        }
 
     def clean(self):
         """
@@ -77,16 +78,3 @@ class SignupForm(forms.ModelForm):
             error = ValidationError("User with this email already exists.")
             self.add_error('email', error)
         return email
-
-    def clean_registration_token(self):
-        """
-        Ensure this token actually corresponding to a PendingHomebuyer
-        instance.  If it does, store that instance instead in the cleaned_data
-        strucutre so the view does not need to repeat the query.
-        """
-        token = self.cleaned_data.get('registration_token')
-        homebuyer = PendingHomebuyer.objects.filter(registration_token=token)
-        if not homebuyer.exists():
-            self.add_error('registration_token',
-                           ValidationError("Invalid Registration Token."))
-        return homebuyer.first()

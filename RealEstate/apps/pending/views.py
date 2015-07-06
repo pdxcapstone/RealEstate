@@ -57,25 +57,49 @@ class InviteHomebuyerView(BaseView):
 
 
 class SignupView(View):
+    """
+    This form is used to register homebuyers that have been invited to
+    the app by a Realtor.
+    """
     template_name = 'pending/signup.html'
 
     def dispatch(self, request, *args, **kwargs):
+        """
+        Manages registration of Homebuyers who have been invited.
+        For all request methods:
+            - If the user is already logged in, redirect home.
+            - If the registration token does not correspond to a valid token,
+              redirect to the login page with an error.
+            - If the registration token corresponds to an already registered
+              user, display an info message and redirect to login.
+            - Otherwise perform the get or post.
+        """
         if request.user.is_authenticated():
             return redirect('home')
+
+        token = kwargs.get('registration_token')
+        pending_homebuyer_filter = PendingHomebuyer.objects.filter(
+            registration_token=token)
+        if not pending_homebuyer_filter.exists():
+            messages.error(request, "Invalid Registration Link.")
+            return redirect('auth_login')
+
+        pending_homebuyer = pending_homebuyer_filter.first()
+        if pending_homebuyer.registered:
+            messages.info(request, ("{email} is already registered."
+                                    .format(email=pending_homebuyer.email)))
+            return redirect('auth_login')
         return super(SignupView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        token = request.GET.get('registration_token')
-        if token:
-            pending_homebuyer_filter = PendingHomebuyer.objects.filter(
-                registration_token=token)
-            if pending_homebuyer_filter.exists():
-                pending_homebuyer = pending_homebuyer_filter.first()
-                context = {
-                    'signup_form': SignupForm(initial={
-                        'registration_token': token,
-                        'email': pending_homebuyer.email
-                    })
-                }
-                return render(request, self.template_name, context)
-        return redirect('auth_login')
+        token = kwargs.get('registration_token')
+        pending_homebuyer = PendingHomebuyer.objects.get(
+            registration_token=token)
+        context = {
+            'signup_form': SignupForm(initial={
+                'email': pending_homebuyer.email
+            }),
+            'realtor': pending_homebuyer.pending_couple.realtor,
+            'registration_token': token,
+        }
+        return render(request, self.template_name, context)

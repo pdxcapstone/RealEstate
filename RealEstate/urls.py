@@ -29,6 +29,7 @@ urlpatterns = [
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
     url(r'^invite/$',
         PendingViews.InviteHomebuyerView.as_view(), name='invite'),
-    url(r'^signup/$', PendingViews.SignupView.as_view(), name='signup'),
+    url(r'^signup/(?P<registration_token>[0-9a-f]{64})/$',
+        PendingViews.SignupView.as_view(), name='signup'),
     url(r'^$', CoreViews.HomeView.as_view(), name='home'),
 ]

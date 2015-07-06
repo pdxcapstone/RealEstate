@@ -411,10 +411,8 @@ class User(AbstractBaseUser, PermissionsMixin):
             'unique': ("A user with this email already "
                        "exists.")
         })
-    first_name = models.CharField(max_length=30, default="First",
-                                  verbose_name="First Name")
-    last_name = models.CharField(max_length=30, default="Last",
-                                 verbose_name="Last Name")
+    first_name = models.CharField(max_length=30, verbose_name="First Name")
+    last_name = models.CharField(max_length=30, verbose_name="Last Name")
     phone = models.CharField(max_length=20, blank=True,
                              verbose_name="Phone Number")
     is_staff = models.BooleanField(
