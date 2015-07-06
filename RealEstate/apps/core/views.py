@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
+from django import forms
 
 from .models import Couple, House, Category, Grade
 
@@ -52,6 +53,8 @@ class EvalView(BaseView):
         house = House.objects.filter(couple=couple) 
         grades = Grade.objects.filter(house=house[0])
 
+        # Merging grades and categories to provide object with both information.
+        # Data Structure: [(cat1, score1), (cat2, score2), ...]
         graded = []
         for category in categories:
             missing = True
@@ -63,6 +66,12 @@ class EvalView(BaseView):
             if missing:
                 graded.append((category, None))
 
-        context = {'couple': couple, 'house' : house[0], 'grades': graded }
+        class ContactForm(forms.Form):
+            def __init__(self, *args, **kwargs):
+                super(ContactForm, self).__init__(*args, **kwargs)
+                for c, s in graded:
+                    self.fields[c.summary] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
+
+        context = {'couple': couple, 'house' : house[0], 'grades': graded, "form" : ContactForm() }
         return render(request, 'core/houseEval.html', context)
         

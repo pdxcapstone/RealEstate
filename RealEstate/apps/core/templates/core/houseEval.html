@@ -1,4 +1,6 @@
 {% extends "core/base.html" %}
+{% load bootstrap3 %}
+{% bootstrap_javascript jquery=2 %}
 
 {% block body %}
     <h2><strong> Evaluation for {{house}}</strong> </h2>
@@ -7,7 +9,7 @@
 	  	{% for category, score in grades %}
 			<li class="list-group-item">
 				<div class="row">
-					<div class="col-sm-6">
+					<div class="col-sm-10">
 						<h4>{{category.summary}}</h4> 
 						<p>
 							{% if not category.description %}
@@ -17,17 +19,54 @@
 							{% endif %}
 						</p>
 					</div>
-					<div class="col-sm-4"></div>
 					<div class="col-sm-2">
 						<p>
-							{% if not score %}
-								<em>No Score</em>
-							{% else %}
-								{{ score }}
-							{% endif %}
+							<div class="btn-group" id={{category.summary}}>
+								<button type="button" class="btn btn-default dropdown-toggle text-right" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="min-width:75px !important">
+								<span class="but-val">
+							    {% if not score %}
+									<em>--</em>
+								{% else %}
+									{{ score }}
+								{% endif %} 
+								</span>
+								<span class="caret"></span>
+							  </button>
+							  <ul class="dropdown-menu align-right">
+							    <li><a>1</a></li>
+							    <li><a>2</a></li>
+							    <li><a>3</a></li>
+							    <li><a>4</a></li>
+							    <li><a>5</a></li>
+							  </ul>
+							</div>
+							
 					</div>
 				</div>
 	   	 	</li>
 		{% endfor %} 		
   	</ul>
+
+  	<form style="margin-bottom:20px" action="{% url 'auth_login' %}" role="form" method="post">
+	  {% bootstrap_form form layout="horizontal"%}
+	  <div style="margin-top: 40px">
+	  <center>
+	    {% buttons submit='Save Evaluation' %}{% endbuttons %}
+	   </center>
+	  </div>
+	</form>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+$(".dropdown-menu li a").click(function(){
+  var selText = $(this).text();
+  var category = $(this).parents('.btn-group').attr("id");
+  console.log(category);
+  $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
+  $(this).parents('.btn:first-child').find('.dropdown-toggle').val(selText);
+  $("#id_"+category).val( selText );
+});
+</script>
 {% endblock %}
