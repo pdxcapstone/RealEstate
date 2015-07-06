@@ -3,11 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import APIUserSerializer, APIHouseSerializer
+from .serializers import APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer
 from .utils import jwt_payload_handler
 from collections import OrderedDict
 
-from RealEstate.apps.core.models import House, Homebuyer, Couple
+from RealEstate.apps.core.models import House, Category, Couple, Grade
 
 class APIUserInfoView(APIView):
     """
@@ -34,7 +34,7 @@ class APIHouseView(APIView):
     serializer_class = APIHouseSerializer
 
     def get(self, request, *args, **kwargs):
-        id = self.request.query_params.get('id')
+        id = self.request.query_params.get('id', None)
         user = self.request.user
         couple = Couple.objects.filter(homebuyer__user=user)
         house = House.objects.filter(couple=couple)
@@ -42,6 +42,8 @@ class APIHouseView(APIView):
 
         if not serializer.is_valid():
             return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+
+        query = {}
 
         if id is None:
             houses = []
@@ -57,8 +59,30 @@ class APIHouseView(APIView):
             query = {
                 'house': houses
             }
-            return Response(query)
+        else:
+            paramser = APIHouseParamSerializer(data={'id': int(id)}, context={'request': self.request})
+            if paramser.is_valid():
+                d = paramser.val()
+                if d is not None:
+                    return Response(d)
+            else:
+                return Response({'code': 300, 'message': 'Format error'})
 
-        return Response({'a': 1})
+            h = House.objects.filter(pk=id)
+            category = Category.objects.filter(couple=couple)
+            categories = []
+            for c in category:
+                grade = Grade.objects.filter(category=c, house=h, homebuyer__user=user)
+                if grade.count() > 0:
+                    content = {
+                        'id': c.pk,
+                        'summary': c.summary,
+                        'score': grade[0].score
+                    }
+                    categories.append(content)
+            query = {
+                'category': categories
+            }
+        return Response(query)
 
 
