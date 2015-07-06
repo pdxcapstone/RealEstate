@@ -2,8 +2,6 @@
 Model definitions for pending couples and homebuyers, people who have been
 invited to the app but have not yet registered.
 """
-from urllib import urlencode
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -50,6 +48,16 @@ class PendingCouple(BaseModel):
         if couples.exists():
             return couples.first()
         return None
+
+    @property
+    def registered(self):
+        """
+        Returns a boolean indicating whether or not all PendingHomebuyer
+        instances related to this PendingCouple have been registered.
+        """
+        pending_homebuyers = self.pendinghomebuyer_set.all()
+        return (pending_homebuyers.count() == 2 and
+                all(map(lambda hb: hb.registered, pending_homebuyers)))
 
     class Meta:
         ordering = ['realtor']

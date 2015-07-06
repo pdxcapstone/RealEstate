@@ -1,9 +1,10 @@
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views.generic import View
 
-from RealEstate.apps.core.models import User
+from RealEstate.apps.core.models import Couple, Homebuyer, User
 from RealEstate.apps.core.views import BaseView
 from RealEstate.apps.pending.forms import InviteHomebuyerForm, SignupForm
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
@@ -92,6 +93,9 @@ class SignupView(View):
         return super(SignupView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
+        """
+        Renders the signup form for registering a homebuyer.
+        """
         token = kwargs.get('registration_token')
         pending_homebuyer = PendingHomebuyer.objects.get(
             registration_token=token)
@@ -105,15 +109,57 @@ class SignupView(View):
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
+        """
+        Handles the creation of User/Homebuyer/Couple instances when signing
+        up a new homebuyer. If the form is not valid, re-render it with errors
+        so the user can correct them. Otherwise:
+          - If the user changed their email that they originally were invited
+            from, update the PendingHomebuyer instance to reflect that.
+          - Create the User object from the form data.
+          - Check to see if there is an existing Couple instance (which
+             happens if there partner already registered). If there is,
+             create the Homebuyer instance and connect with the existing
+             Couple instance.  Otherwise create a brand new instance.
+          - Check to see if everyone in the PendingCouple instance has been
+            registered.  If so, the PendingCouple/PendingHomebuyer instances
+            have been translated into real users and can be deleted.
+          - Authenticate/login the newly registered user and direct them to
+            the home page.
+        """
         token = kwargs.get('registration_token')
         pending_homebuyer = PendingHomebuyer.objects.get(
             registration_token=token)
+        realtor = pending_homebuyer.pending_couple.realtor
         form = SignupForm(request.POST)
         if form.is_valid():
-            pass
+            cleaned_data = form.cleaned_data
+            with transaction.atomic():
+                email = cleaned_data['email']
+                if pending_homebuyer.email != email:
+                    pending_homebuyer.email = email
+                    pending_homebuyer.save()
+                password = cleaned_data['password']
+                user = User.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=cleaned_data['first_name'],
+                    last_name=cleaned_data['last_name'],
+                    phone=cleaned_data['phone'])
+                pending_couple = pending_homebuyer.pending_couple
+                couple = pending_couple.couple
+                if not couple:
+                    couple = Couple.objects.create(realtor=realtor)
+                Homebuyer.objects.create(user=user, couple=couple)
+                if pending_couple.registered:
+                    pending_couple.pendinghomebuyer_set.all().delete()
+                    pending_couple.delete()
+            user = authenticate(email=email, password=password)
+            login(request, user)
+            return redirect('home')
+
         context = {
             'signup_form': form,
-            'realtor': pending_homebuyer.pending_couple.realtor,
+            'realtor': realtor,
             'registration_token': token,
         }
         return render(request, self.template_name, context)

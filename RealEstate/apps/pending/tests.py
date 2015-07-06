@@ -1,8 +1,7 @@
 from django.test import TestCase
 
-from RealEstate.apps.core.models import Realtor, User
+from RealEstate.apps.core.models import User
 from RealEstate.apps.pending.forms import InviteHomebuyerForm, SignupForm
-from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 
 
 class InviteHomebuyerFormTest(TestCase):
