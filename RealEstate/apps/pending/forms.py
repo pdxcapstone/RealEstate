@@ -56,6 +56,10 @@ class SignupForm(forms.ModelForm):
             'password': forms.PasswordInput,
         }
 
+    def __init__(self, *args, **kwargs):
+        super(SignupForm, self).__init__(*args, **kwargs)
+        self.fields['email'].help_text = ""
+
     def clean(self):
         """
         Ensure password matches password_confirmation.

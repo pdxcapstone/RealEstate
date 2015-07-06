@@ -103,3 +103,17 @@ class SignupView(View):
             'registration_token': token,
         }
         return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        token = kwargs.get('registration_token')
+        pending_homebuyer = PendingHomebuyer.objects.get(
+            registration_token=token)
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            pass
+        context = {
+            'signup_form': form,
+            'realtor': pending_homebuyer.pending_couple.realtor,
+            'registration_token': token,
+        }
+        return render(request, self.template_name, context)

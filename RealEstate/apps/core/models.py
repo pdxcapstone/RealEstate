@@ -3,7 +3,8 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import IntegrityError, models
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
@@ -414,6 +415,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30, verbose_name="First Name")
     last_name = models.CharField(max_length=30, verbose_name="Last Name")
     phone = models.CharField(max_length=20, blank=True,
+                             validators=[
+                                 RegexValidator(
+                                     regex="^[0-9-()+]{10,20}$",
+                                     message=("Digits or ()+- only, "
+                                              "minimum length 10"),
+                                     code='phone_format'
+                                 )
+                             ],
                              verbose_name="Phone Number")
     is_staff = models.BooleanField(
         default=False,
