@@ -99,13 +99,21 @@ class SignupView(View):
         token = kwargs.get('registration_token')
         pending_homebuyer = PendingHomebuyer.objects.get(
             registration_token=token)
+        realtor = pending_homebuyer.pending_couple.realtor
         context = {
+            'registration_token': token,
             'signup_form': SignupForm(initial={
                 'email': pending_homebuyer.email
             }),
-            'realtor': pending_homebuyer.pending_couple.realtor,
-            'registration_token': token,
         }
+
+        msg = ("Welcome, {email}.<br>You have been invited by {realtor_name} "
+               "({realtor_email}).<br>Please fill out the form below to "
+               "register for the Real Estate App.".format(
+                   email=pending_homebuyer.email,
+                   realtor_name=realtor.full_name,
+                   realtor_email=realtor.email))
+        messages.info(request, msg)
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -113,8 +121,6 @@ class SignupView(View):
         Handles the creation of User/Homebuyer/Couple instances when signing
         up a new homebuyer. If the form is not valid, re-render it with errors
         so the user can correct them. Otherwise:
-          - If the user changed their email that they originally were invited
-            from, update the PendingHomebuyer instance to reflect that.
           - Create the User object from the form data.
           - Check to see if there is an existing Couple instance (which
              happens if there partner already registered). If there is,
@@ -134,10 +140,7 @@ class SignupView(View):
         if form.is_valid():
             cleaned_data = form.cleaned_data
             with transaction.atomic():
-                email = cleaned_data['email']
-                if pending_homebuyer.email != email:
-                    pending_homebuyer.email = email
-                    pending_homebuyer.save()
+                email = pending_homebuyer.email
                 password = cleaned_data['password']
                 user = User.objects.create_user(
                     email=email,
@@ -158,8 +161,7 @@ class SignupView(View):
             return redirect('home')
 
         context = {
-            'signup_form': form,
-            'realtor': realtor,
             'registration_token': token,
+            'signup_form': form,
         }
         return render(request, self.template_name, context)

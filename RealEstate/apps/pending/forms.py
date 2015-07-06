@@ -50,15 +50,14 @@ class SignupForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'password_confirmation',
-                  'first_name', 'last_name', 'phone')
+        fields = ('password', 'password_confirmation', 'first_name',
+                  'last_name', 'phone')
         widgets = {
             'password': forms.PasswordInput,
         }
 
     def __init__(self, *args, **kwargs):
         super(SignupForm, self).__init__(*args, **kwargs)
-        self.fields['email'].help_text = ""
 
     def clean(self):
         """
@@ -72,13 +71,3 @@ class SignupForm(forms.ModelForm):
             self.add_error('password_confirmation',
                            ValidationError("Passwords do not match."))
         return cleaned_data
-
-    def clean_email(self):
-        """
-        Ensure a User with this email does not already exist.
-        """
-        email = self.cleaned_data.get('email')
-        if email and User.objects.filter(email=email).exists():
-            error = ValidationError("User with this email already exists.")
-            self.add_error('email', error)
-        return email
