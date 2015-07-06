@@ -47,8 +47,9 @@
 		{% endfor %} 		
   	</ul>
 
-  	<form style="margin-bottom:20px" action="{% url 'auth_login' %}" role="form" method="post">
-	  {% bootstrap_form form layout="horizontal"%}
+  	<form style="margin-bottom:20px" action="{% url 'eval' %}" role="form" method="post">
+	  {% bootstrap_form form%}
+	  {% csrf_token %}
 	  <div style="margin-top: 40px">
 	  <center>
 	    {% buttons submit='Save Evaluation' %}{% endbuttons %}
