@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/pdxcapstone/RealEstate.svg?branch=travis_ci)](https://travis-ci.org/pdxcapstone/RealEstate)
+[![Requirements Status](https://requires.io/github/pdxcapstone/RealEstate/requirements.svg?branch=models_unit_tests)](https://requires.io/github/pdxcapstone/RealEstate/requirements/?branch=models_unit_tests)
 
 # Real Estate App
 This is a Django-based web app for Portland State's CS Capstone. 
