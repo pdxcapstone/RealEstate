@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils.translation import ugettext as _
 
-from RealEstate.apps.core.models import House, Homebuyer, Couple
+from RealEstate.apps.core.models import House, Homebuyer, Couple, Category
 
 class APIUserSerializer(serializers.Serializer):
 
@@ -18,17 +18,20 @@ class APIUserSerializer(serializers.Serializer):
 
 class APIHouseSerializer(serializers.ModelSerializer):
 
+    def create(self, validated_data):
+        house = House(**validated_data)
+        house.save()
+        return house
+
     class Meta:
         model = House
-        depth = 1
-        fields = ('id', 'nickname', 'address')
+        field = ('nickname', 'address')
 
 class APIHouseParamSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=True)
     category = serializers.IntegerField(required=False)
     score = serializers.IntegerField(max_value=5, min_value=1, required=False)
-
 
     def val(self):
         user = self.context['request'].user
@@ -47,4 +50,16 @@ class APIHouseParamSerializer(serializers.Serializer):
             code = 203
             msg = 'No such house under current user'
             return {'code': code, 'message': msg}
+
+        try:
+            pcat = self.data['category']
+            categ = Category.objects.filter(pk=pcat, couple=couple)
+
+            if categ.count() < 1:
+                code = 204
+                msg = 'No such category under current user'
+                return {'code': code, 'message': msg}
+        except:
+            pass
+
         return None
