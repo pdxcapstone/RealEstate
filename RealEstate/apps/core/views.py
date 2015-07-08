@@ -47,16 +47,18 @@ class EvalView(BaseView):
     from the rest of the app and uses static elements in the database.
     """
     def get(self, request, *args, **kwargs):
+        homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
 
         # A specific house should be passed into the request, changing next two lines.
         house = House.objects.filter(couple=couple)
-        grades = Grade.objects.filter(house=house[0])
+        grades = Grade.objects.filter(house=house.first(), homebuyer=homebuyer)
 
         # Merging grades and categories to provide object with both information.
         # Data Structure: [(cat1, score1), (cat2, score2), ...]
         graded = []
+        
         for category in categories:
             missing = True
             for grade in grades:
@@ -66,6 +68,7 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
+                
         class ContactForm(forms.Form):
             def __init__(self, *args, **kwargs):
                 super(ContactForm, self).__init__(*args, **kwargs)
@@ -76,6 +79,7 @@ class EvalView(BaseView):
         return render(request, 'core/houseEval.html', context)
 
     def post(self, request, *args, **kwargs):
+        
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
@@ -86,9 +90,9 @@ class EvalView(BaseView):
         for category in categories:
             value = request.POST.get(category.summary)
             grade, created = Grade.objects.update_or_create(
-                homebuyer=homebuyer[0], category=category, house=house[0], defaults={'score': int(value)})
+                homebuyer=homebuyer.first(), category=category, house=house.first(), defaults={'score': int(value)})
 
-        grades = Grade.objects.filter(house=house[0])
+        grades = Grade.objects.filter(house=house.first(), homebuyer=homebuyer)
 
         # Merging grades and categories to provide object with both information.
         # Data Structure: [(cat1, score1), (cat2, score2), ...]
