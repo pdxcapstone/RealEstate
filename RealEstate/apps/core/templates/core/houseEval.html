@@ -1,16 +1,34 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% bootstrap_javascript jquery=2 %}
+{% bootstrap_css %}
+{% load staticfiles %}
+
+{% block style %}
+<script src="{% static "slide.js" %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
+<style>
+    .slider-selection {
+    	background: #BABABA;
+    }
+    .vcenter {
+      display: inline-block;
+      vertical-align: middle;
+      float: none;
+      margin-left:-3px;
+    }
+</style>
+{% endblock %}
 
 {% block body %}
     <h2><strong> Evaluation for {{house}}</strong> </h2>
     <h4><em>{{house.address}}</em></h4>
-  	<ul style="margin-top:50px" class="list-group">         
+  	<ul style="margin-top:50px" class="list-group">
 	  	{% for category, score in grades %}
 			<li class="list-group-item">
 				<div class="row">
-					<div class="col-sm-10">
-						<h4>{{category.summary}}</h4> 
+					<div class="col-sm-6 vcenter">
+						<h4>{{category.summary}}</h4>
 						<p>
 							{% if not category.description %}
 								<em>No Description</em>
@@ -19,34 +37,19 @@
 							{% endif %}
 						</p>
 					</div>
-					<div class="col-sm-2">
-						<p>
-							<div class="btn-group" id={{category.summary}}>
-								<button type="button" class="btn btn-default dropdown-toggle text-right" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="min-width:75px !important">
-								<span class="but-val">
-							    {% if not score %}
-									<em>--</em>
-								{% else %}
-									{{ score }}
-								{% endif %} 
-								</span>
-								<span class="caret"></span>
-							  </button>
-							  <ul class="dropdown-menu align-right">
-							    <li><a>1</a></li>
-							    <li><a>2</a></li>
-							    <li><a>3</a></li>
-							    <li><a>4</a></li>
-							    <li><a>5</a></li>
-							  </ul>
+					<div class="col-sm-6 vcenter">
+							<div>
+							  <center>
+							  <span style="padding-right: 15px">Bad </span>
+							  <input id={{category.summary}} class='soso slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
+							  <span style="padding-left: 15px">Good</span>
+								</center>
 							</div>
-							
 					</div>
 				</div>
-	   	 	</li>
-		{% endfor %} 		
+	   	</li>
+		{% endfor %}
   	</ul>
-
   	<form style="margin-bottom:20px" action="{% url 'eval' %}" role="form" method="post">
 	  {% bootstrap_form form%}
 	  {% csrf_token %}
@@ -58,16 +61,23 @@
 	</form>
 {% endblock %}
 
-
 {% block scripts %}
-<script>
-$(".dropdown-menu li a").click(function(){
-  var selText = $(this).text();
-  var category = $(this).parents('.btn-group').attr("id");
-  console.log(category);
-  $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
-  $(this).parents('.btn:first-child').find('.dropdown-toggle').val(selText);
-  $("#id_"+category).val( selText );
-});
-</script>
+  <script>
+    $(".slide").slider({
+    	formatter: function(value) {
+    	  switch(value){
+    	  case 1: return "Very Bad";
+        case 2: return "Bad";
+        case 3: return "Average";
+        case 4: return "Good";
+        default: return "Very Good";
+    	  }
+    	}
+    });
+    $(".slide").on("change", function(slideEvt) {
+    	var category = $(this).attr("id");
+    	console.log(slideEvt.value.newValue);
+    	$("#id_"+category).val( slideEvt.value.newValue );
+    });
+  </script>
 {% endblock %}
