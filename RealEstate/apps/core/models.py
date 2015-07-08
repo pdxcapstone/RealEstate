@@ -418,8 +418,8 @@ class User(AbstractBaseUser, PermissionsMixin):
                              validators=[
                                  RegexValidator(
                                      regex="^[0-9-()+]{10,20}$",
-                                     message=("Digits or ()+- only, "
-                                              "minimum length 10"),
+                                     message=("Please enter a valid phone "
+                                              "number."),
                                      code='phone_format'
                                  )
                              ],
