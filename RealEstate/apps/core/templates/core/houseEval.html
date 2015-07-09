@@ -1,10 +1,8 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
-{% bootstrap_javascript jquery=2 %}
 {% load staticfiles %}
 
 {% block style %}
-<script src="{% static "slide.js" %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
 <style>
 .slider-selection {
@@ -71,6 +69,7 @@ ul {
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static "slide.js" %}"></script>
 <script>
 	$(".slide").slider({
 		formatter: function(value) {
