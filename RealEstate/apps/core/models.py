@@ -3,7 +3,8 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import IntegrityError, models
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
@@ -181,12 +182,16 @@ class Couple(BaseModel):
     realtor = models.ForeignKey('core.Realtor', verbose_name="Realtor")
 
     def __unicode__(self):
-        homebuyers = self.homebuyer_set.all()
+        return u", ".join(
+            (unicode(hb) if hb else '?' for hb in self._homebuyers()))
+
+    def _homebuyers(self):
+        homebuyers = self.homebuyer_set.order_by('id')
         if not homebuyers:
-            homebuyers = ['?', '?']
+            homebuyers = (None, None)
         elif homebuyers.count() == 1:
-            homebuyers = [homebuyers.first(), '?']
-        return u", ".join(map(unicode, homebuyers))
+            homebuyers = (homebuyers.first(), None)
+        return homebuyers
 
     class Meta:
         ordering = ['realtor']
@@ -292,6 +297,10 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                  "(Couple ID: {id})".format(id=self.couple_id))
         return related_homebuyers.first()
 
+    @property
+    def role_type(self):
+        return 'Homebuyer'
+
     class Meta:
         ordering = ['user__email']
         verbose_name = "Homebuyer"
@@ -356,6 +365,10 @@ class Realtor(Person):
                                   .format(user=self.user))
         return super(Realtor, self).clean()
 
+    @property
+    def role_type(self):
+        return 'Realtor'
+
     class Meta:
         ordering = ['user__email']
         verbose_name = "Realtor"
@@ -399,10 +412,18 @@ class User(AbstractBaseUser, PermissionsMixin):
             'unique': ("A user with this email already "
                        "exists.")
         })
-    first_name = models.CharField(max_length=30, default="First",
-                                  verbose_name="First Name")
-    last_name = models.CharField(max_length=30, default="Last",
-                                 verbose_name="Last Name")
+    first_name = models.CharField(max_length=30, verbose_name="First Name")
+    last_name = models.CharField(max_length=30, verbose_name="Last Name")
+    phone = models.CharField(max_length=20, blank=True,
+                             validators=[
+                                 RegexValidator(
+                                     regex="^[0-9-()+]{10,20}$",
+                                     message=("Please enter a valid phone "
+                                              "number."),
+                                     code='phone_format'
+                                 )
+                             ],
+                             verbose_name="Phone Number")
     is_staff = models.BooleanField(
         default=False,
         help_text=("Designates whether the user can log into this admin "
@@ -418,6 +439,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
+
+    # These are used to control which URLs are available to different types
+    # of users.
+    _ALL_TYPES_ALLOWED = set(['Homebuyer', 'Realtor'])
+    _HOMEBUYER_ONLY = set(['Homebuyer'])
+    _REALTOR_ONLY = set(['Realtor'])
 
     class Meta:
         verbose_name = "User"
@@ -448,11 +475,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
 
     @property
-    def user_type(self):
+    def role_object(self):
         """
-        Returns a string which represents the user type (Homebuyer or Realtor).
-        If they are registered as both, raise an IntegrityError.  Returns None
-        if registered as neither.
+        Returns the object which represents the user type (Homebuyer or
+        Realtor).  If they are registered as both, raise an IntegrityError.
+        Returns None if registered as neither.
         """
         has_homebuyer = hasattr(self, 'homebuyer')
         has_realtor = hasattr(self, 'realtor')
@@ -461,7 +488,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                 raise IntegrityError("User {user} is registered as both a "
                                      "Homebuyer and a Realtor, which is not "
                                      "valid.".format(user=unicode(self)))
-            return "Homebuyer"
+            return self.homebuyer
         elif has_realtor:
-            return "Realtor"
+            return self.realtor
         return None
