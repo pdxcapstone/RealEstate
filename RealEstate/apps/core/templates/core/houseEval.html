@@ -1,64 +1,73 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% bootstrap_javascript jquery=2 %}
-{% bootstrap_css %}
 {% load staticfiles %}
 
 {% block style %}
 <script src="{% static "slide.js" %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
 <style>
-    .slider-selection {
-    	background: #BABABA;
-    }
-    .vcenter {
-      display: inline-block;
-      vertical-align: middle;
-      float: none;
-      margin-left:-3px;
-    }
+  .slider-selection {
+  	background: #BABABA;
+  }
+  .vcenter {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+    margin-left:-3px;
+  }
+  .alert-success {
+    margin-top: 30px;
+  }
+  ul {
+    margin-top:50px;
+  }
+  .inner-rating {
+    padding:20px 0;
+  }
 </style>
 {% endblock %}
 
 {% block body %}
-    <h2><strong> Evaluation for {{house}}</strong> </h2>
-    <h4><em>{{house.address}}</em></h4>
-  	<ul style="margin-top:50px" class="list-group">
-	  	{% for category, score in grades %}
-			<li class="list-group-item">
-				<div class="row">
-					<div class="col-sm-6 vcenter">
-						<h4>{{category.summary}}</h4>
-						<p>
-							{% if not category.description %}
-								<em>No Description</em>
-							{% else %}
-								{{ category.description }}
-							{% endif %}
-						</p>
-					</div>
-					<div class="col-sm-6 vcenter">
-							<div>
-							  <center>
-							  <span style="padding-right: 15px">Bad </span>
-							  <input id={{category.summary}} class='soso slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
-							  <span style="padding-left: 15px">Good</span>
-								</center>
-							</div>
-					</div>
+  <h2><strong> Evaluation for {{house}}</strong> </h2>
+  <h4><em>{{house.address}}</em></h4>
+	<ul class="list-group">
+  	{% for category, score in grades %}
+		<li class="list-group-item">
+			<div class="row">
+				<div class="col-sm-6 vcenter">
+					<h4>{{category.summary}}</h4>
+					<p>
+						{% if category.description %}
+							{{ category.description }}
+						{% endif %}
+					</p>
 				</div>
-	   	</li>
-		{% endfor %}
-  	</ul>
-  	<form style="margin-bottom:20px" action="{% url 'eval' %}" role="form" method="post">
+				<div class="col-sm-6 vcenter rating">
+						<div class="inner-rating" >
+						  <center>
+						  <span class="help-text" style="padding-right: 15px">Bad </span>
+						  <input id={{category.summary}} class='slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
+						  <span class="help-text" style="padding-left: 15px">Good</span>
+							</center>
+						</div>
+				</div>
+			</div>
+   	</li>
+	{% endfor %}
+	</ul>
+	<form style="margin-bottom:20px" action="{% url 'eval' %}" role="form" method="post">
 	  {% bootstrap_form form%}
 	  {% csrf_token %}
 	  <div style="margin-top: 40px">
-	  <center>
-	    {% buttons submit='Save Evaluation' %}{% endbuttons %}
-	   </center>
+  	  <center>
+  	    {% buttons submit='Save Evaluation' %}{% endbuttons %}
+  	    {% if success %}
+  	      {% bootstrap_alert "Your evaluation is saved!" alert_type='success' %}
+  	    {% endif %}
+	    </center>
 	  </div>
-	</form>
+  </form>
 {% endblock %}
 
 {% block scripts %}
@@ -66,11 +75,11 @@
     $(".slide").slider({
     	formatter: function(value) {
     	  switch(value){
-    	  case 1: return "Very Bad";
-        case 2: return "Bad";
-        case 3: return "Average";
-        case 4: return "Good";
-        default: return "Very Good";
+      	  case 1: return "Very Bad";
+          case 2: return "Bad";
+          case 3: return "Average";
+          case 4: return "Good";
+          default: return "Very Good";
     	  }
     	}
     });
@@ -79,5 +88,23 @@
     	console.log(slideEvt.value.newValue);
     	$("#id_"+category).val( slideEvt.value.newValue );
     });
+    $(window).on("resize", function () {
+      var divWidth = $(".row").width();
+      if(divWidth < 400){
+        $(".rating").css("width", "90%");
+        $(".help-text").hide();
+        console.log("yo");
+      }
+      else if(divWidth < 730){
+        $(".help-text").show();
+        $(".rating").css("width", "90%");
+        console.log("yo");
+      }
+      else{
+        $(".help-text").show();
+        $(".rating").css("width", "45%").css("margin", "0 auto");
+        console.log("ho");
+      }
+    }).resize();
   </script>
 {% endblock %}

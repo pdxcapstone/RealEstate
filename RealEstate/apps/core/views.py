@@ -41,7 +41,6 @@ class HomeView(BaseView):
 
 
 class EvalView(BaseView):
-
     """
     View for the Home Evaluation Page. Currently, this page is decoupled
     from the rest of the app and uses static elements in the database.
@@ -58,7 +57,6 @@ class EvalView(BaseView):
         # Merging grades and categories to provide object with both information.
         # Data Structure: [(cat1, score1), (cat2, score2), ...]
         graded = []
-        
         for category in categories:
             missing = True
             for grade in grades:
@@ -73,22 +71,26 @@ class EvalView(BaseView):
             def __init__(self, *args, **kwargs):
                 super(ContactForm, self).__init__(*args, **kwargs)
                 for c, s in graded:
-                    self.fields[c.summary] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
+                    self.fields[c.summary] = forms.CharField(initial="3" if None else s, widget=forms.HiddenInput())
 
-        context = {'couple': couple, 'house' : house[0], 'grades': graded, "form" : ContactForm() }
+        context = {'couple': couple, 'house' : house.first(), 'grades': graded, "form" : ContactForm() }
         return render(request, 'core/houseEval.html', context)
 
     def post(self, request, *args, **kwargs):
-        
+        """
+        Depending on what functionality we want, the post may be more of a redirect back to the home page. In that
+        case, much of this code will leave. In the meantime, it saves new data, recreates the same form and posts a
+        success message.
+        """
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
-
-        # A specific house should be passed into the request, changing next two lines.
         house = House.objects.filter(couple=couple)
 
         for category in categories:
             value = request.POST.get(category.summary)
+            if not value:
+              value = 3
             grade, created = Grade.objects.update_or_create(
                 homebuyer=homebuyer.first(), category=category, house=house.first(), defaults={'score': int(value)})
 
@@ -113,6 +115,6 @@ class EvalView(BaseView):
                 for c, s in graded:
                     self.fields[c.summary] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
         
-        context = {'couple': couple, 'house' : house[0], 'grades': graded, "form" : ContactForm() }
+        context = {'couple': couple, 'house' : house[0], 'grades': graded, "form" : ContactForm(), "success": True }
         return render(request, 'core/houseEval.html', context)
         
