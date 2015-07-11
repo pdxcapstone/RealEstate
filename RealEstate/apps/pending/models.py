@@ -111,7 +111,7 @@ class PendingHomebuyer(BaseModel):
                                  .values_list('id', flat=True).distinct())
         pending_homebuyers.add(self.id)
         if len(pending_homebuyers) > 2:
-            raise ValidationError("PendingCouple a'lready has 2 Homebuyers.")
+            raise ValidationError("PendingCouple already has 2 Homebuyers.")
         return super(PendingHomebuyer, self).clean()
 
     @property
