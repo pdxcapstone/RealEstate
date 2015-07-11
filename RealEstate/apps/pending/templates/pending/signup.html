@@ -1,0 +1,29 @@
+{% extends "core/base.html" %}
+{% load bootstrap3 %}
+
+{% block title %}
+  Sign Up
+{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-sm-3"></div>
+    <div class="col-sm-6">
+      {% bootstrap_messages %}
+      <h2 style="margin-top:50px">
+        <strong>Registration Form</strong>
+      </h2>
+      <div style="margin: 10px 0" class="well">
+        <form style="margin-bottom:20px"
+              action="{% url 'signup' registration_token %}" role="form" method="post">
+          {% csrf_token %}
+          {% bootstrap_form signup_form %}
+          <div class="pull-right" style="margin-top: 40px">
+            {% buttons submit='Register' %}{% endbuttons %}
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-sm-3"></div>
+  </div>
+{% endblock %}
