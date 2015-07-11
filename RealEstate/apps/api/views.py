@@ -4,11 +4,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import (APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer,
-                          APIHouseFullParamSerializer, APIGradeSerializer)
+                          APIHouseFullParamSerializer)
 from .utils import jwt_payload_handler
-from collections import OrderedDict
 
-from RealEstate.apps.core.models import House, Category, Couple, Grade, Homebuyer
+from RealEstate.apps.core.models import House, Category, Couple, Grade
 
 class APIUserInfoView(APIView):
     """
@@ -17,7 +16,7 @@ class APIUserInfoView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (JSONWebTokenAuthentication, )
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
 
         serializer = APIUserSerializer(data=request.data, context={'request': request})
 
@@ -34,7 +33,7 @@ class APIHouseView(APIView):
     """
     serializer_class = APIHouseSerializer
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         hid = self.request.query_params.get('id', None)
         user = self.request.user
         couple = Couple.objects.filter(homebuyer__user=user)
@@ -93,7 +92,7 @@ class APIHouseView(APIView):
     then update the grade of the category provided. If the house doesn't have
     the category, an error will be returned.
     '''
-    def put(self, request, *args, **kwargs):
+    def put(self, request):
         hid = self.request.query_params.get('id', None)
         cat = self.request.query_params.get('category', None)
         score = self.request.query_params.get('score', None)
@@ -124,7 +123,7 @@ class APIHouseView(APIView):
     Add a new house based on the provided nickname and address. The couple of the newly
     created house will be the couple containing the current home buyer.
     '''
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():

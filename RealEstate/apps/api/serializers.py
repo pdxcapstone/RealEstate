@@ -6,6 +6,14 @@ from RealEstate.apps.core.models import (House, Homebuyer, Couple, CategoryWeigh
 
 class APIUserSerializer(serializers.Serializer):
 
+    def create(self, validated_data):
+        # Do nothing
+        return None
+
+    def update(self, instance, validated_data):
+        # Do nothing
+        return None
+
     def validate(self, attrs):
 
         user = self.context['request'].user
@@ -53,6 +61,14 @@ class APIHouseParamSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=True)
 
+    def create(self, validated_data):
+        # Do nothing
+        return None
+
+    def update(self, instance, validated_data):
+        # Do nothing
+        return None
+
     def check(self):
         user = self.context['request'].user
         pid = self.data['id']
@@ -80,6 +96,14 @@ class APIHouseFullParamSerializer(APIHouseParamSerializer):
 
     category = serializers.IntegerField(required=True)
     score = serializers.IntegerField(max_value=5, min_value=1, required=True)
+
+    def create(self, validated_data):
+        # Do nothing
+        return None
+
+    def update(self, instance, validated_data):
+        # Do nothing
+        return None
 
     def val(self):
         d = self.check()
