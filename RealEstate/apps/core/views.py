@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django import forms
+from django.contrib import messages
+
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
 
@@ -54,13 +56,11 @@ class EvalView(BaseView):
     from the rest of the app and uses static elements in the database.
     """
     def get(self, request, *args, **kwargs):
-        homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
+        homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
-
-        # A specific house should be passed into the request, changing next two lines.
-        house = House.objects.filter(couple=couple)
-        grades = Grade.objects.filter(house=house.first(), homebuyer=homebuyer)
+        house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
+        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
         # Merging grades and categories to provide object with both information.
         # Data Structure: [(cat1, score1), (cat2, score2), ...]
@@ -79,9 +79,9 @@ class EvalView(BaseView):
             def __init__(self, *args, **kwargs):
                 super(ContactForm, self).__init__(*args, **kwargs)
                 for c, s in graded:
-                    self.fields[c.summary] = forms.CharField(initial="3" if None else s, widget=forms.HiddenInput())
+                    self.fields[str(c.id)] = forms.CharField(initial="3" if None else s, widget=forms.HiddenInput())
 
-        context = {'couple': couple, 'house' : house.first(), 'grades': graded, "form" : ContactForm() }
+        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
         return render(request, 'core/houseEval.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -93,16 +93,16 @@ class EvalView(BaseView):
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
-        house = House.objects.filter(couple=couple)
+        house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
 
         for category in categories:
-            value = request.POST.get(category.summary)
+            value = request.POST.get(str(category.id))
             if not value:
               value = 3
             grade, created = Grade.objects.update_or_create(
-                homebuyer=homebuyer.first(), category=category, house=house.first(), defaults={'score': int(value)})
+                homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(value)})
 
-        grades = Grade.objects.filter(house=house.first(), homebuyer=homebuyer)
+        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
         # Merging grades and categories to provide object with both information.
         # Data Structure: [(cat1, score1), (cat2, score2), ...]
@@ -121,8 +121,10 @@ class EvalView(BaseView):
             def __init__(self, *args, **kwargs):
                 super(ContactForm, self).__init__(*args, **kwargs)
                 for c, s in graded:
-                    self.fields[c.summary] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
-        
-        context = {'couple': couple, 'house' : house[0], 'grades': graded, "form" : ContactForm(), "success": True }
+                    self.fields[str(c.id)] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
+                    
+        messages.success(request,"Your evaluation was saved!")
+
+        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
         return render(request, 'core/houseEval.html', context)
         

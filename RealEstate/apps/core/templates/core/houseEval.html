@@ -35,17 +35,17 @@ ul {
 				<div class="row">
 					<div class="col-sm-6 vcenter">
 						<h4>{{category.summary}}</h4>
-						<p>
-							{% if category.description %}
+						{% if category.description %}
+							<p>
 								{{ category.description }}
-							{% endif %}
-						</p>
+							</p>
+						{% endif %}
 					</div>
 					<div class="col-sm-6 vcenter rating">
 						<div class="inner-rating" >
 							<center>
 								<span class="help-text" style="padding-right: 15px">Bad </span>
-									<input id={{category.summary}} class='slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
+									<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
 								<span class="help-text" style="padding-left: 15px">Good</span>
 							</center>
 						</div>
@@ -54,15 +54,14 @@ ul {
 			</li>
 		{% endfor %}
 	</ul>
-	<form style="margin-bottom:20px" action="{% url 'eval' %}" role="form" method="post">
+	<form style="margin-bottom:20px" action="{% url 'eval' %}{{house.id}}/" role="form" method="post">
 		{% bootstrap_form form%}
 		{% csrf_token %}
 		<div style="margin-top: 40px">
 			<center>
 				{% buttons submit='Save Evaluation' %}{% endbuttons %}
-				{% if success %}
-					{% bootstrap_alert "Your evaluation is saved!" alert_type='success' %}
-				{% endif %}
+				{% bootstrap_messages %}
+
 			</center>
 		</div>
 	</form>
@@ -83,8 +82,9 @@ ul {
 		}
 	});
 	$(".slide").on("change", function(slideEvt) {
-		var category = $(this).attr("id");
-		$("#id_"+category).val( slideEvt.value.newValue );
+		var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
+		console.log(categoryID);
+		$("#id_"+categoryID).val( slideEvt.value.newValue );
 	});
 	$(window).on("resize", function () {
 		var divWidth = $(".row").width();
