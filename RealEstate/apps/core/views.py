@@ -31,11 +31,19 @@ class BaseView(View):
     """
     _USER_TYPES_ALLOWED = User._ALL_TYPES_ALLOWED
 
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        Override this in subclassed views if the view needs more granular
+        permissions than the simple Homebuyer/Realtor check.
+        """
+        return True
+
     @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         role = request.user.role_object
         if role and role.role_type in self._USER_TYPES_ALLOWED:
-            return super(BaseView, self).dispatch(request, *args, **kwargs)
+            if self._permission_check(request, role, *args, **kwargs):
+                return super(BaseView, self).dispatch(request, *args, **kwargs)
         raise PermissionDenied
 
 
@@ -55,6 +63,18 @@ class EvalView(BaseView):
     View for the Home Evaluation Page. Currently, this page is decoupled
     from the rest of the app and uses static elements in the database.
     """
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        For a given House instance, only allow the user to view the page if
+        its for a related Homebuyer. This prevents users from grading other
+        peoples houses.
+        """
+        if role.role_type == 'Homebuyer':
+            house_id = kwargs.get('house_id', None)
+            if role.couple.house_set.filter(id=house_id).exists():
+                return True
+        return False
+
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
@@ -74,7 +94,7 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
-                
+
         class ContactForm(forms.Form):
             def __init__(self, *args, **kwargs):
                 super(ContactForm, self).__init__(*args, **kwargs)
@@ -122,9 +142,8 @@ class EvalView(BaseView):
                 super(ContactForm, self).__init__(*args, **kwargs)
                 for c, s in graded:
                     self.fields[str(c.id)] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
-                    
+
         messages.success(request,"Your evaluation was saved!")
 
         context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
         return render(request, 'core/houseEval.html', context)
-        
