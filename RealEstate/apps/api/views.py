@@ -3,11 +3,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer
+from .serializers import (APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer,
+                          APIHouseFullParamSerializer, APIGradeSerializer)
 from .utils import jwt_payload_handler
 from collections import OrderedDict
 
-from RealEstate.apps.core.models import House, Category, Couple, Grade
+from RealEstate.apps.core.models import House, Category, Couple, Grade, Homebuyer
 
 class APIUserInfoView(APIView):
     """
@@ -34,17 +35,18 @@ class APIHouseView(APIView):
     serializer_class = APIHouseSerializer
 
     def get(self, request, *args, **kwargs):
-        id = self.request.query_params.get('id', None)
+        hid = self.request.query_params.get('id', None)
         user = self.request.user
         couple = Couple.objects.filter(homebuyer__user=user)
-        house = House.objects.filter(couple=couple)
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():
             return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
 
-        if id is None:
+        if hid is None:
             houses = []
+
+            house = House.objects.filter(couple=couple)
 
             for h in house:
                 content = {
@@ -58,7 +60,8 @@ class APIHouseView(APIView):
                 'house': houses
             }
         else:
-            paramser = APIHouseParamSerializer(data={'id': int(id)}, context={'request': self.request})
+            paramser = APIHouseParamSerializer(data={'id': int(hid)},
+                                               context={'request': self.request})
             if paramser.is_valid():
                 d = paramser.val()
                 if d is not None:
@@ -66,7 +69,7 @@ class APIHouseView(APIView):
             else:
                 return Response({'code': 300, 'message': 'Format error'})
 
-            h = House.objects.filter(pk=id)
+            h = House.objects.filter(pk=hid)
             category = Category.objects.filter(couple=couple)
             categories = []
             for c in category:
@@ -91,14 +94,14 @@ class APIHouseView(APIView):
     the category, an error will be returned.
     '''
     def put(self, request, *args, **kwargs):
-        id = self.request.query_params.get('id', None)
+        hid = self.request.query_params.get('id', None)
         cat = self.request.query_params.get('category', None)
         score = self.request.query_params.get('score', None)
 
-        if id is None or cat is None or score is None:
+        if hid is None or cat is None or score is None:
             return Response({'code': 300, 'message': 'Format error'})
 
-        paramser = APIHouseParamSerializer(data={'id': int(id), 'category': int(cat),
+        paramser = APIHouseFullParamSerializer(data={'id': int(hid), 'category': int(cat),
                                         'score': int(score)},context={'request': self.request})
         if paramser.is_valid():
             d = paramser.val()
@@ -112,8 +115,9 @@ class APIHouseView(APIView):
         if not serializer.is_valid():
             return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
 
-        # Waiting for implementation of Category serializer
-        return Response("a")
+        # Waiting for the bug to be fixed and the new version to be released
+
+        return Response('Waiting for updates')
 
     '''
     Add a house
@@ -135,12 +139,13 @@ class APIHouseView(APIView):
 
         if ser.is_valid(raise_exception=True):
             ser.save()
-            d = ser.validated_data
+            ret = ser.validated_data
             content = {
-                'nickname': d['nickname'],
-                'address': d['address']
+                'nickname': ret['nickname'],
+                'address': ret['address']
             }
             return Response(content)
         else:
+            # Will be replaced by serializer error
             return Response({'error': 'Format error'})
 

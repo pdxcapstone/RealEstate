@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.utils.translation import ugettext as _
 
-from RealEstate.apps.core.models import House, Homebuyer, Couple, Category
+from RealEstate.apps.core.models import (House, Homebuyer, Couple, CategoryWeight,
+                                         Grade, Category)
 
 class APIUserSerializer(serializers.Serializer):
 
@@ -27,13 +28,32 @@ class APIHouseSerializer(serializers.ModelSerializer):
         model = House
         field = ('nickname', 'address')
 
+class APICategoryWeightSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        instance.weight = validated_data.get('weight', instance.weight)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = CategoryWeight
+
+class APIGradeSerializer(serializers.ModelSerializer):
+
+    def update(self, instance, validated_data):
+        instance.score = validated_data.get('score', instance.score)
+        instance.update()
+        return instance
+
+    class Meta:
+        model = Grade
+        fields = ('score', 'homebuyer', 'house', 'category')
+
 class APIHouseParamSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=True)
-    category = serializers.IntegerField(required=False)
-    score = serializers.IntegerField(max_value=5, min_value=1, required=False)
 
-    def val(self):
+    def check(self):
         user = self.context['request'].user
         pid = self.data['id']
         house = House.objects.filter(pk=pid)
@@ -51,15 +71,29 @@ class APIHouseParamSerializer(serializers.Serializer):
             msg = 'No such house under current user'
             return {'code': code, 'message': msg}
 
-        try:
-            pcat = self.data['category']
-            categ = Category.objects.filter(pk=pcat, couple=couple)
-
-            if categ.count() < 1:
-                code = 204
-                msg = 'No such category under current user'
-                return {'code': code, 'message': msg}
-        except:
-            pass
-
         return None
+
+    def val(self):
+        return self.check()
+
+class APIHouseFullParamSerializer(APIHouseParamSerializer):
+
+    category = serializers.IntegerField(required=True)
+    score = serializers.IntegerField(max_value=5, min_value=1, required=True)
+
+    def val(self):
+        d = self.check()
+
+        if d is not None:
+            return d
+
+        user = self.context['request'].user
+        couple = Couple.objects.filter(homebuyer__user=user)
+
+        pcat = self.data['category']
+        categ = Category.objects.filter(pk=pcat, couple=couple)
+
+        if categ.count() < 1:
+            code = 204
+            msg = 'No such category under current user'
+            return {'code': code, 'message': msg}
