@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/pdxcapstone/RealEstate.svg?branch=travis_ci)](https://travis-ci.org/pdxcapstone/RealEstate)
+[![Requirements Status](https://requires.io/github/pdxcapstone/RealEstate/requirements.svg?branch=models_unit_tests)](https://requires.io/github/pdxcapstone/RealEstate/requirements/?branch=dev)
+[![Coverage Status](https://coveralls.io/repos/pdxcapstone/RealEstate/badge.svg?branch=dev&service=github)](https://coveralls.io/github/pdxcapstone/RealEstate?branch=dev)
 # Real Estate App
 This is a Django-based web app for Portland State's CS Capstone. 
 
@@ -39,6 +42,17 @@ The following instructions are primarily intended for Mac/Linux, but they should
 	```python manage.py runserver```
 
 11. When you are finished and wish to exit the virtualenv, exit by the command: ```deactivate```
+
+12. Optional: Create a superuser in order to login to the RealEstate application:
+
+    ```python manage.py createsuperuser```
+
+## API Document
+
+* [REST-API](https://docs.google.com/document/d/1f06a-pnfcYQxcg2cQIeOdPtUgF2YTUOA-gWNyFvrF7o/edit)
+
+=======
+
 
 ## External Documentation
 
