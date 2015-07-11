@@ -54,7 +54,7 @@ ul {
 			</li>
 		{% endfor %}
 	</ul>
-	<form style="margin-bottom:20px" action="{% url 'eval' %}{{house.id}}/" role="form" method="post">
+	<form style="margin-bottom:20px" action="" role="form" method="post">
 		{% bootstrap_form form%}
 		{% csrf_token %}
 		<div style="margin-top: 40px">
