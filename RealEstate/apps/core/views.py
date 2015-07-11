@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
@@ -7,7 +9,7 @@ from django.views.generic import View
 from django import forms
 from django.contrib import messages
 
-
+from RealEstate.apps.core.forms import ContactForm
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
 
 
@@ -75,6 +77,22 @@ class EvalView(BaseView):
                 return True
         return False
 
+    def _score_context(self):
+        score_field = Grade._meta.get_field('score')
+        score_choices = dict(score_field.choices)
+        min_score = min(score for score in score_choices)
+        max_score = max(score for score in score_choices)
+        min_choice = score_choices[min_score]
+        max_choice = score_choices[max_score]
+        return {
+            'min_score': min_score,
+            'max_score': max_score,
+            'min_choice': min_choice,
+            'max_choice': max_choice,
+            'default_score': score_field.default,
+            'js_scores': json.dumps(score_choices),
+        }
+
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
@@ -94,14 +112,15 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
+        form = ContactForm(graded=graded)
 
-        class ContactForm(forms.Form):
-            def __init__(self, *args, **kwargs):
-                super(ContactForm, self).__init__(*args, **kwargs)
-                for c, s in graded:
-                    self.fields[str(c.id)] = forms.CharField(initial="3" if None else s, widget=forms.HiddenInput())
-
-        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
+        context = {
+            'couple': couple,
+            'house' : house,
+            'grades': graded,
+            'form' : form,
+        }
+        context.update(self._score_context())
         return render(request, 'core/houseEval.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -136,14 +155,14 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
-
-        class ContactForm(forms.Form):
-            def __init__(self, *args, **kwargs):
-                super(ContactForm, self).__init__(*args, **kwargs)
-                for c, s in graded:
-                    self.fields[str(c.id)] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
+        form = ContactForm(graded=graded)
 
         messages.success(request,"Your evaluation was saved!")
-
-        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
+        context = {
+            'couple': couple,
+            'house' : house,
+            'grades': graded,
+            'form' : form
+        }
+        context.update(self._score_context())
         return render(request, 'core/houseEval.html', context)
