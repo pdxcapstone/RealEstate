@@ -70,7 +70,7 @@ ul {
 {% block scripts %}
 <script src="{% static "slide.js" %}"></script>
 <script>
-    var jsScores = {{js_scores|safe}}
+    var jsScores = {{js_scores|safe}};
 	$(".slide").slider({
 		formatter: function(value) {
             return jsScores[value] || "";

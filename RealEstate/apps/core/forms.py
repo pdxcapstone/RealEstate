@@ -4,11 +4,10 @@ from django.contrib.auth.forms import UserCreationForm
 from RealEstate.apps.core.models import User
 
 
-class ContactForm(forms.Form):
+class EvaluationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         graded = kwargs.pop('graded', [])
-        #default_score = kwargs.pop('default_score')
-        super(ContactForm, self).__init__(*args, **kwargs)
+        super(EvaluationForm, self).__init__(*args, **kwargs)
         for c, s in graded:
             self.fields[str(c.id)] = forms.CharField(
                 initial=s, widget=forms.HiddenInput())

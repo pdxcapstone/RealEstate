@@ -9,7 +9,7 @@ from django.views.generic import View
 from django import forms
 from django.contrib import messages
 
-from RealEstate.apps.core.forms import ContactForm
+from RealEstate.apps.core.forms import EvaluationForm
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
 
 
@@ -65,6 +65,8 @@ class EvalView(BaseView):
     View for the Home Evaluation Page. Currently, this page is decoupled
     from the rest of the app and uses static elements in the database.
     """
+    template_name = 'core/houseEval.html'
+
     def _permission_check(self, request, role, *args, **kwargs):
         """
         For a given House instance, only allow the user to view the page if
@@ -112,7 +114,7 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
-        form = ContactForm(graded=graded)
+        form = EvaluationForm(graded=graded)
 
         context = {
             'couple': couple,
@@ -121,23 +123,23 @@ class EvalView(BaseView):
             'form' : form,
         }
         context.update(self._score_context())
-        return render(request, 'core/houseEval.html', context)
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         """
-        Depending on what functionality we want, the post may be more of a redirect back to the home page. In that
-        case, much of this code will leave. In the meantime, it saves new data, recreates the same form and posts a
-        success message.
+        Depending on what functionality we want, the post may be more of a
+        redirect back to the home page. In that case, much of this code will
+        leave. In the meantime, it saves new data, recreates the same form and
+        posts a success message.
         """
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
 
+        default_score = Grade._meta.get_field('score').default
         for category in categories:
-            value = request.POST.get(str(category.id))
-            if not value:
-              value = 3
+            value = request.POST.get(str(category.id)) or default_score
             grade, created = Grade.objects.update_or_create(
                 homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(value)})
 
@@ -155,7 +157,7 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
-        form = ContactForm(graded=graded)
+        form = EvaluationForm(graded=graded)
 
         messages.success(request,"Your evaluation was saved!")
         context = {
@@ -165,4 +167,4 @@ class EvalView(BaseView):
             'form' : form
         }
         context.update(self._score_context())
-        return render(request, 'core/houseEval.html', context)
+        return render(request, self.template_name, context)
