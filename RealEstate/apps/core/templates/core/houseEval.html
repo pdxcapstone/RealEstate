@@ -73,6 +73,7 @@ ul.list-group {
 
 {% block scripts %}
 <script src="{% static "slide.js" %}"></script>
+<script src="{% static "debounce.js" %}"></script>
 <script>
 var jsScores = {{js_scores|safe}}
 $(".slide").slider({
@@ -80,8 +81,9 @@ $(".slide").slider({
           return jsScores[value] || "";
 	}
 });
-$(".slide").on("change", function(slideEvt) {
-	var timer = setTimeout(showStatus, 1500);
+$(".slide").change($.debounce( 700, slideChange ));
+function slideChange (slideEvt) {
+	var timer = null;
 	clearTimeout(timer);
 	function showStatus() {
 		$("#update_"+categoryID).stop().show();
@@ -98,13 +100,13 @@ $(".slide").on("change", function(slideEvt) {
 			score: slideEvt.value.newValue
 		},
 		success: function(data) {
-			timer = setTimeout(showStatus, 2500);
+			timer = setTimeout(showStatus, 1500);
 		},
 		error: function(xhr, textStatus, errorThrown) {
 			// Do nothing for now.
 		}
 	});
-});
+};
 $(window).on("resize", function () {
 	var divWidth = $(".row").width();
 	if(divWidth < 400){
