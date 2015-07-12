@@ -6,7 +6,8 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django import forms
 from django.contrib import messages
-
+from django.http import HttpResponseRedirect, HttpResponse
+import json
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
 
@@ -112,38 +113,15 @@ class EvalView(BaseView):
         """
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         couple = Couple.objects.filter(homebuyer__user=request.user)
-        categories = Category.objects.filter(couple=couple)
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
 
-        for category in categories:
-            value = request.POST.get(str(category.id))
-            if not value:
-              value = 3
-            grade, created = Grade.objects.update_or_create(
-                homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(value)})
-
-        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
-
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
-        graded = []
-        for category in categories:
-            missing = True
-            for grade in grades:
-                if grade.category.id is category.id:
-                    graded.append((category, grade.score))
-                    missing = False
-                    break
-            if missing:
-                graded.append((category, None))
-
-        class ContactForm(forms.Form):
-            def __init__(self, *args, **kwargs):
-                super(ContactForm, self).__init__(*args, **kwargs)
-                for c, s in graded:
-                    self.fields[str(c.id)] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
-
-        messages.success(request,"Your evaluation was saved!")
-
-        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
-        return render(request, 'core/houseEval.html', context)
+        if request.is_ajax():
+          id = request.POST['category']
+          score = request.POST['score']
+          category = Category.objects.get(id=id)
+          grade, created = Grade.objects.update_or_create(
+                homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(score)})
+          response_data = {}
+          response_data['id'] = str(id)
+          response_data['score'] = str(score)
+          return HttpResponse(json.dumps(response_data), content_type="application/json")

@@ -27,6 +27,7 @@ ul {
 {% endblock %}
 
 {% block body %}
+{% csrf_token %}
 	<h2><strong> Evaluation for {{house}}</strong> </h2>
 	<h4><em>{{house.address}}</em></h4>
 	<ul class="list-group">
@@ -54,17 +55,6 @@ ul {
 			</li>
 		{% endfor %}
 	</ul>
-	<form style="margin-bottom:20px" action="" role="form" method="post">
-		{% bootstrap_form form%}
-		{% csrf_token %}
-		<div style="margin-top: 40px">
-			<center>
-				{% buttons submit='Save Evaluation' %}{% endbuttons %}
-				{% bootstrap_messages %}
-
-			</center>
-		</div>
-	</form>
 {% endblock %}
 
 {% block scripts %}
@@ -84,8 +74,21 @@ ul {
 	$(".slide").on("change", function(slideEvt) {
 		var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
 		console.log(categoryID);
-		$("#id_"+categoryID).val( slideEvt.value.newValue );
-	});
+    $.ajax({
+      type: "POST",
+      data: {
+        csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+        category: categoryID,
+        score: slideEvt.value.newValue
+      },
+      success: function(data) {
+        console.log(data);
+      },
+      error: function(xhr, textStatus, errorThrown) {
+        alert("Not saved!");
+      }
+    });
+  });
 	$(window).on("resize", function () {
 		var divWidth = $(".row").width();
 		if(divWidth < 400){
