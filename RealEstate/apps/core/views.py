@@ -132,7 +132,7 @@ class EvalView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
-        homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
+        homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
@@ -168,3 +168,24 @@ class EvalView(BaseView):
         }
         context.update(self._score_context())
         return render(request, self.template_name, context)
+
+
+class CategoryView(BaseView):
+		"""
+		View for the Category Ranking Page.
+		"""
+		template_name = 'core/categories.html'
+		
+		def _permission_check(self, request, role, *args, **kwargs):
+				return True
+		
+		def get(self, request, *args, **kwargs):
+				homebuyer	= request.user.role_object
+				couple = Couple.objects.filter(homebuyer__user=request.user)
+				categories = Category.objects.filter(couple=couple)
+				context = {
+				    'couple': couple,
+				    'categories': categories,
+				}
+				return render(request, self.template_name, context)
+
