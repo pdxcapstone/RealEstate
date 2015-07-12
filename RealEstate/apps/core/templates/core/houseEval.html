@@ -44,9 +44,9 @@ ul {
 					<div class="col-sm-6 vcenter rating">
 						<div class="inner-rating" >
 							<center>
-								<span class="help-text" style="padding-right: 15px">Bad </span>
-									<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
-								<span class="help-text" style="padding-left: 15px">Good</span>
+                                <span class="help-text" style="padding-right: 15px">{{min_choice}}</span>
+                                <input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+                                <span class="help-text" style="padding-left: 15px">{{max_choice}}</span>
 							</center>
 						</div>
 					</div>
@@ -70,15 +70,10 @@ ul {
 {% block scripts %}
 <script src="{% static "slide.js" %}"></script>
 <script>
+    var jsScores = {{js_scores|safe}};
 	$(".slide").slider({
 		formatter: function(value) {
-			switch(value){
-				case 1: return "Very Bad";
-				case 2: return "Bad";
-				case 3: return "Average";
-				case 4: return "Good";
-				default: return "Very Good";
-			}
+            return jsScores[value] || "";
 		}
 	});
 	$(".slide").on("change", function(slideEvt) {
