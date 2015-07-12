@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/pdxcapstone/RealEstate.svg?branch=travis_ci)](https://travis-ci.org/pdxcapstone/RealEstate)
-[![Requirements Status](https://requires.io/github/pdxcapstone/RealEstate/requirements.svg?branch=models_unit_tests)](https://requires.io/github/pdxcapstone/RealEstate/requirements/?branch=dev)
-[![Coverage Status](https://coveralls.io/repos/pdxcapstone/RealEstate/badge.svg?branch=dev&service=github)](https://coveralls.io/github/pdxcapstone/RealEstate?branch=dev)
+[![Requirements Status](https://requires.io/github/pdxcapstone/RealEstate/requirements.svg?branch=master)](https://requires.io/github/pdxcapstone/RealEstate/requirements/?branch=dev)
+[![Coverage Status](https://coveralls.io/repos/pdxcapstone/RealEstate/badge.svg?branch=master&service=github)](https://coveralls.io/github/pdxcapstone/RealEstate?branch=dev)
 # Real Estate App
 This is a Django-based web app for Portland State's CS Capstone. 
 
