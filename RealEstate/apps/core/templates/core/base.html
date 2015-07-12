@@ -1,60 +1,86 @@
-<!DOCTYPE html>
 {% load bootstrap3 %}
 
- <head>
-  <!--[if lt IE 9]>
-  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-  <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-  <![endif]-->
-  <meta charset="UTF-8">
-  <title>{% block title %}Real Estate{% endblock %}</title>
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <meta charset="UTF-8">
+    <title>{% block title %}Real Estate{% endblock %}</title>
 
-  <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
-  <meta name="description" content="Real Estate Decisions">
-  <meta name="keywords" content="realestate">
-  {% bootstrap_css %}
+    <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
+    <meta name="description" content="Real Estate Decisions">
+    <meta name="keywords" content="realestate">
+    {% bootstrap_css %}
 
-  {% block style %}
-  {% endblock %}
- </head>
+    {% block style %}
+    {% endblock %}
+  </head>
 
- <body>
-   <nav class="navbar navbar-default">
-    <div class="container-fluid">
-      <!-- Brand and toggle get grouped for better mobile display -->
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="{% url 'home' %}"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> Real Estate App</a>
-      </div>
+  <body>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                  data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{% url 'home' %}">
+            <span class="glyphicon glyphicon-home" aria-hidden="true"></span> Real Estate App
+          </a>
+        </div>
 
-      <!-- Collect the nav links, forms, and other content for toggling -->
-      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-        <ul class="nav navbar-nav navbar-right">
-          {% if user.is_staff %}
-            <li><a href={% url "admin:index" %}>Admin</a></li>
-          {% endif %}
-          {% block navbarright %}
-          {% endblock %}
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           {% if user.is_authenticated %}
-            <li><a href="{% url 'auth_logout' %}"> Logout</a>
-          {% else %}
-            <li><a href="{% url 'auth_login' %}"> Log In</a></li>
+            <ul class="nav navbar-nav">
+              <li>
+                <a href="#">
+                  <span class="glyphicon glyphicon-equalizer"> Categories</span>
+                </a>
+              </li>
+              {% if user.is_staff %}
+                <li>
+                  <a href={% url "admin:index" %}>
+                    <span class="glyphicon glyphicon-king"> Admin</span>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
           {% endif %}
-        </ul>
-      </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
-   </nav>
-   <div class="container">
-     {% block body %}
-     {% endblock %}
-   </div>
-   {% bootstrap_javascript jquery=1 %}
-   {% block scripts %}
-   {% endblock %}
- </body>
+          <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                   role="button" aria-haspopup="true" aria-expanded="false">
+                   {{ user.get_full_name|default:"User"}} ({{user.email}})
+                   <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a href="#"> Change Password</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="{% url 'auth_logout' %}"> Logout</a></li>
+                </ul>
+              </li>
+            {% else %}
+              <li><a href="{% url 'auth_login' %}"> Log In</a></li>
+            {% endif %}
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+    <div class="container">
+      {% block body %}
+      {% endblock %}
+    </div>
+    {% bootstrap_javascript jquery=1 %}
+    {% block scripts %}
+    {% endblock %}
+  </body>
 </html>
