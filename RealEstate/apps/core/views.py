@@ -144,7 +144,5 @@ class EvalView(BaseView):
             'id': str(id),
             'score': str(score)
         }
-        response_data['id'] = str(id)
-        response_data['score'] = str(score)
         return HttpResponse(json.dumps(response_data),
                             content_type="application/json")
