@@ -8,9 +8,11 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django import forms
 from django.contrib import messages
+from django.http import HttpResponse
+
 
 from RealEstate.apps.core.forms import EvaluationForm
-from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
+from RealEstate.apps.core.models import Category, Couple, Grade, House, User, CategoryWeight
 
 
 def login(request, *args, **kwargs):
@@ -171,21 +173,72 @@ class EvalView(BaseView):
 
 
 class CategoryView(BaseView):
-		"""
-		View for the Category Ranking Page.
-		"""
-		template_name = 'core/categories.html'
-		
-		def _permission_check(self, request, role, *args, **kwargs):
-				return True
-		
-		def get(self, request, *args, **kwargs):
-				homebuyer	= request.user.role_object
-				couple = Couple.objects.filter(homebuyer__user=request.user)
-				categories = Category.objects.filter(couple=couple)
-				context = {
-				    'couple': couple,
-				    'categories': categories,
-				}
-				return render(request, self.template_name, context)
+    """
+    View for the Category Ranking Page.
+    """
+    template_name = 'core/categories.html'
 
+    def _permission_check(self, request, role, *args, **kwargs):
+        return True
+
+    def _weight_context(self):
+        weight_field = CategoryWeight._meta.get_field('weight')
+        weight_choices = dict(weight_field.choices)
+        min_weight = min(weight for weight in weight_choices)
+        max_weight = max(weight for weight in weight_choices)
+        min_choice = weight_choices[min_weight]
+        max_choice = weight_choices[max_weight]
+        return {
+            'min_weight': min_weight,
+            'max_weight': max_weight,
+            'min_choice': min_choice,
+            'max_choice': max_choice,
+            'default_weight': weight_field.default,
+            'js_weight': json.dumps(weight_choices),
+        }
+
+    def get(self, request, *args, **kwargs):
+        homebuyer = request.user.role_object
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        categories = Category.objects.filter(couple=couple)
+        weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+
+        weighted = []
+        for category in categories:
+            missing = True
+            for weight in weights:
+                if weight.category.id is category.id:
+                    weighted.append((category, weight.weight))
+                    missing = False
+                    break
+                if missing:
+                    weighted.append((category, None))
+
+        context = {
+            'weights': weighted,
+        }
+        context.update(self._weight_context())
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Depending on what functionality we want, the post may be more of a
+        redirect back to the home page. In that case, much of this code will
+        leave. In the meantime, it saves new data, recreates the same form and
+        posts a success message.
+        """
+        if not request.is_ajax():
+            raise PermissionDenied
+
+        homebuyer = request.user.role_object
+        id = request.POST['category']
+        weight = request.POST['weight']
+        category = Category.objects.get(id=id)
+        grade, created = CategoryWeight.objects.update_or_create(
+            homebuyer=homebuyer, category=category,
+            defaults={'weight': int(weight)})
+        response_data = {
+            'message' : 'success'
+        }
+        return HttpResponse(json.dumps(response_data),
+                            content_type="application/json")

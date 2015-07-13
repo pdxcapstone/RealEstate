@@ -133,8 +133,13 @@ class CategoryWeight(BaseModel):
     fields.
     """
     weight = models.PositiveSmallIntegerField(
-        help_text="0-100",
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        choices=((1, 'Unimportant'),
+                 (2, 'Below Average'),
+                 (3, 'Average'),
+                 (4, 'Above Average'),
+                 (5, 'Important')),
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
