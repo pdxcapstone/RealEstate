@@ -5,6 +5,24 @@
 {% block style %}
 <link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
 <style>
+ul.list-group {
+	padding-top:30px;
+}
+#heading {
+	padding-bottom: 30px;
+}
+.alert-success {
+	margin-top: 30px;
+}
+.icon-ok {
+	display: none;
+	font-size: 80%;
+	color: green;
+	padding-left: 20px
+}
+.inner-rating {
+	padding:20px 0;
+}
 .slider-selection {
 	background: #BABABA;
 }
@@ -14,87 +32,95 @@
 	float: none;
 	margin-left:-3px;
 }
-.alert-success {
-	margin-top: 30px;
-}
-ul {
-	margin-top:50px;
-}
-.inner-rating {
-	padding:20px 0;
-}
 </style>
 {% endblock %}
 
 {% block body %}
+{% csrf_token %}
+<div id="heading">
 	<h2><strong> Evaluation for {{house}}</strong> </h2>
 	<h4><em>{{house.address}}</em></h4>
-	<ul class="list-group">
-		{% for category, score in grades %}
-			<li class="list-group-item">
-				<div class="row">
-					<div class="col-sm-6 vcenter">
-						<h4>{{category.summary}}</h4>
-						{% if category.description %}
-							<p>
-								{{ category.description }}
-							</p>
-						{% endif %}
-					</div>
-					<div class="col-sm-6 vcenter rating">
-						<div class="inner-rating" >
-							<center>
-                                <span class="help-text" style="padding-right: 15px">{{min_choice}}</span>
-                                <input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
-                                <span class="help-text" style="padding-left: 15px">{{max_choice}}</span>
-							</center>
-						</div>
+</div>
+<p id="save-status" class="pull-right"></p>
+<ul class="list-group">
+	{% for category, score in grades %}
+		<li class="list-group-item">
+			<div class="row">
+				<div class="col-sm-6 vcenter">
+					<h4>{{category.summary}}
+						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
+					</h4>
+					{% if category.description %}
+						<p>
+							{{ category.description }}
+						</p>
+					{% endif %}
+				</div>
+				<div class="col-sm-6 vcenter rating">
+					<div class="inner-rating" style="padding-left:10%" >
+						<center>
+							<span class="help-text" style="text-size:60%; padding-right: 15px">{{min_choice}}</span>
+							<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+							<span class="help-text" style="text-size:60%; padding-left: 15px">{{max_choice}}</span>
+						</center>
 					</div>
 				</div>
-			</li>
-		{% endfor %}
-	</ul>
-	<form style="margin-bottom:20px" action="" role="form" method="post">
-		{% bootstrap_form form%}
-		{% csrf_token %}
-		<div style="margin-top: 40px">
-			<center>
-				{% buttons submit='Save Evaluation' %}{% endbuttons %}
-				{% bootstrap_messages %}
-
-			</center>
-		</div>
-	</form>
+			</div>
+		</li>
+	{% endfor %}
+</ul>
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static "slide.js" %}"></script>
+<script src="{% static "debounce.js" %}"></script>
 <script>
-    var jsScores = {{js_scores|safe}};
-	$(".slide").slider({
-		formatter: function(value) {
-            return jsScores[value] || "";
+var jsScores = {{js_scores|safe}}
+$(".slide").slider({
+	formatter: function(value) {
+          return jsScores[value] || "";
+	}
+});
+$(".slide").change($.debounce( 700, slideChange ));
+function slideChange (slideEvt) {
+	var timer;
+	clearTimeout(timer);
+	function showStatus() {
+		$("#update_"+categoryID).stop().show();
+		$("#update_"+categoryID).fadeOut(2000);
+		$("#save-status").text("All changes saved.").show().css("color", "#333");
+	}
+	var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
+	$("#save-status").text("saving...").css("color", "#888");
+	$.ajax({
+		type: "POST",
+		data: {
+			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+			category: categoryID,
+			score: slideEvt.value.newValue
+		},
+		success: function(data) {
+			timer = setTimeout(showStatus, 1500);
+		},
+		error: function(xhr, textStatus, errorThrown) {
+			// Do nothing for now.
 		}
 	});
-	$(".slide").on("change", function(slideEvt) {
-		var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
-		console.log(categoryID);
-		$("#id_"+categoryID).val( slideEvt.value.newValue );
-	});
-	$(window).on("resize", function () {
-		var divWidth = $(".row").width();
-		if(divWidth < 400){
-			$(".rating").css("width", "90%");
-			$(".help-text").hide();
-		}
-		else if(divWidth < 730){
-			$(".help-text").show();
-			$(".rating").css("width", "90%");
-		}
-		else{
-			$(".help-text").show();
-			$(".rating").css("width", "45%").css("margin", "0 auto");
-		}
-	}).resize();
+};
+$(window).on("resize", function () {
+	var divWidth = $(".row").width();
+	if(divWidth < 400){
+		$(".rating").css("width", "90%");
+		$(".help-text").hide();
+	}
+	else if(divWidth < 730){
+		$(".help-text").show();
+		$(".rating").css("width", "90%");
+	}
+	else{
+		$(".help-text").show();
+		$(".rating").css("width", "45%").css("margin", "0 auto");
+	}
+}).resize();
 </script>
 {% endblock %}

@@ -6,10 +6,8 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
-from django import forms
-from django.contrib import messages
+from django.http import HttpResponse
 
-from RealEstate.apps.core.forms import EvaluationForm
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
 
 
@@ -57,7 +55,8 @@ class HomeView(BaseView):
     def get(self, request, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
-        return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
+        return render(request, 'core/homebuyerHome.html',
+                      {'couple': couple, 'house': house})
 
 
 class EvalView(BaseView):
@@ -102,8 +101,8 @@ class EvalView(BaseView):
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
         grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
+        # Merging grades and categories to provide object with both
+        # information. Data Structure: [(cat1, score1), (cat2, score2), ...]
         graded = []
         for category in categories:
             missing = True
@@ -114,13 +113,11 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
-        form = EvaluationForm(graded=graded)
 
         context = {
             'couple': couple,
             'house' : house,
             'grades': graded,
-            'form' : form,
         }
         context.update(self._score_context())
         return render(request, self.template_name, context)
@@ -132,39 +129,20 @@ class EvalView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
+        if not request.is_ajax():
+            raise PermissionDenied
+
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
-        couple = Couple.objects.filter(homebuyer__user=request.user)
-        categories = Category.objects.filter(couple=couple)
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
-
-        default_score = Grade._meta.get_field('score').default
-        for category in categories:
-            value = request.POST.get(str(category.id)) or default_score
-            grade, created = Grade.objects.update_or_create(
-                homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(value)})
-
-        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
-
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
-        graded = []
-        for category in categories:
-            missing = True
-            for grade in grades:
-                if grade.category.id is category.id:
-                    graded.append((category, grade.score))
-                    missing = False
-                    break
-            if missing:
-                graded.append((category, None))
-        form = EvaluationForm(graded=graded)
-
-        messages.success(request,"Your evaluation was saved!")
-        context = {
-            'couple': couple,
-            'house' : house,
-            'grades': graded,
-            'form' : form
+        id = request.POST['category']
+        score = request.POST['score']
+        category = Category.objects.get(id=id)
+        grade, created = Grade.objects.update_or_create(
+            homebuyer=homebuyer.first(), category=category, house=house,
+            defaults={'score': int(score)})
+        response_data = {
+            'id': str(id),
+            'score': str(score)
         }
-        context.update(self._score_context())
-        return render(request, self.template_name, context)
+        return HttpResponse(json.dumps(response_data),
+                            content_type="application/json")
