@@ -1,7 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from RealEstate.apps.core.models import User
+from RealEstate.apps.core.models import User, Category
+
+
+class AddCategoryForm(forms.Form):
+    summary = forms.CharField(max_length=100)
+    description = forms.CharField(widget=forms.Textarea)
 
 
 class EvaluationForm(forms.Form):

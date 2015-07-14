@@ -11,7 +11,8 @@ from django.contrib import messages
 from django.http import HttpResponse
 
 
-from RealEstate.apps.core.forms import EvaluationForm
+from RealEstate.apps.core.forms import AddCategoryForm
+
 from RealEstate.apps.core.models import Category, Couple, Grade, House, User, CategoryWeight
 
 
@@ -216,7 +217,10 @@ class CategoryView(BaseView):
 
         context = {
             'weights': weighted,
+            'form': AddCategoryForm()
         }
+
+
         context.update(self._weight_context())
         return render(request, self.template_name, context)
 
