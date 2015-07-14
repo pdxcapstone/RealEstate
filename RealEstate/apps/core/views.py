@@ -211,8 +211,8 @@ class CategoryView(BaseView):
                     weighted.append((category, weight.weight))
                     missing = False
                     break
-                if missing:
-                    weighted.append((category, None))
+            if missing:
+                weighted.append((category, None))
 
         context = {
             'weights': weighted,
