@@ -207,11 +207,11 @@ class Grade(BaseModel):
     specific house/category combination.
     """
     score = models.PositiveSmallIntegerField(
-        choices=((1, '1'),
-                 (2, '2'),
-                 (3, '3'),
-                 (4, '4'),
-                 (5, '5')),
+        choices=((1, 'Poor'),
+                 (2, 'Below Average'),
+                 (3, 'Average'),
+                 (4, 'Above Average'),
+                 (5, 'Excellent')),
         default=3,
         verbose_name="Score")
 
