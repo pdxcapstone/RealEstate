@@ -219,8 +219,6 @@ class CategoryView(BaseView):
             'weights': weighted,
             'form': AddCategoryForm()
         }
-
-
         context.update(self._weight_context())
         return render(request, self.template_name, context)
 
@@ -231,18 +229,47 @@ class CategoryView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
-        if not request.is_ajax():
-            raise PermissionDenied
+        if request.is_ajax():
+            homebuyer = request.user.role_object
+            id = request.POST['category']
+            weight = request.POST['weight']
+            category = Category.objects.get(id=id)
+            grade, created = CategoryWeight.objects.update_or_create(
+                homebuyer=homebuyer, category=category,
+                defaults={'weight': int(weight)})
+            response_data = {
+                'message' : 'success'
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
 
-        homebuyer = request.user.role_object
-        id = request.POST['category']
-        weight = request.POST['weight']
-        category = Category.objects.get(id=id)
-        grade, created = CategoryWeight.objects.update_or_create(
-            homebuyer=homebuyer, category=category,
-            defaults={'weight': int(weight)})
-        response_data = {
-            'message' : 'success'
-        }
-        return HttpResponse(json.dumps(response_data),
-                            content_type="application/json")
+        else:
+            summary = request.POST["summary"]
+            description = request.POST["description"]
+            homebuyer = request.user.role_object
+            couple = Couple.objects.filter(homebuyer__user=request.user)
+
+            grade, created = Category.objects.update_or_create(
+                couple=couple.first(), summary=summary, defaults={'description': str(description)} )
+
+            categories = Category.objects.filter(couple=couple)
+            weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+
+            weighted = []
+            for category in categories:
+                missing = True
+                for weight in weights:
+                    if weight.category.id is category.id:
+                        weighted.append((category, weight.weight))
+                        missing = False
+                        break
+                if missing:
+                    weighted.append((category, None))
+
+            context = {
+                'weights': weighted,
+                'form': AddCategoryForm()
+            }
+
+            context.update(self._weight_context())
+            return render(request, self.template_name, context)
