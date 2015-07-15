@@ -7,7 +7,7 @@ from .serializers import (APIUserSerializer, APIHouseSerializer, APIHouseParamSe
                           APIHouseFullParamSerializer)
 from .utils import jwt_payload_handler
 
-from RealEstate.apps.core.models import House, Category, Couple, Grade
+from RealEstate.apps.core.models import House, Category, Couple, Grade, CategoryWeight
 
 class APIUserInfoView(APIView):
     """
@@ -147,4 +147,33 @@ class APIHouseView(APIView):
         else:
             # Will be replaced by serializer error
             return Response({'error': 'Format error'})
+
+class APICategoryView:
+    """
+    API for listing categories and ranking categories
+    """
+    def get(self, request, *args, **kwargs):
+        serializer = APIUserSerializer(data=request.data, context={'request': self.request})
+
+        if not serializer.is_valid():
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        category = Category.objects.filter(couple=couple)
+
+        categories = []
+        for c in category:
+            cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=category)
+            content = {
+                'id': c.pk,
+                'summary': c.summary,
+                'description': c.description,
+                'weight': cweight[0].weight
+            }
+            categories.append(content)
+        query = {
+            'category': categories
+        }
+
+        return Response(query)
 
