@@ -148,7 +148,7 @@ class APIHouseView(APIView):
             # Will be replaced by serializer error
             return Response({'error': 'Format error'})
 
-class APICategoryView:
+class APICategoryView(APIView):
     """
     API for listing categories and ranking categories
     """
@@ -164,11 +164,16 @@ class APICategoryView:
         categories = []
         for c in category:
             cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=category)
+            w = None
+            if cweight.count() < 1:
+                w = 'NAN'
+            else:
+                w = cweight[0].weight
             content = {
                 'id': c.pk,
                 'summary': c.summary,
                 'description': c.description,
-                'weight': cweight[0].weight
+                'weight': w
             }
             categories.append(content)
         query = {
