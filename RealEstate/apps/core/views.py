@@ -8,7 +8,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.http import HttpResponse
 
-from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
+from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, Realtor, User
 
 
 def login(request, *args, **kwargs):
@@ -54,9 +54,23 @@ class HomeView(BaseView):
     """
     def get(self, request, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
-        house = House.objects.filter(couple=couple)
-        return render(request, 'core/homebuyerHome.html',
-                      {'couple': couple, 'house': house})
+        realtor = Realtor.objects.filter(user=request.user)
+        if couple:
+            house = House.objects.filter(couple=couple)
+            return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
+        elif realtor:
+            couples = Couple.objects.filter(realtor=realtor)
+            house = House.objects.filter(couple=couple)
+            # Couple data is a list of touples [(couple1, homebuyers), (couple2, homebuyers)]
+            # There may be a better way to get homebuyers straight from couples, but I didn't see
+            # it in the model.
+            coupleData = []
+            for couple in couples:
+                homebuyer = Homebuyer.objects.filter(couple=couple)
+                coupleData.append((couple, homebuyer))
+            return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor})
+        else:
+            raise Exception("Neither a Homebuyer nor a Realtor")
 
 
 class EvalView(BaseView):
