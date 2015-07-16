@@ -155,11 +155,7 @@ class addHomeView(FormView):
     """
     View for the modal used to add a home to the list.
     """
-    """form_class = HouseForm"""
-    template_name = 'core/addHome.html'
-    def get(self, request, *args, **kwargs):
-        couple = Couple.objects.filter(homebuyer__user=request.user)
-        house = House.objects.filter(couple=couple)
-        return render(request, 'core/homebuyerHome.html',
-                      {'couple': couple, 'house': house})
-
+    form_class = addHomeForm
+    template_name = 'core/homebuyerHome.html'
+    model = House
+    

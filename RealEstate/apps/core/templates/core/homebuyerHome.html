@@ -34,10 +34,10 @@
             </div>
             <div class="modal-body">
             	{% csrf_token %}
-            	{{ form.non_field_errors }}
             	{% load crispy_forms_tags %}
+            	
             	<form method="post" class="uniForm">
-    				{{ addHomeForm|crispy }}
+    			
 				</form>
             	<div class = "form-grp">
 
