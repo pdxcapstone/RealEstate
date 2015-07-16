@@ -5,15 +5,17 @@
     <ul class="list-group">
       {% for home in house %}
       <li class="list-group-item">
-				<div class="row">
-					<div class="col-sm-6 vcenter">
+      	<div class = "row">
+				<div class="row-con">
+					<div class="col-sm-6">
 					   <h4>{{home}}</h4>
-					   <p>{{home.address}}</p></p>
+					   <p>{{home.address}}</p>
 					</div>
-					<div class="col-sm-6 vcenter">
-            <p><a href="{{home.evaluation_url}}"> Link</a></p>
+					<div class="vcenter">
+            			<p><a href="{{home.evaluation_url}}"> Link</a></p>
 					</div>
 				</div>
+			</div>
 			</li>
 			{% endfor %}
     </ul>
