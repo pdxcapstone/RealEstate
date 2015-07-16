@@ -1,12 +1,12 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
-from django import forms
-from django.contrib import messages
-
+from django.http import HttpResponse
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
 
@@ -55,7 +55,8 @@ class HomeView(BaseView):
     def get(self, request, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
-        return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
+        return render(request, 'core/homebuyerHome.html',
+                      {'couple': couple, 'house': house})
 
 
 class EvalView(BaseView):
@@ -63,6 +64,8 @@ class EvalView(BaseView):
     View for the Home Evaluation Page. Currently, this page is decoupled
     from the rest of the app and uses static elements in the database.
     """
+    template_name = 'core/houseEval.html'
+
     def _permission_check(self, request, role, *args, **kwargs):
         """
         For a given House instance, only allow the user to view the page if
@@ -75,6 +78,22 @@ class EvalView(BaseView):
                 return True
         return False
 
+    def _score_context(self):
+        score_field = Grade._meta.get_field('score')
+        score_choices = dict(score_field.choices)
+        min_score = min(score for score in score_choices)
+        max_score = max(score for score in score_choices)
+        min_choice = score_choices[min_score]
+        max_choice = score_choices[max_score]
+        return {
+            'min_score': min_score,
+            'max_score': max_score,
+            'min_choice': min_choice,
+            'max_choice': max_choice,
+            'default_score': score_field.default,
+            'js_scores': json.dumps(score_choices),
+        }
+
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
@@ -82,8 +101,8 @@ class EvalView(BaseView):
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
         grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
+        # Merging grades and categories to provide object with both
+        # information. Data Structure: [(cat1, score1), (cat2, score2), ...]
         graded = []
         for category in categories:
             missing = True
@@ -95,55 +114,35 @@ class EvalView(BaseView):
             if missing:
                 graded.append((category, None))
 
-        class ContactForm(forms.Form):
-            def __init__(self, *args, **kwargs):
-                super(ContactForm, self).__init__(*args, **kwargs)
-                for c, s in graded:
-                    self.fields[str(c.id)] = forms.CharField(initial="3" if None else s, widget=forms.HiddenInput())
-
-        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
-        return render(request, 'core/houseEval.html', context)
+        context = {
+            'couple': couple,
+            'house' : house,
+            'grades': graded,
+        }
+        context.update(self._score_context())
+        return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         """
-        Depending on what functionality we want, the post may be more of a redirect back to the home page. In that
-        case, much of this code will leave. In the meantime, it saves new data, recreates the same form and posts a
-        success message.
+        Depending on what functionality we want, the post may be more of a
+        redirect back to the home page. In that case, much of this code will
+        leave. In the meantime, it saves new data, recreates the same form and
+        posts a success message.
         """
+        if not request.is_ajax():
+            raise PermissionDenied
+
         homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
-        couple = Couple.objects.filter(homebuyer__user=request.user)
-        categories = Category.objects.filter(couple=couple)
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
-
-        for category in categories:
-            value = request.POST.get(str(category.id))
-            if not value:
-              value = 3
-            grade, created = Grade.objects.update_or_create(
-                homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(value)})
-
-        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
-
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
-        graded = []
-        for category in categories:
-            missing = True
-            for grade in grades:
-                if grade.category.id is category.id:
-                    graded.append((category, grade.score))
-                    missing = False
-                    break
-            if missing:
-                graded.append((category, None))
-
-        class ContactForm(forms.Form):
-            def __init__(self, *args, **kwargs):
-                super(ContactForm, self).__init__(*args, **kwargs)
-                for c, s in graded:
-                    self.fields[str(c.id)] = forms.CharField(initial="0" if None else s, widget=forms.HiddenInput())
-
-        messages.success(request,"Your evaluation was saved!")
-
-        context = {'couple': couple, 'house' : house, 'grades': graded, "form" : ContactForm() }
-        return render(request, 'core/houseEval.html', context)
+        id = request.POST['category']
+        score = request.POST['score']
+        category = Category.objects.get(id=id)
+        grade, created = Grade.objects.update_or_create(
+            homebuyer=homebuyer.first(), category=category, house=house,
+            defaults={'score': int(score)})
+        response_data = {
+            'id': str(id),
+            'score': str(score)
+        }
+        return HttpResponse(json.dumps(response_data),
+                            content_type="application/json")

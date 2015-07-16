@@ -27,6 +27,9 @@ urlpatterns = [
     url(r'^login/$', CoreViews.login, name='auth_login'),
     url(r'^logout/$',
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
+    url(r'^change-password/$', 'django.contrib.auth.views.password_change',
+        {'post_change_redirect': 'home'}, name='password_change'),
+
     url(r'^invite/$',
         PendingViews.InviteHomebuyerView.as_view(), name='invite'),
     url(r'^signup/(?P<registration_token>[0-9a-f]{64})/$',
