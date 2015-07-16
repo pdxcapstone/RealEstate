@@ -36,4 +36,5 @@ urlpatterns = [
         PendingViews.SignupView.as_view(), name='signup'),
     url(r'^$', CoreViews.HomeView.as_view(), name='home'),
     url(r'^eval/(?P<house_id>[\d]+)/$', CoreViews.EvalView.as_view(), name='eval'),
+    url(r'^addHome/$', CoreViews.addHomeView.as_view(), name='addHome')
 ]

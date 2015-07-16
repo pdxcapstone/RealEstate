@@ -5,13 +5,14 @@ from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
-from django.views.generic import View
+from django.views.generic import View, FormView
 from django.http import HttpResponse
 from django.views.generic import UpdateView, ListView
 from django.template.loader import render_to_string
 
+
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
-from RealEstate.apps.core.forms import HouseForm
+from RealEstate.apps.core.forms import addHomeForm
 
 
 def login(request, *args, **kwargs):
@@ -150,10 +151,15 @@ class EvalView(BaseView):
         return HttpResponse(json.dumps(response_data),
                             content_type="application/json")
 
-class addHomeView(HomeView)
+class addHomeView(FormView):
     """
     View for the modal used to add a home to the list.
     """
-    form_class = HouseForm
+    """form_class = HouseForm"""
     template_name = 'core/addHome.html'
-    
+    def get(self, request, *args, **kwargs):
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        house = House.objects.filter(couple=couple)
+        return render(request, 'core/homebuyerHome.html',
+                      {'couple': couple, 'house': house})
+

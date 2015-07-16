@@ -20,3 +20,11 @@ class UserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email',)
+
+
+class addHomeForm(forms.Form):
+    """
+    Used for adding a home to a users home list
+    """
+    nickname = forms.CharField(label="Nickname", required=True)
+    address = forms.CharField(label="Address", required=True)
