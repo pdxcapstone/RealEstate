@@ -7,8 +7,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.http import HttpResponse
+from django.views.generic import UpdateView, ListView
+from django.template.loader import render_to_string
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
+from RealEstate.apps.core.forms import HouseForm
 
 
 def login(request, *args, **kwargs):
@@ -146,3 +149,11 @@ class EvalView(BaseView):
         }
         return HttpResponse(json.dumps(response_data),
                             content_type="application/json")
+
+class addHomeView(HomeView)
+    """
+    View for the modal used to add a home to the list.
+    """
+    form_class = HouseForm
+    template_name = 'core/addHome.html'
+    
