@@ -4,10 +4,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import (APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer,
-                          APIHouseFullParamSerializer)
+                          APIHouseFullParamSerializer, APICategoryWeightSerializer, APIGradeSerializer)
 from .utils import jwt_payload_handler
 
-from RealEstate.apps.core.models import House, Category, Couple, Grade
+from RealEstate.apps.core.models import House, Category, Couple, Grade, CategoryWeight, Homebuyer
 
 class APIUserInfoView(APIView):
     """
@@ -114,9 +114,26 @@ class APIHouseView(APIView):
         if not serializer.is_valid():
             return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
 
-        # Waiting for the bug to be fixed and the new version to be released
+        house = House.objects.filter(pk=hid)
+        category = Category.objects.filter(pk=cat)
+        homebuyer = Homebuyer.objects.filter(user=request.user)
+        grade = Grade.objects.filter(house=house, category=category, homebuyer=homebuyer)
 
-        return Response('Waiting for updates')
+        data = {
+            'house': hid,
+            'category': cat,
+            'homebuyer': homebuyer[0].pk,
+            'score': score
+        }
+
+        ser = APIGradeSerializer(instance=grade[0], data=data)
+
+        if ser.is_valid(raise_exception=True):
+            c = ser.save()
+            return Response({'code': 101, 'message': 'OK', 'score': c.score})
+
+        # Override this error
+        return Response('Error')
 
     '''
     Add a house
@@ -148,3 +165,64 @@ class APIHouseView(APIView):
             # Will be replaced by serializer error
             return Response({'error': 'Format error'})
 
+class APICategoryView(APIView):
+    """
+    API for listing categories and ranking categories
+    """
+    def get(self, request, *args, **kwargs):
+        serializer = APIUserSerializer(data=request.data, context={'request': self.request})
+
+        if not serializer.is_valid():
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        category = Category.objects.filter(couple=couple)
+
+        categories = []
+        for c in category:
+            cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=category)
+            w = None
+            if cweight.count() < 1:
+                w = 'NAN'
+            else:
+                w = cweight[0].weight
+            content = {
+                'id': c.pk,
+                'summary': c.summary,
+                'description': c.description,
+                'weight': w
+            }
+            categories.append(content)
+        query = {
+            'category': categories
+        }
+
+        return Response(query)
+
+    def put(self, request, *args, **kwargs):
+        serializer = APIUserSerializer(data=request.data, context={'request': self.request})
+
+        if not serializer.is_valid():
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+
+        cid = self.request.query_params.get('id', None)
+        w = self.request.query_params.get('weight', None)
+
+        cg = Category.objects.filter(pk=cid)
+        cgw = CategoryWeight.objects.filter(category=cg, homebuyer__user=request.user)
+        hb = Homebuyer.objects.filter(user=request.user)
+
+        data = {
+            'homebuyer': int(hb[0].pk),
+            'category': cid,
+            'weight': int(w)
+        }
+
+        ser = APICategoryWeightSerializer(instance=cgw[0], data=data)
+
+        if ser.is_valid(raise_exception=True):
+            c = ser.save()
+            return Response({'code': 101, 'message': 'OK', 'weight': c.weight})
+
+        # Override this error
+        return Response('Error')
