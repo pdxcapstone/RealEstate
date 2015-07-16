@@ -6,7 +6,13 @@ from RealEstate.apps.core.models import User, Category
 
 class AddCategoryForm(forms.Form):
     summary = forms.CharField(max_length=100)
-    description = forms.CharField(widget=forms.Textarea)
+    description = forms.CharField(max_length=200)
+    
+    
+class EditCategoryForm(forms.Form):
+    summary = forms.CharField(max_length=100)
+    description = forms.CharField(max_length=200)
+    catID = forms.CharField(widget=forms.HiddenInput())
 
 
 class EvaluationForm(forms.Form):

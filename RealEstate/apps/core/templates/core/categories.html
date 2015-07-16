@@ -14,11 +14,18 @@ ul.list-group {
 .alert-success {
 	margin-top: 30px;
 }
+.icon-edit {
+	display: none;
+	font-size: 80%;
+	color: #888;
+	padding-left: 20px;
+	cursor: pointer;
+}
 .icon-ok {
 	display: none;
 	font-size: 80%;
 	color: green;
-	padding-left: 20px
+	padding-left: 20px;
 }
 .inner-rating {
 	padding:20px 0;
@@ -33,6 +40,7 @@ ul.list-group {
 	margin-left:-3px;
 }
 </style>
+<script>var catID;</script>
 {% endblock %}
 
 {% block body %}
@@ -46,9 +54,10 @@ ul.list-group {
 	{% for category, weight in weights %}
 	    {{weight.category}}
 		<li class="list-group-item">
-			<div class="row">
+			<div id="row_{{category.id}}" class="row category_row ">
 				<div class="col-md-4 vcenter">
 					<h4>{{category.summary}}
+					    <span data-toggle="modal" data-target="#editCategory" id='edit_{{category.id}}' class='glyphicon glyphicon-edit icon-edit'></span>
 						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
 					</h4>
 					{% if category.description %}
@@ -71,10 +80,10 @@ ul.list-group {
 	{% endfor %}
 </ul>
 <center>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" style="margin:30px">Add Category</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory" style="margin:30px">Add Category</button>
 </center>
 
-<div id="myModal" class="modal fade" role="dialog" style="height:auto">
+<div id="addCategory" class="modal fade" role="dialog" style="height:auto">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -84,6 +93,29 @@ ul.list-group {
         <div class="modal-body">
         <form action="" role="form" method="post">
         	{% bootstrap_form form%}
+        	{% csrf_token %}
+        	<div style="margin-top: 40px">
+        		<center>
+        			{% buttons submit='Save Evaluation' %}{% endbuttons %}
+        			{% bootstrap_messages %}
+        		</center>
+        	</div>
+        </form>
+        </div>
+    </div>
+  </div>
+</div>
+
+<div id="editCategory" class="modal fade" role="dialog" style="height:auto">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h2 class="modal-title">Edit your category!</h4>
+        </div>
+        <div class="modal-body">
+        <form action="" role="form" method="post">
+        	{% bootstrap_form editForm%}
         	{% csrf_token %}
         	<div style="margin-top: 40px">
         		<center>
@@ -135,6 +167,34 @@ function slideChange (slideEvt) {
 		}
 	});
 };
+function editCategoryAjax() {
+    $.ajax({
+		type: "GET",
+		data: {
+			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+			category: catID
+		},
+		success: function(data) {
+			$('input[name="summary"]').val(data.summary);
+			$('input[name="description"]').val(data.description);
+		},
+		error: function(xhr, textStatus, errorThrown) {
+			// Do nothing for now.
+		}
+	});
+  }
+$(".category_row").mouseenter( function() {
+  catID = $(this).attr("id").toString().replace(/row_/i, "");
+  $("#edit_"+catID).show(function(){
+      //   $("#edit_"+catID).click( $.debounce(300, editCategoryAjax ))
+      $('input[name="summary"]').val("data.summary");
+	  $('input[name="description"]').val("data.description");
+	  $('input[name="catID"]').val(catID);
+  });
+}).mouseleave( function() {
+  var id = $(this).attr("id").toString().replace(/row_/i, "");
+  $("#edit_"+id).fadeOut("slow");
+});
 $(window).on("resize", function () {
 	var divWidth = $(".row").width();
 	if(divWidth < 570){

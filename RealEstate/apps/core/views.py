@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 
 
-from RealEstate.apps.core.forms import AddCategoryForm
+from RealEstate.apps.core.forms import AddCategoryForm, EditCategoryForm
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, User, CategoryWeight
 
@@ -199,6 +199,16 @@ class CategoryView(BaseView):
         }
 
     def get(self, request, *args, **kwargs):
+        if request.is_ajax():
+            id = request.GET['category']
+            category = Category.objects.get(id=id)
+            response_data = {
+                'summary': category.summary,
+                'description': category.description
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+
         homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
@@ -214,11 +224,13 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
-
+        
         context = {
             'weights': weighted,
-            'form': AddCategoryForm()
+            'form': AddCategoryForm(),
+            'editForm': EditCategoryForm()
         }
+        print EditCategoryForm()
         context.update(self._weight_context())
         return render(request, self.template_name, context)
 
@@ -244,13 +256,18 @@ class CategoryView(BaseView):
                                 content_type="application/json")
 
         else:
-            summary = request.POST["summary"]
-            description = request.POST["description"]
+            
             homebuyer = request.user.role_object
             couple = Couple.objects.filter(homebuyer__user=request.user)
-
-            grade, created = Category.objects.update_or_create(
-                couple=couple.first(), summary=summary, defaults={'description': str(description)} )
+            print couple.first()
+            summary = request.POST["summary"]
+            description = request.POST["description"]
+            if request.POST["catID"]:
+                grade, created = Category.objects.update_or_create(
+                    couple=couple, id=request.POST["catID"], defaults={'summary': summary} )
+            else:
+                grade, created = Category.objects.update_or_create(
+                    couple=couple.first(), summary=summary, defaults={'description': str(description)} )
 
             categories = Category.objects.filter(couple=couple)
             weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
@@ -267,8 +284,9 @@ class CategoryView(BaseView):
                     weighted.append((category, None))
 
             context = {
-                'weights': weighted,
-                'form': AddCategoryForm()
+                'weights': [],
+                'form': AddCategoryForm(),
+                'editForm': EditCategoryForm()
             }
 
             context.update(self._weight_context())
