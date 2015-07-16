@@ -1,0 +1,10 @@
+.row-con{
+   display:table;
+   width:100%;
+}
+.vcenter {
+	display: table-cell; 
+	vertical-align: middle;
+	text-align:center;
+	width:50%;
+}
