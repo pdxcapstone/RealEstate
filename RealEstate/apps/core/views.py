@@ -8,7 +8,8 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.http import HttpResponse
 
-from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, User
+from RealEstate.apps.core.models import (Category, Couple, Grade, House,
+                                         Homebuyer, User)
 
 
 def login(request, *args, **kwargs):
@@ -116,7 +117,7 @@ class EvalView(BaseView):
 
         context = {
             'couple': couple,
-            'house' : house,
+            'house': house,
             'grades': graded,
         }
         context.update(self._score_context())
@@ -146,3 +147,24 @@ class EvalView(BaseView):
         }
         return HttpResponse(json.dumps(response_data),
                             content_type="application/json")
+
+
+class ReportView(BaseView):
+    """
+    This view will display take into account the category weights and scores
+    for each Homebuyer that is part of the Couple instance, and display the
+    results to the user.
+    """
+    template_name = 'core/report.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        Homebuyers can only see their own report.  Realtors can see reports
+        for any of their Couples
+        """
+        couple_id = int(kwargs.get('couple_id', 0))
+        get_object_or_404(Couple, id=couple_id)
+        return role.can_view_report_for_couple(couple_id)
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {})
