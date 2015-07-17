@@ -10,7 +10,6 @@ from django import forms
 from django.contrib import messages
 from django.http import HttpResponse
 
-
 from RealEstate.apps.core.forms import AddCategoryForm, EditCategoryForm
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, User, CategoryWeight
@@ -256,21 +255,31 @@ class CategoryView(BaseView):
                                 content_type="application/json")
 
         else:
-            
             homebuyer = request.user.role_object
-            couple = Couple.objects.filter(homebuyer__user=request.user)
-            print couple.first()
-            summary = request.POST["summary"]
-            description = request.POST["description"]
-            if request.POST["catID"]:
-                grade, created = Category.objects.update_or_create(
-                    couple=couple, id=request.POST["catID"], defaults={'summary': summary} )
+            couple = Couple.objects.filter(homebuyer__user=request.user).first()
+            
+            if "catID" in request.POST:
+                summary = request.POST["edit_summary"]
+                description = request.POST["edit_description"]
+                category = get_object_or_404(Category.objects.filter(id=request.POST["catID"]))
+                category.summary = summary
+                category.description = description
+                category.save()
             else:
-                grade, created = Category.objects.update_or_create(
-                    couple=couple.first(), summary=summary, defaults={'description': str(description)} )
+                print request.POST
+                summary = request.POST["summary"]
+                description = request.POST["description"]
+                if summary:
+                    grade, created = Category.objects.update_or_create(
+                        couple=couple, summary=summary, defaults={'description': str(description)} )
+                choices = request.POST.getlist("default_choices")
+                for choice in choices:
+                    print choice
+                    grade, created = Category.objects.update_or_create(
+                        couple=couple, summary=choice, defaults={'description': ''} )
 
-            categories = Category.objects.filter(couple=couple)
             weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+            categories = Category.objects.filter(couple=couple)
 
             weighted = []
             for category in categories:
@@ -284,7 +293,7 @@ class CategoryView(BaseView):
                     weighted.append((category, None))
 
             context = {
-                'weights': [],
+                'weights': weighted,
                 'form': AddCategoryForm(),
                 'editForm': EditCategoryForm()
             }
