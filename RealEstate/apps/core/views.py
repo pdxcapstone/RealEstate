@@ -151,9 +151,8 @@ class EvalView(BaseView):
 
 class ReportView(BaseView):
     """
-    This view will display take into account the category weights and scores
-    for each Homebuyer that is part of the Couple instance, and display the
-    results to the user.
+    This view will take into account the category weights and scores for each
+    Homebuyer that is part of the Couple instance, and display the results.
     """
     template_name = 'core/report.html'
 
