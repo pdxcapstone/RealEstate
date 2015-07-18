@@ -9,6 +9,7 @@ from django.views.generic import View
 from django.http import HttpResponse
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, Realtor, User
+from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 
 
 def login(request, *args, **kwargs):
@@ -60,6 +61,7 @@ class HomeView(BaseView):
             return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
         elif realtor:
             couples = Couple.objects.filter(realtor=realtor)
+            pendingCouples = PendingCouple.objects.filter(realtor=realtor)
             house = House.objects.filter(couple=couple)
             # Couple data is a list of touples [(couple1, homebuyers), (couple2, homebuyers)]
             # There may be a better way to get homebuyers straight from couples, but I didn't see
@@ -68,6 +70,9 @@ class HomeView(BaseView):
             for couple in couples:
                 homebuyer = Homebuyer.objects.filter(couple=couple)
                 coupleData.append((couple, homebuyer))
+            for pendingCouple in pendingCouples:
+                pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
+                coupleData.append((pendingCouple, pendingHomebuyer))
             return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor})
         else:
             raise Exception("Neither a Homebuyer nor a Realtor")
