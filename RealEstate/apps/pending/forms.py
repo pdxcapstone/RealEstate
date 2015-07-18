@@ -40,7 +40,7 @@ class InviteHomebuyerForm(forms.Form):
         return cleaned_data
 
 
-class SignupForm(forms.ModelForm):
+class HomebuyerSignupForm(forms.ModelForm):
     """
     Potential homebuyers will use this form to sign up.  The view that uses
     this form will then create their User/Homebuyer instances.
@@ -57,13 +57,13 @@ class SignupForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(SignupForm, self).__init__(*args, **kwargs)
+        super(HomebuyerSignupForm, self).__init__(*args, **kwargs)
 
     def clean(self):
         """
         Ensure password matches password_confirmation.
         """
-        cleaned_data = super(SignupForm, self).clean()
+        cleaned_data = super(HomebuyerSignupForm, self).clean()
         password = cleaned_data.get('password')
         password_confirmation = cleaned_data.get('password_confirmation')
         if (password and password_confirmation and

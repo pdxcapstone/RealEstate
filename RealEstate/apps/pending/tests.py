@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from RealEstate.apps.core.models import User
-from RealEstate.apps.pending.forms import InviteHomebuyerForm, SignupForm
+from RealEstate.apps.pending.forms import InviteHomebuyerForm, HomebuyerSignupForm
 
 
 class InviteHomebuyerFormTest(TestCase):
@@ -58,9 +58,9 @@ class InviteHomebuyerFormTest(TestCase):
         self.assertTrue(form.is_valid())
 
 
-class SignupFormTest(TestCase):
+class HomebuyerSignupFormTest(TestCase):
     def test_empty_form_invalid(self):
-        form = SignupForm({})
+        form = HomebuyerSignupForm({})
         self.assertFalse(form.is_valid())
         self.assertIn('password', form.errors)
         self.assertIn('password_confirmation', form.errors)
@@ -68,7 +68,7 @@ class SignupFormTest(TestCase):
         self.assertIn('last_name', form.errors)
 
     def test_passwords_dont_match_invalid(self):
-        form = SignupForm({
+        form = HomebuyerSignupForm({
             'password': 'foo',
             'password_confirmation': 'bar',
         })
@@ -76,7 +76,7 @@ class SignupFormTest(TestCase):
         self.assertIn('password_confirmation', form.errors)
 
     def test_matching_token_valid(self):
-        form = SignupForm({
+        form = HomebuyerSignupForm({
             'password': 'foo',
             'password_confirmation': 'foo',
             'first_name': 'f',
