@@ -20,6 +20,7 @@
 				<div class="col-sm-6 vcenter">
 				    {% for homebuyer in homebuyers %}
 				        <h4>{{homebuyer}}</h4>
+                        <a href="mailto:{{homebuyer.email}}" target="_top">Email</a>
 	                {% endfor %}
 				</div>
 				<div class="col-sm-4 vcenter">
