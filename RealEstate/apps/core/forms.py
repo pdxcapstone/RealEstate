@@ -19,8 +19,8 @@ class AddCategoryForm(forms.Form):
     
 
 class EditCategoryForm(forms.Form):
-    edit_summary = forms.CharField(label='summary', max_length=100)
-    edit_description = forms.CharField(label='description', max_length=200)
+    edit_summary = forms.CharField(label='Summary', max_length=100)
+    edit_description = forms.CharField(required=False, label='Description', max_length=200)
     catID = forms.CharField(widget=forms.HiddenInput())
 
 
