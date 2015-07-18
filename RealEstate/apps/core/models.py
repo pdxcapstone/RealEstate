@@ -3,6 +3,7 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import IntegrityError, models
@@ -78,6 +79,15 @@ class Person(BaseModel):
     def __unicode__(self):
         name = self.full_name
         return name if name else self.email
+
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Returns a boolean indicating whether or not the Person instance can
+        view the report for a given Couple.  This behavior will differ for the
+        different subclasses (Homebuyer/Realtor), so the implementations
+        should be defined there.
+        """
+        raise NotImplementedError
 
     @property
     def email(self):
@@ -198,6 +208,11 @@ class Couple(BaseModel):
             homebuyers = (homebuyers.first(), None)
         return homebuyers
 
+    def report_url(self):
+        if not self.id:
+            return None
+        return reverse('report', kwargs={'couple_id': self.id})
+
     class Meta:
         ordering = ['realtor']
         verbose_name = "Couple"
@@ -263,6 +278,12 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                         through='core.CategoryWeight',
                                         verbose_name="Categories")
 
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Homebuyers can only see their own report.
+        """
+        return self.couple_id == couple_id
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
@@ -301,6 +322,9 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                  "should be resolved immediately. "
                                  "(Couple ID: {id})".format(id=self.couple_id))
         return related_homebuyers.first()
+
+    def report_url(self):
+        return self.couple.report_url()
 
     @property
     def role_type(self):
@@ -358,6 +382,12 @@ class Realtor(Person):
     Represents a realtor.  Each Couple instance has a required foreign key to
     Realtor, so each Realtor serves zero or more couples.
     """
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Realtors can view all reports for their client Couples.
+        """
+        return self.couple_set.filter(id=couple_id).exists()
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have

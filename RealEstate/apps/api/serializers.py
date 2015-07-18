@@ -50,7 +50,7 @@ class APIGradeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.score = validated_data.get('score', instance.score)
-        instance.update()
+        instance.save()
         return instance
 
     class Meta:

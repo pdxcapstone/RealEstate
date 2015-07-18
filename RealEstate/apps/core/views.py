@@ -12,7 +12,8 @@ from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import AddCategoryForm, EditCategoryForm
 
-from RealEstate.apps.core.models import Category, Couple, Grade, House, User, CategoryWeight
+from RealEstate.apps.core.models import (Category, Couple, Grade, House,
+                                         Homebuyer, User, CategoryWeight)
 
 
 def login(request, *args, **kwargs):
@@ -59,7 +60,8 @@ class HomeView(BaseView):
     def get(self, request, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
-        return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
+        return render(request, 'core/homebuyerHome.html',
+                      {'couple': couple, 'house': house})
 
 
 class EvalView(BaseView):
@@ -104,8 +106,8 @@ class EvalView(BaseView):
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
         grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
+        # Merging grades and categories to provide object with both
+        # information. Data Structure: [(cat1, score1), (cat2, score2), ...]
         graded = []
         for category in categories:
             missing = True
@@ -116,13 +118,11 @@ class EvalView(BaseView):
                     break
             if missing:
                 graded.append((category, None))
-        form = EvaluationForm(graded=graded)
 
         context = {
             'couple': couple,
-            'house' : house,
+            'house': house,
             'grades': graded,
-            'form' : form,
         }
         context.update(self._score_context())
         return render(request, self.template_name, context)
@@ -134,42 +134,43 @@ class EvalView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
-        homebuyer = request.user.role_object
-        couple = Couple.objects.filter(homebuyer__user=request.user)
-        categories = Category.objects.filter(couple=couple)
+        if not request.is_ajax():
+            raise PermissionDenied
+
+        homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
         house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
-
-        default_score = Grade._meta.get_field('score').default
-        for category in categories:
-            value = request.POST.get(str(category.id)) or default_score
-            grade, created = Grade.objects.update_or_create(
-                homebuyer=homebuyer.first(), category=category, house=house, defaults={'score': int(value)})
-
-        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
-
-        # Merging grades and categories to provide object with both information.
-        # Data Structure: [(cat1, score1), (cat2, score2), ...]
-        graded = []
-        for category in categories:
-            missing = True
-            for grade in grades:
-                if grade.category.id is category.id:
-                    graded.append((category, grade.score))
-                    missing = False
-                    break
-            if missing:
-                graded.append((category, None))
-        form = EvaluationForm(graded=graded)
-
-        messages.success(request,"Your evaluation was saved!")
-        context = {
-            'couple': couple,
-            'house' : house,
-            'grades': graded,
-            'form' : form
+        id = request.POST['category']
+        score = request.POST['score']
+        category = Category.objects.get(id=id)
+        grade, created = Grade.objects.update_or_create(
+            homebuyer=homebuyer.first(), category=category, house=house,
+            defaults={'score': int(score)})
+        response_data = {
+            'id': str(id),
+            'score': str(score)
         }
-        context.update(self._score_context())
-        return render(request, self.template_name, context)
+        return HttpResponse(json.dumps(response_data),
+                            content_type="application/json")
+
+
+class ReportView(BaseView):
+    """
+    This view will take into account the category weights and scores for each
+    Homebuyer that is part of the Couple instance, and display the results.
+    """
+    template_name = 'core/report.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        Homebuyers can only see their own report.  Realtors can see reports
+        for any of their Couples
+        """
+        couple_id = int(kwargs.get('couple_id', 0))
+        get_object_or_404(Couple, id=couple_id)
+        return role.can_view_report_for_couple(couple_id)
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {})
 
 
 class CategoryView(BaseView):
