@@ -56,6 +56,9 @@ class InviteHomebuyerView(BaseView):
         context = {'invite_homebuyer_form': form}
         return render(request, self.template_name, context)
 
+class HomebuyerReportView(BaseView):
+    template_name = 'core/homebuyerreport.hmtl'
+
 
 class SignupView(View):
     """
