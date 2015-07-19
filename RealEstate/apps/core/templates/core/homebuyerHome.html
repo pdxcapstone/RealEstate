@@ -3,6 +3,7 @@
 {% load staticfiles %}
 
 {% block style %}
+
 <style>
 .row-con{
    display:table;
@@ -20,6 +21,12 @@
     padding-left: 20px;
     cursor: pointer;
     font-size: 90%;
+}
+.hbdash-center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align:center;
+    width:50%;
 }
 </style>
 {% endblock %}
@@ -41,7 +48,8 @@
 					   <p>{{home.address}}</p>
 					</div>
 					<div class="vcenter">
-            			<p><a href="{{home.evaluation_url}}"> Rate House </a></p>
+            			<p><a href="{{home.evaluation_url}}"> Rate House </a>
+            			</p>
 					</div>
 				</div>
 			</div>
