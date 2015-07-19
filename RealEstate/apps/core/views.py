@@ -177,7 +177,7 @@ class RealtorSignupView(View):
         """
         Handles the creation of User/Realtor instances when signing up a new
         realtor. If the form is not valid, re-render it with errors
-        so the user can correct them. Otherwise:
+        so the user can correct them. If valid, create the User/Realtor.
         """
         signup_form = RealtorSignupForm(request.POST)
         if signup_form.is_valid():

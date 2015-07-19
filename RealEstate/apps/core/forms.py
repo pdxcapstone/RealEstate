@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
 from RealEstate.apps.core.models import User
+from RealEstate.apps.pending.models import PendingHomebuyer
 
 
 class BaseSignupForm(forms.ModelForm):
@@ -50,8 +51,9 @@ class RealtorSignupForm(BaseSignupForm):
         Disallow duplicate emails when validation form.
         """
         email = self.cleaned_data.get('email')
-        if email and User.objects.filter(email=email).exists():
-            raise ValidationError("A user with this email already exists.")
+        for model in (User, PendingHomebuyer):
+            if email and model.objects.filter(email=email).exists():
+                raise ValidationError("A user with this email already exists.")
         return email
 
     class Meta(BaseSignupForm.Meta):
