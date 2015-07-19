@@ -1,10 +1,8 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
-    {% bootstrap_javascript jquery=1 %}
 
 {% block style %}
-
 <link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
 <style>
 ul.list-group {
@@ -13,8 +11,11 @@ ul.list-group {
 #heading {
 	padding-bottom: 20px;
 }
-#addCategory .modal-body .form-group:first-of-type {
-    margin-bottom: 50px;
+.rating-col {
+    min-width: 500px;
+}
+.summary-col{
+    min-width: 150px;
 }
 .alert-success {
 	margin-top: 30px;
@@ -57,7 +58,6 @@ ul.list-group {
 	margin-left:-3px;
 }
 </style>
-<script>var catID;</script>
 {% endblock %}
 
 {% block body %}
@@ -67,24 +67,28 @@ ul.list-group {
 	<h4>How important are the categories below when choosing a home?</h4>
 </div>
 <p id="save-status" class="pull-right"></p>
+
+<!-- Category List -->
 <ul class="list-group">
 	{% for category, weight in weights %}
 	    {{weight.category}}
 		<li class="list-group-item" id="li_{{category.id}}">
 			<div id="row_{{category.id}}" class="row category_row ">
-				<div class="col-md-4 vcenter">
+			    
+			    <!-- Category Summary -->
+				<div class="col-md-4 vcenter summary-col">
 					<h4>{{category.summary}}
 					    <span data-toggle="modal" data-target="#editCategory" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
 					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
 						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
 					</h4>
 					{% if category.description %}
-						<p>
-							{{ category.description }}
-						</p>
+						<p>{{ category.description }}</p>
 					{% endif %}
 				</div>
-				<div class="col-md-7 vcenter rating">
+				
+				<!-- Category Weighting -->
+				<div class="col-md-7 vcenter rating rating-col">
 					<div class="inner-rating" style="padding-left:10%" >
 						<center>
 							<span class="help-text" style="text-size:60%; padding-right: 20px">{{min_choice}}</span>
@@ -93,6 +97,7 @@ ul.list-group {
 						</center>
 					</div>
 				</div>
+				
 			</div>
 		</li>
 	{% endfor %}
@@ -101,12 +106,13 @@ ul.list-group {
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory" style="margin:30px">Add Category</button>
 </center>
 
+<!-- Add Category Modal -->
 <div id="addCategory" class="modal fade" role="dialog" style="height:auto">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h2 class="modal-title">Add a category!</h4>
+            <h2 class="modal-title">Add a category!</h2>
         </div>
         <div class="modal-body">
         <form action="" role="form" method="post">
@@ -124,12 +130,13 @@ ul.list-group {
   </div>
 </div>
 
+<!-- Edit Category Modal -->
 <div id="editCategory" class="modal fade" role="dialog" style="height:auto">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h2 class="modal-title">Edit your category!</h4>
+            <h2 class="modal-title">Edit your category!</h2>
         </div>
         <div class="modal-body">
         <form action="" role="form" method="post">
@@ -137,7 +144,7 @@ ul.list-group {
         	{% csrf_token %}
         	<div style="margin-top: 40px">
         		<center>
-        			{% buttons submit='Save Evaluation' %}{% endbuttons %}
+        			{% buttons submit='Save Evaluation'%}{% endbuttons %}
         			{% bootstrap_messages %}
         		</center>
         	</div>
@@ -147,6 +154,7 @@ ul.list-group {
   </div>
 </div>
 
+<!-- Delete Category Modal -->
 <div id="confirmDelete" class="modal fade">
     <div class="modal-dialog">
     <div class="modal-content">
@@ -157,7 +165,7 @@ ul.list-group {
       <div class="modal-body">
         <p>You're about to delete this category and all associated house rankings.</p>
         <center>
-            <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteCategory($('#confirmDelete').data('id'));">I'm sure, bro!</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteCategory($('#confirmDelete').data('id'));">I'm sure!</button>
         </center>
       </div>
       </div>
@@ -171,101 +179,106 @@ ul.list-group {
 <script src="{% static "debounce.js" %}"></script>
 <script>
 var jsWeights = {{js_weight|safe}}
+var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
 $(".slide").slider({
 	formatter: function(value) {
           return jsWeights[value] || "";
 	}
 });
+
+// Provides user interaction when saving through ajax.
 $(".slide").change($.debounce( 700, slideChange ));
 function slideChange (slideEvt) {
 	var timer;
 	clearTimeout(timer);
-	function showStatus() {
-		$("#update_"+categoryID).stop().show();
-		$("#update_"+categoryID).fadeOut(2000);
-		$("#save-status").text("All changes saved.").show().css("color", "#333");
-	}
 	var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
 	$("#save-status").text("saving...").css("color", "#888");
 	$.ajax({
 		type: "POST",
 		data: {
-			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+			csrfmiddlewaretoken: token,
 			category: categoryID,
-			weight: slideEvt.value.newValue
+			weight: slideEvt.value.newValue,
+			type: "update"
 		},
 		success: function(data) {
-			timer = setTimeout(showStatus, 1500);
-		},
-		error: function(xhr, textStatus, errorThrown) {
-			// Do nothing for now.
+			timer = setTimeout(function(){
+			    $("#update_"+categoryID).stop().show();
+        		$("#update_"+categoryID).fadeOut(2000);
+        		$("#save-status").text("All changes saved.").show().css("color", "#333");
+			}, 1500);
 		}
 	});
 };
-function editCategoryAjax() {
+
+// Deletes category given an ID
+function deleteCategory(deleteID) {
     $.ajax({
-		type: "GET",
+		type: "POST",
 		data: {
-			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
-			category: catID
+			csrfmiddlewaretoken: token,
+			category: deleteID,
+			type: "delete"
 		},
 		success: function(data) {
-			$('input[name="edit_summary"]').val(data.summary);
-			$('input[name="edit_description"]').val(data.description);
-		},
-		error: function(xhr, textStatus, errorThrown) {
-			// Do nothing for now.
+		    $("#li_"+data.id).remove();
 		}
 	});
-  }
+}
+
+// Gets category summary and description, given id.
+function editCategory() {
+    $.ajax({
+        type: "GET",
+        data: {
+            csrfmiddlewaretoken: token,
+            category: catID
+        },
+        success: function(data) {
+            $('input[name="edit_summary"]').val(data.summary);
+            $('input[name="edit_description"]').val(data.description);
+        }
+    });
+}
+
+// Shows edit and delete icons on div mouseenter.
 $(".category_row").mouseenter( function() {
-  catID = $(this).attr("id").toString().replace(/row_/i, "");
-  $("#delete_"+catID).fadeIn("slow", function(){
-      $("#delete_"+catID).click( function(){
+    catID = $(this).attr("id").toString().replace(/row_/i, "");
+    $("#delete_"+catID).fadeIn("slow", function(){
+        $("#delete_"+catID).click( function(){
             var sum = $(this).parent().text();
             $("#confirmDelete").data("id", catID );
             $("#confirmDelete .btn-danger").text("Delete " + sum);
-          });
-  });
-  $("#edit_"+catID).fadeIn("slow", function(){
-      $("#edit_"+catID).click( $.debounce(300, editCategoryAjax ))
-	  $('input[name="catID"]').val(catID);
-  });
+        });
+    });
+    $("#edit_"+catID).fadeIn("slow", function(){
+        $("#edit_"+catID).click( $.debounce(300, editCategory))
+        $('input[name="catID"]').val(catID);
+    });
 }).mouseleave( function() {
-  var id = $(this).attr("id").toString().replace(/row_/i, "");
-  $("#edit_"+id).stop().fadeOut("fast");
-  $("#delete_"+id).stop().fadeOut("fast");
+    var id = $(this).attr("id").toString().replace(/row_/i, "");
+    $("#edit_"+id).stop().fadeOut("fast");
+    $("#delete_"+id).stop().fadeOut("fast");
 });
+
+// Handles sizing of columns and breaks columns at appropriate times.
 $(window).on("resize", function () {
 	var divWidth = $(".row").width();
 	if(divWidth < 570){
 		$(".rating").css("width", "90%");
 		$(".help-text").hide();
+		$(".rating-col").css("min-width", "0");
 	}
-	else if(divWidth < 730){
+	else if(divWidth < 750){
 		$(".help-text").show();
 		$(".rating").css("width", "90%");
+		$(".rating-col").css("min-width", "500px");
 	}
 	else{
 		$(".help-text").show();
 		$(".rating").css("width", "60%").css("margin", "0 auto");
+		$(".rating-col").css("min-width", "500px");
 	}
 }).resize();
-function deleteCategory(deleteID) {
-    $.ajax({
-		type: "GET",
-		data: {
-			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
-			category: deleteID,
-			deleteCat: "true"
-		},
-		success: function(data) {
-		    $("#li_"+data.id).remove();
-		},
-		error: function(xhr, textStatus, errorThrown) {
-			// Do nothing for now.
-		}
-	});
-}
 </script>
 {% endblock %}

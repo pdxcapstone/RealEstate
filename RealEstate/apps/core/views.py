@@ -199,7 +199,9 @@ class CategoryView(BaseView):
         }
 
     def get(self, request, *args, **kwargs):
-        if request.is_ajax() and "deleteCat" not in request.GET:
+        
+        # Returns summary and description if given category ID
+        if request.is_ajax():
             id = request.GET['category']
             category = Category.objects.get(id=id)
             response_data = {
@@ -208,13 +210,8 @@ class CategoryView(BaseView):
             }
             return HttpResponse(json.dumps(response_data),
                                 content_type="application/json")
-        if request.is_ajax():
-            id = request.GET['category']
-            category = Category.objects.get(id=id)
-            blah = category.delete()
-            return HttpResponse(json.dumps({"id" : id}),
-                                content_type="application/json")
 
+        # Renders standard category page
         homebuyer = request.user.role_object
         couple = Couple.objects.filter(homebuyer__user=request.user)
         categories = Category.objects.filter(couple=couple)
@@ -246,24 +243,33 @@ class CategoryView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
+        # ajax calls implement weight and delete category commands.
         if request.is_ajax():
-            homebuyer = request.user.role_object
             id = request.POST['category']
-            weight = request.POST['weight']
             category = Category.objects.get(id=id)
-            grade, created = CategoryWeight.objects.update_or_create(
-                homebuyer=homebuyer, category=category,
-                defaults={'weight': int(weight)})
-            response_data = {
-                'message' : 'success'
-            }
-            return HttpResponse(json.dumps(response_data),
-                                content_type="application/json")
-
+            
+            # Weight a category
+            if request.POST['type'] == 'update':
+                homebuyer = request.user.role_object
+                weight = request.POST['weight']
+                grade, created = CategoryWeight.objects.update_or_create(
+                    homebuyer=homebuyer, category=category,
+                    defaults={'weight': int(weight)})
+                return HttpResponse(json.dumps({"id" : id}),
+                                    content_type="application/json")
+                                    
+            # Delete a category
+            elif request.POST['type'] == 'delete':
+                category.delete()
+                return HttpResponse(json.dumps({"id" : id}),
+                                    content_type="application/json")
+        
+        # Creates or updates a category
         else:
             homebuyer = request.user.role_object
             couple = Couple.objects.filter(homebuyer__user=request.user).first()
             
+            # Updates a category
             if "catID" in request.POST:
                 summary = request.POST["edit_summary"]
                 description = request.POST["edit_description"]
@@ -271,16 +277,13 @@ class CategoryView(BaseView):
                 category.summary = summary
                 category.description = description
                 category.save()
+            
+            # Creates a category
             else:
                 summary = request.POST["summary"]
                 description = request.POST["description"]
-                if summary:
-                    grade, created = Category.objects.update_or_create(
+                grade, created = Category.objects.update_or_create(
                         couple=couple, summary=summary, defaults={'description': str(description)} )
-                choices = request.POST.getlist("default_choices")
-                for choice in choices:
-                    grade, created = Category.objects.update_or_create(
-                        couple=couple, summary=choice, defaults={'description': ''} )
 
             weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
             categories = Category.objects.filter(couple=couple)
@@ -301,6 +304,5 @@ class CategoryView(BaseView):
                 'form': AddCategoryForm(),
                 'editForm': EditCategoryForm()
             }
-
             context.update(self._weight_context())
             return render(request, self.template_name, context)
