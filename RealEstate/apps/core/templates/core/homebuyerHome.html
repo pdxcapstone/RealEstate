@@ -22,6 +22,15 @@
     cursor: pointer;
     font-size: 90%;
 }
+#heading {
+    padding-bottom: 30px;
+}
+.list-group{
+    padding-top:30px;
+}
+.addButton{
+    margin-bottom:20px;
+}
 .icon-delete {
     display: none;
     font-size: 90%;
@@ -33,11 +42,45 @@
     vertical-align: middle;
     text-align:center;
     width:50%;
+
 }
 </style>
 {% endblock %}
 
 {% block body %}
+    <div id = "heading">
+        <h2><strong> Dashboard </strong> </h2>
+    </div>
+    <ul class="list-group">
+	<!--Home list -->
+      {% for home in house %}
+      <li class="list-group-item" id="li_{{home.id}}">
+      	<div class="row home_row" id="row_{{home.id}}">
+				<div class="row-con">
+					<div class="col-sm-6">
+					   <h4>
+					       {{home}}
+					       <span data-toggle="modal" data-target="#edit-house" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
+				       </h4>
+					   <p>{{home.address}}</p>
+					</div>
+					<div class="vcenter">
+            			<p><a href="{{home.evaluation_url}}"> Rate House </a>
+            			</p>
+					</div>
+				</div>
+			</div>
+		</li>
+	{% endfor %}
+    </ul>
+    <div class = "addButton">
+	   <center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
+    </div>
+		
+	<!-- Modal -->
+    <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+        <div class="modal-dialog">
+
 
 <h2><strong> Dashboard </strong> </h2>
 
@@ -65,7 +108,9 @@
     </li>
     {% endfor %}
 </ul>
-<center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
+<div class = "addButton">
+    <center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
+</div>
 
 <!-- Confirm Delete Modal -->
 <div id="confirmDelete" class="modal fade">
