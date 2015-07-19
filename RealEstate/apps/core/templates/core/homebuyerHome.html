@@ -22,6 +22,12 @@
     cursor: pointer;
     font-size: 90%;
 }
+.icon-delete {
+    display: none;
+    font-size: 90%;
+    color: #A94431;
+    padding-left: 20px;
+}
 .hbdash-center {
     display: table-cell;
     vertical-align: middle;
@@ -33,35 +39,83 @@
 
 {% block body %}
 
-    <h2><strong> Dashboard </strong> </h2>
-    <ul class="list-group">
-	<!--Home list -->
-      {% for home in house %}
-      <li class="list-group-item" id="li_{{home.id}}">
-      	<div class="row home_row" id="row_{{home.id}}">
-				<div class="row-con">
-					<div class="col-sm-6">
-					   <h4>
-					       {{home}}
-					       <span data-toggle="modal" data-target="#edit-house" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
-				       </h4>
-					   <p>{{home.address}}</p>
-					</div>
-					<div class="vcenter">
-            			<p><a href="{{home.evaluation_url}}"> Rate House </a>
-            			</p>
-					</div>
-				</div>
-			</div>
-		</li>
-	{% endfor %}
-    </ul>
-	<center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
-		
-	<!-- Modal -->
-    <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
-        <div class="modal-dialog">
+<h2><strong> Dashboard </strong> </h2>
 
+<ul class="list-group">
+<!--Home list -->
+    {% for home in house %}
+    <li class="list-group-item" id="li_{{home.id}}">
+        <div class="row home_row" id="row_{{home.id}}">
+            <div class="row-con">
+                <div class="col-sm-6">
+                    <h4>
+                        {{home}}
+                        <span data-toggle="modal" data-target="#edit-house" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
+                        <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{home.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
+                    </h4>
+                <p>{{home.address}}</p>
+                </div>
+                <div class="vcenter">
+                    <p>
+                        <a href="{{home.evaluation_url}}"> Rate House </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+<center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
+
+<!-- Confirm Delete Modal -->
+<div id="confirmDelete" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    &times;
+                </button>
+                <h2 class="modal-title">Are you sure about this?</h2>
+            </div>
+            <div class="modal-body">
+                <p>You're about to delete this home and all associated evaluations.
+                </p>
+                <center>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteHome($('#confirmDelete').data('id'));">I'm sure!</button>
+                </center>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit home modal -->
+<div id="edit-house" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Home" aria-hidden="true">
+    <div class="modal-dialog">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">
+                    &times;
+                </button>
+                <h4 class = "modal-title">Edit your home</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="" role="editForm" class="uniForm">
+                    {% bootstrap_form editForm %}
+                    {% csrf_token %}
+                    <center>
+                        {% buttons submit='Update Home' %}{% endbuttons %}
+                    </center>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Home Modal -->
+<div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+    <div class="modal-dialog">
         <!-- Modal content -->
         <div class="modal-content">
             <div class="modal-header">
@@ -74,68 +128,66 @@
                 {% csrf_token %}
                 <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
 				</form>
-            	<div class = "form-grp">
-            	</div>
             </div>
-        </div> <!--modal content -->
-	</div><!--modal dialogue -->
-</div><!--the whole she-bang -->
-
-<!-- Edit home modal -->
-<div id="edit-house" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Home" aria-hidden="true">
-    <div class="modal-dialog">
-
-    <!-- Modal content -->
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
-            <h4 class = "modal-title">Edit your home</h4>
         </div>
-        <div class="modal-body">
-        	<form method="post" action="" role="editForm" class="uniForm">
-    			{% bootstrap_form editForm %}
-                {% csrf_token %}
-                <center>
-                    {% buttons submit='Update Home' %}{% endbuttons %}
-                </center>
-			</form>
-        </div>
-    </div>
+	</div>
 </div>
-
 
 {% endblock %}
 
 {% block scripts %}
 <script src="{% static "debounce.js" %}"></script>
-
 <script>
 var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
 
 // Shows edit and delete icons on div mouseenter.
 $(".home_row").mouseenter( function() {
     homeID = $(this).attr("id").toString().replace(/row_/i, "");
+    $("#delete_"+homeID).fadeIn("slow", function(){
+        $("#delete_"+homeID).click( function(){
+            var sum = $(this).parent().text();
+            $("#confirmDelete").data("id", homeID );
+            $("#confirmDelete .btn-danger").text("Delete " + sum);
+        });
+    });
     $("#edit_"+homeID).fadeIn("slow", function(){
-        $("#edit_"+homeID).click( $.debounce(300, function(){
-            $.ajax({
-                type: "GET",
-                data: {
-                    csrfmiddlewaretoken: token,
-                    home: homeID
-                },
-                success: function(data) {
-                    $('input[name="edit_nickname"]').val(data.nickname);
-                    $('input[name="edit_address"]').val(data.address);
-                }
-            });
-        }))
+        $("#edit_"+homeID).click( $.debounce(300, editHome));
         $('input[name="homeId"]').val(homeID);
     });
 }).mouseleave( function() {
     var id = $(this).attr("id").toString().replace(/row_/i, "");
     $("#edit_"+id).stop().fadeOut("fast");
+    $("#delete_"+id).stop().fadeOut("fast");
 });
 
+// Updates home given an ID
+function editHome() {
+    $.ajax({
+        type: "GET",
+        data: {
+            csrfmiddlewaretoken: token,
+            home: homeID
+        },
+        success: function(data) {
+            $('input[name="edit_nickname"]').val(data.nickname);
+            $('input[name="edit_address"]').val(data.address);
+        }
+    });
+}
 
+// Deletes home given an ID
+function deleteHome(deleteID) {
+    $.ajax({
+		type: "POST",
+		data: {
+			csrfmiddlewaretoken: token,
+			home: deleteID,
+			type: "delete"
+		},
+		success: function(data) {
+		    $("#li_"+data.id).remove();
+		}
+	});
+}
 </script>
 {% endblock %}

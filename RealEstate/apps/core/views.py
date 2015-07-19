@@ -79,7 +79,15 @@ class HomeView(BaseView):
         return render(request, 'core/homebuyerHome.html', context)
 
     def post(self, request, *args, **kwargs):
-        # Updates a category
+        # Deletes a home
+        if request.is_ajax():
+            id = request.POST['home']
+            home = House.objects.get(id=id)
+            home.delete()
+            return HttpResponse(json.dumps({"id" : id}),
+                                content_type="application/json")
+        
+        # Updates a home
         if "homeId" in request.POST:
             nickname = request.POST["edit_nickname"]
             address = request.POST["edit_address"]
@@ -88,6 +96,7 @@ class HomeView(BaseView):
             home.address = address
             home.save()
         
+        # Creates new home
         else:
             nickname = request.POST["nickname"]
             address = request.POST["address"]
