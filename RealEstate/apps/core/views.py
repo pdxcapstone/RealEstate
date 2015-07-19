@@ -199,7 +199,7 @@ class CategoryView(BaseView):
         }
 
     def get(self, request, *args, **kwargs):
-        if request.is_ajax():
+        if request.is_ajax() and "deleteCat" not in request.GET:
             id = request.GET['category']
             category = Category.objects.get(id=id)
             response_data = {
@@ -207,6 +207,12 @@ class CategoryView(BaseView):
                 'description': category.description
             }
             return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+        if request.is_ajax():
+            id = request.GET['category']
+            category = Category.objects.get(id=id)
+            blah = category.delete()
+            return HttpResponse(json.dumps({"id" : id}),
                                 content_type="application/json")
 
         homebuyer = request.user.role_object
@@ -224,13 +230,12 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
-        
+
         context = {
             'weights': weighted,
             'form': AddCategoryForm(),
             'editForm': EditCategoryForm()
         }
-        print EditCategoryForm()
         context.update(self._weight_context())
         return render(request, self.template_name, context)
 
@@ -267,7 +272,6 @@ class CategoryView(BaseView):
                 category.description = description
                 category.save()
             else:
-                print request.POST
                 summary = request.POST["summary"]
                 description = request.POST["description"]
                 if summary:
@@ -275,7 +279,6 @@ class CategoryView(BaseView):
                         couple=couple, summary=summary, defaults={'description': str(description)} )
                 choices = request.POST.getlist("default_choices")
                 for choice in choices:
-                    print choice
                     grade, created = Category.objects.update_or_create(
                         couple=couple, summary=choice, defaults={'description': ''} )
 

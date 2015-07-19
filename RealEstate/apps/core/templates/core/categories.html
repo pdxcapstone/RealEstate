@@ -1,8 +1,10 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+    {% bootstrap_javascript jquery=1 %}
 
 {% block style %}
+
 <link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
 <style>
 ul.list-group {
@@ -68,12 +70,12 @@ ul.list-group {
 <ul class="list-group">
 	{% for category, weight in weights %}
 	    {{weight.category}}
-		<li class="list-group-item">
+		<li class="list-group-item" id="li_{{category.id}}">
 			<div id="row_{{category.id}}" class="row category_row ">
 				<div class="col-md-4 vcenter">
 					<h4>{{category.summary}}
 					    <span data-toggle="modal" data-target="#editCategory" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
-					    <a style="text-decoration:none" href="javascript: deleteCategory({{category.id}})"><span id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon-delete'></span></a>
+					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
 						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
 					</h4>
 					{% if category.description %}
@@ -145,6 +147,23 @@ ul.list-group {
   </div>
 </div>
 
+<div id="confirmDelete" class="modal fade">
+    <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h2 class="modal-title">Are you sure about this?</h4>
+        </div>
+      <div class="modal-body">
+        <p>You're about to delete this category and all associated house rankings.</p>
+        <center>
+            <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteCategory($('#confirmDelete').data('id'));">I'm sure, bro!</button>
+        </center>
+      </div>
+      </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -201,7 +220,13 @@ function editCategoryAjax() {
   }
 $(".category_row").mouseenter( function() {
   catID = $(this).attr("id").toString().replace(/row_/i, "");
-  $("#delete_"+catID).fadeIn("slow");
+  $("#delete_"+catID).fadeIn("slow", function(){
+      $("#delete_"+catID).click( function(){
+            var sum = $(this).parent().text();
+            $("#confirmDelete").data("id", catID );
+            $("#confirmDelete .btn-danger").text("Delete " + sum);
+          });
+  });
   $("#edit_"+catID).fadeIn("slow", function(){
       $("#edit_"+catID).click( $.debounce(300, editCategoryAjax ))
 	  $('input[name="catID"]').val(catID);
@@ -227,7 +252,20 @@ $(window).on("resize", function () {
 	}
 }).resize();
 function deleteCategory(deleteID) {
-    alert(deleteID);
+    $.ajax({
+		type: "GET",
+		data: {
+			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+			category: deleteID,
+			deleteCat: "true"
+		},
+		success: function(data) {
+		    $("#li_"+data.id).remove();
+		},
+		error: function(xhr, textStatus, errorThrown) {
+			// Do nothing for now.
+		}
+	});
 }
 </script>
 {% endblock %}
