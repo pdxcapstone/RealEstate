@@ -60,7 +60,19 @@ class HomeView(BaseView):
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
         return render(request, 'core/homebuyerHome.html',
-                      {'couple': couple, 'house': house})
+                      {'couple': couple, 'house': house, 'form':addHomeForm()})
+
+    def post(self, request, *args, **kwargs):
+        nickname = request.POST["nickname"]
+        address = request.POST["address"]
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        home, created = House.objects.update_or_create(
+            couple=couple.first(), nickname=nickname,
+            defaults={'address': address})
+
+        house = House.objects.filter(couple=couple)
+        return render(request, 'core/homebuyerHome.html',
+                      {'couple': couple, 'house': house, 'form':addHomeForm()})
 
 
 class EvalView(BaseView):
@@ -151,11 +163,3 @@ class EvalView(BaseView):
         return HttpResponse(json.dumps(response_data),
                             content_type="application/json")
 
-class addHomeView(FormView):
-    """
-    View for the modal used to add a home to the list.
-    """
-    form_class = addHomeForm
-    template_name = 'core/homebuyerHome.html'
-    model = House
-    
