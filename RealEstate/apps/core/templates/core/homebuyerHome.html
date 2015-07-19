@@ -1,5 +1,23 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+
+{% block style %}
+
+<style>
+.row-con{
+   display:table;
+   width:100%;
+}
+.hbdash-center {
+    display: table-cell; 
+    vertical-align: middle;
+    text-align:center;
+    width:50%;
+}
+</style>
+
+{% endblock %}
+
 {% block body %}
     <h2><strong> Dashboard </strong> </h2>
     <ul class="list-group">
@@ -12,7 +30,7 @@
 					   <h4>{{home}}</h4>
 					   <p>{{home.address}}</p>
 					</div>
-					<div class="vcenter">
+					<div class="hbdash-center">
             			<p><a href="{{home.evaluation_url}}"> edit</a></p>
 					</div>
 				</div>
