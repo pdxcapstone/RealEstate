@@ -1,28 +1,56 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block style %}
+<style>
+.row-con{
+   display:table;
+   width:100%;
+}
+.vcenter {
+	display: table-cell;
+	vertical-align: middle;
+	text-align:center;
+	width:50%;
+}
+.icon-edit {
+    display: none;
+    color: #31708f;
+    padding-left: 20px;
+    cursor: pointer;
+    font-size: 90%;
+}
+</style>
+{% endblock %}
+
 {% block body %}
+
     <h2><strong> Dashboard </strong> </h2>
     <ul class="list-group">
 	<!--Home list -->
       {% for home in house %}
-      <li class="list-group-item">
-      	<div class = "row">
+      <li class="list-group-item" id="li_{{home.id}}">
+      	<div class="row home_row" id="row_{{home.id}}">
 				<div class="row-con">
 					<div class="col-sm-6">
-					   <h4>{{home}}</h4>
+					   <h4>
+					       {{home}}
+					       <span data-toggle="modal" data-target="#edit-house" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
+				       </h4>
 					   <p>{{home.address}}</p>
 					</div>
 					<div class="vcenter">
-            			<p><a href="{{home.evaluation_url}}"> edit</a></p>
+            			<p><a href="{{home.evaluation_url}}"> Rate House </a></p>
 					</div>
 				</div>
 			</div>
-			</li>
-			{% endfor %}
+		</li>
+	{% endfor %}
     </ul>
 	<center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
 		
-		<!-- Modal -->
+	<!-- Modal -->
     <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
         <div class="modal-dialog">
 
@@ -33,12 +61,9 @@
                 <h4 class = "modal-title">Add Home</h4>
             </div>
             <div class="modal-body">
-            	
-            	
-            	
             	<form method="post" action="" role="form" class="uniForm">
-    			{% bootstrap_form form %}    
-                {% csrf_token %}                            
+    			{% bootstrap_form form %}
+                {% csrf_token %}
                 <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
 				</form>
             	<div class = "form-grp">
@@ -48,4 +73,61 @@
 	</div><!--modal dialogue -->
 </div><!--the whole she-bang -->
 
+<!-- Edit home modal -->
+<div id="edit-house" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Home" aria-hidden="true">
+    <div class="modal-dialog">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
+            <h4 class = "modal-title">Edit your home</h4>
+        </div>
+        <div class="modal-body">
+        	<form method="post" action="" role="editForm" class="uniForm">
+    			{% bootstrap_form editForm %}
+                {% csrf_token %}
+                <center>
+                    {% buttons submit='Update Home' %}{% endbuttons %}
+                </center>
+			</form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static "debounce.js" %}"></script>
+
+<script>
+var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
+// Shows edit and delete icons on div mouseenter.
+$(".home_row").mouseenter( function() {
+    homeID = $(this).attr("id").toString().replace(/row_/i, "");
+    $("#edit_"+homeID).fadeIn("slow", function(){
+        $("#edit_"+homeID).click( $.debounce(300, function(){
+            $.ajax({
+                type: "GET",
+                data: {
+                    csrfmiddlewaretoken: token,
+                    home: homeID
+                },
+                success: function(data) {
+                    $('input[name="edit_nickname"]').val(data.nickname);
+                    $('input[name="edit_address"]').val(data.address);
+                }
+            });
+        }))
+        $('input[name="homeId"]').val(homeID);
+    });
+}).mouseleave( function() {
+    var id = $(this).attr("id").toString().replace(/row_/i, "");
+    $("#edit_"+id).stop().fadeOut("fast");
+});
+
+
+</script>
 {% endblock %}

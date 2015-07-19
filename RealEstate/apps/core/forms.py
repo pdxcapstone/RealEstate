@@ -28,10 +28,24 @@ class addHomeForm(forms.Form):
     Used for adding a home to a users home list
     """
     nickname = forms.CharField(
-        label="Nickname", 
+        label="Nickname",
         required=True
         )
     address = forms.CharField(
-        label="Address", 
+        label="Address",
         required=False
         )
+
+class editHomeForm(forms.Form):
+    """
+    Used for adding a home to a users home list
+    """
+    edit_nickname = forms.CharField(
+        label="Nickname",
+        required=True
+        )
+    edit_address = forms.CharField(
+        label="Address",
+        required=False
+        )
+    homeId = forms.CharField(widget=forms.HiddenInput())
