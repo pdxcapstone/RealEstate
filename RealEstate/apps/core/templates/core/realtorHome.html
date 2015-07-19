@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block body %}
-    <h2><strong> Dashboard </strong> </h2>
+    <h2><strong> Dashboard tst</strong> </h2>
     <ul class="list-group">
         {% for couple, homebuyers in couples %}
         <li class="list-group-item">
@@ -28,6 +28,19 @@
 				</div>
 				<div class="col-sm-2 vcenter">
 					<a href="homebuyerreport">Report</a>
+				</div>
+			</div>
+		</li>
+		{% endfor %}
+    </ul>
+     <ul class="list-group">
+        {% for couple, homebuyers in couples %}
+        <li class="list-group-item">
+			<div class="row">
+				<div class="col-sm-6 vcenter">
+				    {% for pendingCouple in pendingCouples %}
+				        <h4>{{pendingCouple}}</h4>
+	                {% endfor %}
 				</div>
 			</div>
 		</li>

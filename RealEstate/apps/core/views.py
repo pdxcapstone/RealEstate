@@ -54,6 +54,7 @@ class HomeView(BaseView):
     on whether or not the the logged in User is a Realtor or Homebuyer.
     """
     def get(self, request, *args, **kwargs):
+        global pendingHomebuyer
         couple = Couple.objects.filter(homebuyer__user=request.user)
         realtor = Realtor.objects.filter(user=request.user)
         if couple:
@@ -73,7 +74,8 @@ class HomeView(BaseView):
             for pendingCouple in pendingCouples:
                 pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
                 coupleData.append((pendingCouple, pendingHomebuyer))
-            return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor})
+            return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
+                                                             'pendingCouples': pendingCouples})
         else:
             raise Exception("Neither a Homebuyer nor a Realtor")
 
