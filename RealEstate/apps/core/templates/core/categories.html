@@ -5,57 +5,39 @@
 {% block style %}
 <link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
 <style>
-ul.list-group {
-	padding-top:30px;
-}
-#heading {
-	padding-bottom: 20px;
-}
-.rating-col {
-    min-width: 500px;
-}
-.summary-col{
-    min-width: 150px;
-}
-.alert-success {
-	margin-top: 30px;
-}
-.tooltip-main.top.in {
-    z-index:1 !important;
-}
-.close {
-    z-index: 3000 !important;
-}
+ul.list-group { padding-top:30px; }
+#heading { padding-bottom: 20px; }
+.rating-col { min-width: 500px; }
+.summary-col{ min-width: 150px; }
+.alert-success { margin-top: 30px; }
+.tooltip-main.top.in { z-index:1 !important; }
+.close { z-index: 3000 !important; }
+.inner-rating { padding:20px 0; }
+.slider-selection { background: #BABABA; }
 .icon-edit {
-	display: none;
-	font-size: 90%;
-	color: #31708f;
-	padding-left: 20px;
-	cursor: pointer;
+    display: none;
+    font-size: 90%;
+    color: #31708f;
+    padding-left: 20px;
+    cursor: pointer;
 }
 .icon-ok {
-	display: none;
-	font-size: 90%;
-	color: green;
-	padding-left: 20px;
+    display: none;
+    font-size: 90%;
+    color: green;
+    padding-left: 20px;
 }
 .icon-delete {
-	display: none;
-	font-size: 90%;
-	color: #A94431;
-	padding-left: 20px;
-}
-.inner-rating {
-	padding:20px 0;
-}
-.slider-selection {
-	background: #BABABA;
+    display: none;
+    font-size: 90%;
+    color: #A94431;
+    padding-left: 20px;
 }
 .vcenter {
-	display: inline-block;
-	vertical-align: middle;
-	float: none;
-	margin-left:-3px;
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+    margin-left:-3px;
 }
 </style>
 {% endblock %}
@@ -74,7 +56,7 @@ ul.list-group {
 	    {{weight.category}}
 		<li class="list-group-item" id="li_{{category.id}}">
 			<div id="row_{{category.id}}" class="row category_row ">
-			    
+
 			    <!-- Category Summary -->
 				<div class="col-md-4 vcenter summary-col">
 					<h4>{{category.summary}}
@@ -86,7 +68,7 @@ ul.list-group {
 						<p>{{ category.description }}</p>
 					{% endif %}
 				</div>
-				
+
 				<!-- Category Weighting -->
 				<div class="col-md-7 vcenter rating rating-col">
 					<div class="inner-rating" style="padding-left:10%" >
@@ -97,7 +79,7 @@ ul.list-group {
 						</center>
 					</div>
 				</div>
-				
+
 			</div>
 		</li>
 	{% endfor %}
