@@ -48,39 +48,6 @@
 {% endblock %}
 
 {% block body %}
-    <div id = "heading">
-        <h2><strong> Dashboard </strong> </h2>
-    </div>
-    <ul class="list-group">
-	<!--Home list -->
-      {% for home in house %}
-      <li class="list-group-item" id="li_{{home.id}}">
-      	<div class="row home_row" id="row_{{home.id}}">
-				<div class="row-con">
-					<div class="col-sm-6">
-					   <h4>
-					       {{home}}
-					       <span data-toggle="modal" data-target="#edit-house" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
-				       </h4>
-					   <p>{{home.address}}</p>
-					</div>
-					<div class="vcenter">
-            			<p><a href="{{home.evaluation_url}}"> Rate House </a>
-            			</p>
-					</div>
-				</div>
-			</div>
-		</li>
-	{% endfor %}
-    </ul>
-    <div class = "addButton">
-	   <center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
-    </div>
-		
-	<!-- Modal -->
-    <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
-        <div class="modal-dialog">
-
 
 <h2><strong> Dashboard </strong> </h2>
 
@@ -168,14 +135,14 @@
                 <h4 class = "modal-title">Add Home</h4>
             </div>
             <div class="modal-body">
-            	<form method="post" action="" role="form" class="uniForm">
-    			{% bootstrap_form form %}
+                <form method="post" action="" role="form" class="uniForm">
+                {% bootstrap_form form %}
                 {% csrf_token %}
                 <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
-				</form>
+                </form>
             </div>
         </div>
-	</div>
+    </div>
 </div>
 
 {% endblock %}
@@ -184,7 +151,6 @@
 <script src="{% static "debounce.js" %}"></script>
 <script>
 var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
-
 // Shows edit and delete icons on div mouseenter.
 $(".home_row").mouseenter( function() {
     homeID = $(this).attr("id").toString().replace(/row_/i, "");
@@ -204,7 +170,6 @@ $(".home_row").mouseenter( function() {
     $("#edit_"+id).stop().fadeOut("fast");
     $("#delete_"+id).stop().fadeOut("fast");
 });
-
 // Updates home given an ID
 function editHome() {
     $.ajax({
@@ -219,20 +184,19 @@ function editHome() {
         }
     });
 }
-
 // Deletes home given an ID
 function deleteHome(deleteID) {
     $.ajax({
-		type: "POST",
-		data: {
-			csrfmiddlewaretoken: token,
-			home: deleteID,
-			type: "delete"
-		},
-		success: function(data) {
-		    $("#li_"+data.id).remove();
-		}
-	});
+        type: "POST",
+        data: {
+            csrfmiddlewaretoken: token,
+            home: deleteID,
+            type: "delete"
+        },
+        success: function(data) {
+            $("#li_"+data.id).remove();
+        }
+    });
 }
 </script>
 {% endblock %}
