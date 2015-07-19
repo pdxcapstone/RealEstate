@@ -34,6 +34,8 @@ urlpatterns = [
         PendingViews.InviteHomebuyerView.as_view(), name='invite'),
     url(r'^homebuyer-signup/(?P<registration_token>[0-9a-f]{64})/$',
         PendingViews.HomebuyerSignupView.as_view(), name='homebuyer-signup'),
+    url(r'^realtor-signup/$',
+        CoreViews.RealtorSignupView.as_view(), name='realtor-signup'),
     url(r'^eval/(?P<house_id>[\d]+)/$',
         CoreViews.EvalView.as_view(), name='eval'),
     url(r'^report/(?P<couple_id>[\d]+)/$',

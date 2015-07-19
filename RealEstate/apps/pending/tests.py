@@ -1,7 +1,35 @@
 from django.test import TestCase
 
 from RealEstate.apps.core.models import User
-from RealEstate.apps.pending.forms import InviteHomebuyerForm, HomebuyerSignupForm
+from RealEstate.apps.pending.forms import (HomebuyerSignupForm,
+                                           InviteHomebuyerForm)
+
+
+class HomebuyerSignupFormTest(TestCase):
+    def test_empty_form_invalid(self):
+        form = HomebuyerSignupForm({})
+        self.assertFalse(form.is_valid())
+        self.assertIn('password', form.errors)
+        self.assertIn('password_confirmation', form.errors)
+        self.assertIn('first_name', form.errors)
+        self.assertIn('last_name', form.errors)
+
+    def test_passwords_dont_match_invalid(self):
+        form = HomebuyerSignupForm({
+            'password': 'foo',
+            'password_confirmation': 'bar',
+        })
+        self.assertFalse(form.is_valid())
+        self.assertIn('password_confirmation', form.errors)
+
+    def test_matching_token_valid(self):
+        form = HomebuyerSignupForm({
+            'password': 'foo',
+            'password_confirmation': 'foo',
+            'first_name': 'f',
+            'last_name': 'l',
+        })
+        self.assertTrue(form.is_valid())
 
 
 class InviteHomebuyerFormTest(TestCase):
@@ -54,32 +82,5 @@ class InviteHomebuyerFormTest(TestCase):
         form = InviteHomebuyerForm({
             'first_email': 'test1@test1.com',
             'second_email': 'test2@test2.com'
-        })
-        self.assertTrue(form.is_valid())
-
-
-class HomebuyerSignupFormTest(TestCase):
-    def test_empty_form_invalid(self):
-        form = HomebuyerSignupForm({})
-        self.assertFalse(form.is_valid())
-        self.assertIn('password', form.errors)
-        self.assertIn('password_confirmation', form.errors)
-        self.assertIn('first_name', form.errors)
-        self.assertIn('last_name', form.errors)
-
-    def test_passwords_dont_match_invalid(self):
-        form = HomebuyerSignupForm({
-            'password': 'foo',
-            'password_confirmation': 'bar',
-        })
-        self.assertFalse(form.is_valid())
-        self.assertIn('password_confirmation', form.errors)
-
-    def test_matching_token_valid(self):
-        form = HomebuyerSignupForm({
-            'password': 'foo',
-            'password_confirmation': 'foo',
-            'first_name': 'f',
-            'last_name': 'l',
         })
         self.assertTrue(form.is_valid())

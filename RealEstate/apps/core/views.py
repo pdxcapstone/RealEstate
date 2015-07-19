@@ -1,15 +1,18 @@
 import json
 
+from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.http import HttpResponse
 
-from RealEstate.apps.core.models import (Category, Couple, Grade, House,
-                                         Homebuyer, User)
+from RealEstate.apps.core.forms import RealtorSignupForm
+from RealEstate.apps.core.models import (Category, Couple, Grade, Homebuyer,
+                                         House, Realtor, User)
 
 
 def login(request, *args, **kwargs):
@@ -147,6 +150,55 @@ class EvalView(BaseView):
         }
         return HttpResponse(json.dumps(response_data),
                             content_type="application/json")
+
+
+class RealtorSignupView(View):
+    """
+    This form is used to register realtors.
+    """
+    template_name = 'core/realtorSignup.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            return redirect('home')
+        return super(
+            RealtorSignupView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Renders the signup form for registering a realtor.
+        """
+        context = {
+            'signup_form': RealtorSignupForm()
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles the creation of User/Realtor instances when signing up a new
+        realtor. If the form is not valid, re-render it with errors
+        so the user can correct them. Otherwise:
+        """
+        signup_form = RealtorSignupForm(request.POST)
+        if signup_form.is_valid():
+            cleaned_data = signup_form.cleaned_data
+            email = cleaned_data['email']
+            password = cleaned_data['password']
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=cleaned_data['first_name'],
+                    last_name=cleaned_data['last_name'],
+                    phone=cleaned_data['phone'])
+                Realtor.objects.create(user=user)
+            user = authenticate(email=email, password=password)
+            _login(request, user)
+            return redirect('home')
+        context = {
+            'signup_form': signup_form
+        }
+        return render(request, self.template_name, context)
 
 
 class ReportView(BaseView):
