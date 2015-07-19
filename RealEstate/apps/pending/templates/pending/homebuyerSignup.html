@@ -14,8 +14,7 @@
         <strong>Homebuyer Registration Form</strong>
       </h2>
       <div style="margin: 10px 0" class="well">
-        <form style="margin-bottom:20px"
-              action="{% url 'homebuyer-signup' registration_token %}" role="form" method="post">
+        <form style="margin-bottom:20px" action="" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form signup_form %}
           <div class="pull-right" style="margin-top: 40px">

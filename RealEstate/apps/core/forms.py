@@ -51,9 +51,11 @@ class RealtorSignupForm(BaseSignupForm):
         Disallow duplicate emails when validation form.
         """
         email = self.cleaned_data.get('email')
-        for model in (User, PendingHomebuyer):
-            if email and model.objects.filter(email=email).exists():
-                raise ValidationError("A user with this email already exists.")
+        if email:
+            for model in (User, PendingHomebuyer):
+                if model.objects.filter(email=email).exists():
+                    raise ValidationError(
+                        "A user with this email already exists.")
         return email
 
     class Meta(BaseSignupForm.Meta):
