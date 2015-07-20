@@ -32,9 +32,6 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.User'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
-
-
 INSTALLED_APPS = (
     # Default Django apps
     'django.contrib.admin',
@@ -48,7 +45,6 @@ INSTALLED_APPS = (
     # Third party apps
     'django_extensions',
     'bootstrap3',
-    'crispy_forms',
 
     # Real Estate apps
     'RealEstate.apps.core',
