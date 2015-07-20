@@ -6,7 +6,8 @@ from django.views.generic import View
 
 from RealEstate.apps.core.models import Couple, Homebuyer, User
 from RealEstate.apps.core.views import BaseView
-from RealEstate.apps.pending.forms import InviteHomebuyerForm, SignupForm
+from RealEstate.apps.pending.forms import (HomebuyerSignupForm,
+                                           InviteHomebuyerForm)
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 
 
@@ -57,12 +58,12 @@ class InviteHomebuyerView(BaseView):
         return render(request, self.template_name, context)
 
 
-class SignupView(View):
+class HomebuyerSignupView(View):
     """
     This form is used to register homebuyers that have been invited to
     the app by a Realtor.
     """
-    template_name = 'pending/signup.html'
+    template_name = 'pending/homebuyerSignup.html'
 
     def dispatch(self, request, *args, **kwargs):
         """
@@ -90,7 +91,8 @@ class SignupView(View):
             messages.info(request, ("{email} is already registered."
                                     .format(email=pending_homebuyer.email)))
             return redirect('auth_login')
-        return super(SignupView, self).dispatch(request, *args, **kwargs)
+        return super(
+            HomebuyerSignupView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         """
@@ -102,7 +104,7 @@ class SignupView(View):
         realtor = pending_homebuyer.pending_couple.realtor
         context = {
             'registration_token': token,
-            'signup_form': SignupForm(initial={
+            'signup_form': HomebuyerSignupForm(initial={
                 'email': pending_homebuyer.email
             }),
         }
@@ -136,7 +138,7 @@ class SignupView(View):
         pending_homebuyer = PendingHomebuyer.objects.get(
             registration_token=token)
         realtor = pending_homebuyer.pending_couple.realtor
-        form = SignupForm(request.POST)
+        form = HomebuyerSignupForm(request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data
             with transaction.atomic():
