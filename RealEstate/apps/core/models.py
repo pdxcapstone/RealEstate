@@ -437,7 +437,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         unique=True,
         verbose_name="Email Address",
-        help_text="Required.  Please enter a valid email address.",
         error_messages={
             'unique': ("A user with this email already "
                        "exists.")
