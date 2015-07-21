@@ -2,14 +2,17 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
+from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
+from django import forms
 from django.http import HttpResponse
 
 from RealEstate.apps.core.models import Category, Couple, Grade, House, Homebuyer, Realtor, User
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
+from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
 
 def login(request, *args, **kwargs):
@@ -53,6 +56,18 @@ class HomeView(BaseView):
     View for the home page, which should render different templates based
     on whether or not the the logged in User is a Realtor or Homebuyer.
     """
+    def _invite_homebuyer(self, request, pending_couple, email):
+        """
+        Create the PendingHomebuyer instance and attach it to the
+        PendingCouple.  Then send out the email invite and flash a message
+        to the user that the invite has been sent.
+        """
+        homebuyer = PendingHomebuyer.objects.create(
+            email=email,
+            pending_couple=pending_couple)
+        homebuyer.send_email_invite(request)
+
+    
     def get(self, request, *args, **kwargs):
         global pendingHomebuyer
         couple = Couple.objects.filter(homebuyer__user=request.user)
@@ -70,16 +85,50 @@ class HomeView(BaseView):
             coupleData = []
             for couple in couples:
                 homebuyer = Homebuyer.objects.filter(couple=couple)
-                coupleData.append((couple, homebuyer))
+                coupleData.append((couple, homebuyer, False))
             for pendingCouple in pendingCouples:
                 pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
-                coupleData.append((pendingCouple, pendingHomebuyer))
+                coupleData.append((pendingCouple, pendingHomebuyer, True))
             return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                             'pendingCouples': pendingCouples})
+                                                             'form': InviteHomebuyerForm() })
         else:
             raise Exception("Neither a Homebuyer nor a Realtor")
+    def post(self, request, *args, **kwargs):
+        realtor = Realtor.objects.filter(user=request.user)
+        couple = Couple.objects.filter(homebuyer__user=request.user)
 
-
+        if couple:
+            #do stuff
+            house = House.objects.filter(couple=couple)
+            return render(request, 'core/homebuyerHome.html', {'couple': couples, 'house': house})
+            
+        elif realtor:
+            couples = Couple.objects.filter(realtor=realtor)
+            pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+            house = House.objects.filter(couple=couple)
+            form = InviteHomebuyerForm(request.POST)
+            if form.is_valid():
+                first_email = form.cleaned_data.get('first_email')
+                second_email = form.cleaned_data.get('second_email')
+                with transaction.atomic():
+                    pending_couple = PendingCouple.objects.create(
+                        realtor=request.user.realtor)
+                    self._invite_homebuyer(request, pending_couple, first_email)
+                    self._invite_homebuyer(request, pending_couple, second_email)
+            
+            coupleData = []
+            for couple in couples:
+                homebuyer = Homebuyer.objects.filter(couple=couple)
+                coupleData.append((couple, homebuyer, False))
+            for pendingCouple in pendingCouples:
+                pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
+                coupleData.append((pendingCouple, pendingHomebuyer, True))
+                
+            return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
+                                                             'form': InviteHomebuyerForm() })
+        else:
+            raise Exception("Neither a Homebuyer nor a Realtor")
+            
 class EvalView(BaseView):
     """
     View for the Home Evaluation Page. Currently, this page is decoupled
