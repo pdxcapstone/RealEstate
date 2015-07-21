@@ -1,25 +1,25 @@
 """
 Settings that are specific to a production environment.
 """
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 from django.core.exceptions import ImproperlyConfigured
 from RealEstate.settings.base import *
 
 STATIC_ROOT = "/opt/myenv/static/"
 
-ALLOWED_HOSTS = ['capstonedd.cs.pdx.edu']
+ALLOWED_HOSTS = ['*']
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = False
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'django',
-        'USER': 'postgres',
-        'PASSWORD': 'pass',
+        'USER': 'django',
+        'PASSWORD': '1234',
         'HOST': 'localhost',
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 
