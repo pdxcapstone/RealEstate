@@ -8,14 +8,14 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
-from django import forms
-from django.contrib import messages
 from django.http import HttpResponse
 
-from RealEstate.apps.core.forms import AddCategoryForm, EditCategoryForm, RealtorSignupForm
+from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
+                                        RealtorSignupForm)
 
-from RealEstate.apps.core.models import (Category, CategoryWeight, Couple, Grade,
-                                         Homebuyer, House, Realtor, User)
+from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
+                                         Grade, Homebuyer, House, Realtor,
+                                         User)
 
 
 def login(request, *args, **kwargs):
@@ -229,9 +229,9 @@ class CategoryView(BaseView):
     View for the Category Ranking Page.
     """
     _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
-    
+
     template_name = 'core/categories.html'
-    
+
     def _permission_check(self, request, role, *args, **kwargs):
         return True
 
@@ -252,7 +252,7 @@ class CategoryView(BaseView):
         }
 
     def get(self, request, *args, **kwargs):
-        
+
         # Returns summary and description if given category ID
         if request.is_ajax():
             id = request.GET['category']
@@ -300,7 +300,7 @@ class CategoryView(BaseView):
         if request.is_ajax():
             id = request.POST['category']
             category = Category.objects.get(id=id)
-            
+
             # Weight a category
             if request.POST['type'] == 'update':
                 homebuyer = request.user.role_object
@@ -308,33 +308,35 @@ class CategoryView(BaseView):
                 grade, created = CategoryWeight.objects.update_or_create(
                     homebuyer=homebuyer, category=category,
                     defaults={'weight': int(weight)})
-                return HttpResponse(json.dumps({"id" : id}),
+                return HttpResponse(json.dumps({"id": id}),
                                     content_type="application/json")
-                                    
+
             # Delete a category
             elif request.POST['type'] == 'delete':
                 category.delete()
-                return HttpResponse(json.dumps({"id" : id}),
+                return HttpResponse(json.dumps({"id": id}),
                                     content_type="application/json")
-        
+
         # Creates or updates a category
         else:
             homebuyer = request.user.role_object
             couple = homebuyer.couple
             summary = request.POST["summary"]
             description = request.POST["description"]
-            
+
             # Updates a category
             if "catID" in request.POST:
-                category = get_object_or_404(Category.objects.filter(id=request.POST["catID"]))
+                category = get_object_or_404(Category,
+                                             id=request.POST['catID'])
                 category.summary = summary
                 category.description = description
                 category.save()
-            
+
             # Creates a category
             else:
                 grade, created = Category.objects.update_or_create(
-                        couple=couple, summary=summary, defaults={'description': str(description)} )
+                    couple=couple, summary=summary,
+                    defaults={'description': str(description)})
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)

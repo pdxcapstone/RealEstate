@@ -213,7 +213,6 @@ function editCategory() {
     $.ajax({
         type: "GET",
         data: {
-            csrfmiddlewaretoken: token,
             category: catID
         },
         success: function(data) {

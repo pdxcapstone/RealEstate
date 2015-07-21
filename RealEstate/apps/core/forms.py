@@ -10,14 +10,15 @@ class AddCategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ('summary', 'description')
-    
+
 
 class EditCategoryForm(forms.ModelForm):
     catID = forms.CharField(widget=forms.HiddenInput())
+
     class Meta:
         model = Category
         fields = ('summary', 'description')
-    
+
 
 class BaseSignupForm(forms.ModelForm):
     """
@@ -83,4 +84,3 @@ class UserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email',)
-
