@@ -102,7 +102,7 @@ ul.list-group { padding-top:30px; }
         	{% csrf_token %}
         	<div style="margin-top: 40px">
         		<center>
-        			{% buttons submit='Save Evaluation' %}{% endbuttons %}
+        			{% buttons submit='Save Category' %}{% endbuttons %}
         			{% bootstrap_messages %}
         		</center>
         	</div>
@@ -126,7 +126,7 @@ ul.list-group { padding-top:30px; }
         	{% csrf_token %}
         	<div style="margin-top: 40px">
         		<center>
-        			{% buttons submit='Save Evaluation'%}{% endbuttons %}
+        			{% buttons submit='Save Category'%}{% endbuttons %}
         			{% bootstrap_messages %}
         		</center>
         	</div>
@@ -217,8 +217,8 @@ function editCategory() {
             category: catID
         },
         success: function(data) {
-            $('input[name="edit_summary"]').val(data.summary);
-            $('input[name="edit_description"]').val(data.description);
+            $('#editCategory input[name="summary"]').val(data.summary);
+            $('#editCategory textarea[name="description"]').val(data.description);
         }
     });
 }

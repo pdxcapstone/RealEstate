@@ -228,8 +228,10 @@ class CategoryView(BaseView):
     """
     View for the Category Ranking Page.
     """
+    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
+    
     template_name = 'core/categories.html'
-
+    
     def _permission_check(self, request, role, *args, **kwargs):
         return True
 
@@ -264,7 +266,7 @@ class CategoryView(BaseView):
 
         # Renders standard category page
         homebuyer = request.user.role_object
-        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couple = homebuyer.couple
         categories = Category.objects.filter(couple=couple)
         weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
 
@@ -318,12 +320,12 @@ class CategoryView(BaseView):
         # Creates or updates a category
         else:
             homebuyer = request.user.role_object
-            couple = Couple.objects.filter(homebuyer__user=request.user).first()
+            couple = homebuyer.couple
+            summary = request.POST["summary"]
+            description = request.POST["description"]
             
             # Updates a category
             if "catID" in request.POST:
-                summary = request.POST["edit_summary"]
-                description = request.POST["edit_description"]
                 category = get_object_or_404(Category.objects.filter(id=request.POST["catID"]))
                 category.summary = summary
                 category.description = description
@@ -331,12 +333,10 @@ class CategoryView(BaseView):
             
             # Creates a category
             else:
-                summary = request.POST["summary"]
-                description = request.POST["description"]
                 grade, created = Category.objects.update_or_create(
                         couple=couple, summary=summary, defaults={'description': str(description)} )
 
-            weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+            weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
 
             weighted = []

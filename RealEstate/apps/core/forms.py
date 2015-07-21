@@ -6,15 +6,17 @@ from RealEstate.apps.core.models import User, Category
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
-class AddCategoryForm(forms.Form):
-    summary = forms.CharField(max_length=100)
-    description = forms.CharField(required=False, max_length=200)
+class AddCategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ('summary', 'description')
     
 
-class EditCategoryForm(forms.Form):
-    edit_summary = forms.CharField(label='Summary', max_length=100)
-    edit_description = forms.CharField(required=False, label='Description', max_length=200)
+class EditCategoryForm(forms.ModelForm):
     catID = forms.CharField(widget=forms.HiddenInput())
+    class Meta:
+        model = Category
+        fields = ('summary', 'description')
     
 
 class BaseSignupForm(forms.ModelForm):
