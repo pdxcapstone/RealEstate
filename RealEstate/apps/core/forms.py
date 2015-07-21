@@ -2,8 +2,22 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
-from RealEstate.apps.core.models import User
+from RealEstate.apps.core.models import User, Category
 from RealEstate.apps.pending.models import PendingHomebuyer
+
+
+class AddCategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ('summary', 'description')
+
+
+class EditCategoryForm(forms.ModelForm):
+    catID = forms.CharField(widget=forms.HiddenInput())
+
+    class Meta:
+        model = Category
+        fields = ('summary', 'description')
 
 
 class BaseSignupForm(forms.ModelForm):

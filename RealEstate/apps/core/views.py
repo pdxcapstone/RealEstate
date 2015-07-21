@@ -10,9 +10,12 @@ from django.utils.decorators import method_decorator
 from django.views.generic import View
 from django.http import HttpResponse
 
-from RealEstate.apps.core.forms import RealtorSignupForm
-from RealEstate.apps.core.models import (Category, Couple, Grade, Homebuyer,
-                                         House, Realtor, User)
+from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
+                                        RealtorSignupForm)
+
+from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
+                                         Grade, Homebuyer, House, Realtor,
+                                         User)
 
 
 def login(request, *args, **kwargs):
@@ -219,3 +222,140 @@ class ReportView(BaseView):
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name, {})
+
+
+class CategoryView(BaseView):
+    """
+    View for the Category Ranking Page.
+    """
+    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
+
+    template_name = 'core/categories.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        return True
+
+    def _weight_context(self):
+        weight_field = CategoryWeight._meta.get_field('weight')
+        weight_choices = dict(weight_field.choices)
+        min_weight = min(weight for weight in weight_choices)
+        max_weight = max(weight for weight in weight_choices)
+        min_choice = weight_choices[min_weight]
+        max_choice = weight_choices[max_weight]
+        return {
+            'min_weight': min_weight,
+            'max_weight': max_weight,
+            'min_choice': min_choice,
+            'max_choice': max_choice,
+            'default_weight': weight_field.default,
+            'js_weight': json.dumps(weight_choices),
+        }
+
+    def get(self, request, *args, **kwargs):
+
+        # Returns summary and description if given category ID
+        if request.is_ajax():
+            id = request.GET['category']
+            category = Category.objects.get(id=id)
+            response_data = {
+                'summary': category.summary,
+                'description': category.description
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+
+        # Renders standard category page
+        homebuyer = request.user.role_object
+        couple = homebuyer.couple
+        categories = Category.objects.filter(couple=couple)
+        weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+
+        weighted = []
+        for category in categories:
+            missing = True
+            for weight in weights:
+                if weight.category.id is category.id:
+                    weighted.append((category, weight.weight))
+                    missing = False
+                    break
+            if missing:
+                weighted.append((category, None))
+
+        context = {
+            'weights': weighted,
+            'form': AddCategoryForm(),
+            'editForm': EditCategoryForm()
+        }
+        context.update(self._weight_context())
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Depending on what functionality we want, the post may be more of a
+        redirect back to the home page. In that case, much of this code will
+        leave. In the meantime, it saves new data, recreates the same form and
+        posts a success message.
+        """
+        # ajax calls implement weight and delete category commands.
+        if request.is_ajax():
+            id = request.POST['category']
+            category = Category.objects.get(id=id)
+
+            # Weight a category
+            if request.POST['type'] == 'update':
+                homebuyer = request.user.role_object
+                weight = request.POST['weight']
+                grade, created = CategoryWeight.objects.update_or_create(
+                    homebuyer=homebuyer, category=category,
+                    defaults={'weight': int(weight)})
+                return HttpResponse(json.dumps({"id": id}),
+                                    content_type="application/json")
+
+            # Delete a category
+            elif request.POST['type'] == 'delete':
+                category.delete()
+                return HttpResponse(json.dumps({"id": id}),
+                                    content_type="application/json")
+
+        # Creates or updates a category
+        else:
+            homebuyer = request.user.role_object
+            couple = homebuyer.couple
+            summary = request.POST["summary"]
+            description = request.POST["description"]
+
+            # Updates a category
+            if "catID" in request.POST:
+                category = get_object_or_404(Category,
+                                             id=request.POST['catID'])
+                category.summary = summary
+                category.description = description
+                category.save()
+
+            # Creates a category
+            else:
+                grade, created = Category.objects.update_or_create(
+                    couple=couple, summary=summary,
+                    defaults={'description': str(description)})
+
+            weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
+            categories = Category.objects.filter(couple=couple)
+
+            weighted = []
+            for category in categories:
+                missing = True
+                for weight in weights:
+                    if weight.category.id is category.id:
+                        weighted.append((category, weight.weight))
+                        missing = False
+                        break
+                if missing:
+                    weighted.append((category, None))
+
+            context = {
+                'weights': weighted,
+                'form': AddCategoryForm(),
+                'editForm': EditCategoryForm()
+            }
+            context.update(self._weight_context())
+            return render(request, self.template_name, context)

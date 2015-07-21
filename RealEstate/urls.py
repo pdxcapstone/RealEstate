@@ -41,4 +41,5 @@ urlpatterns = [
     url(r'^report/(?P<couple_id>[\d]+)/$',
         CoreViews.ReportView.as_view(), name='report'),
     url(r'^$', CoreViews.HomeView.as_view(), name='home'),
+    url(r'^categories/$', CoreViews.CategoryView.as_view(), name='categories'),
 ]
