@@ -32,17 +32,20 @@ ul.list-group { padding-top:30px; }
 
     <ul class="list-group">
         {% for couple, homebuyers, isPending in couples %}
-        <li id="row_{{couple.id}}" class="list-group-item couple_row">
+        {% if isPending %}
+            <li id="row_p{{couple.id}}" class="list-group-item couple_row">
+        {% else %}
+            <li id="row_{{couple.id}}" class="list-group-item couple_row">
+        {% endif %}
 			<div class="row">
 				<div class="col-sm-7 vcenter couple-container">
 				    {% for homebuyer in homebuyers %}
 				        <h4>
 				            {% if isPending %}
-				                {{homebuyer.email}} <span class="red-alert">*</span>
+				                {{homebuyer.email}} <span class="red-alert">*</span> <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
 				            {% else %}
-				                {{homebuyer}}
+				                {{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
 				            {% endif %}
-				            <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
 				        </h4>
 	                {% endfor %}
 				</div>
