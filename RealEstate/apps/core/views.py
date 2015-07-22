@@ -11,7 +11,8 @@ from django.views.generic import View
 from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
-                                        RealtorSignupForm)
+                                        RealtorSignupForm, AddHomeForm,
+                                        EditHomeForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
@@ -60,10 +61,62 @@ class HomeView(BaseView):
     on whether or not the the logged in User is a Realtor or Homebuyer.
     """
     def get(self, request, *args, **kwargs):
+        # Returns summary and description if given category ID
+        if request.is_ajax():
+            id = request.GET['home']
+            home = House.objects.get(id=id)
+            response_data = {
+                'nickname': home.nickname,
+                'address': home.address
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
-        return render(request, 'core/homebuyerHome.html',
-                      {'couple': couple, 'house': house})
+        context =   {
+                        'couple'  : couple,
+                        'house'   : house,
+                        'form'    : AddHomeForm(),
+                        'editForm': EditHomeForm()
+                    }
+        return render(request, 'core/homebuyerHome.html', context)
+
+    def post(self, request, *args, **kwargs):
+        # Deletes a home
+        if request.is_ajax():
+            id = request.POST['home']
+            home = House.objects.get(id=id)
+            home.delete()
+            return HttpResponse(json.dumps({"id": id}),
+                                content_type="application/json")
+
+        nickname = request.POST["nickname"]
+        address = request.POST["address"]
+        # Updates a home
+        if "homeId" in request.POST:
+            home = get_object_or_404(House.objects.filter
+                                     (id=request.POST["homeId"]))
+            home.nickname = nickname
+            home.address = address
+            home.save()
+
+        # Creates new home
+        else:
+            couple = Couple.objects.filter(homebuyer__user=request.user)
+            home, created = House.objects.update_or_create(
+                couple=couple.first(), nickname=nickname,
+                defaults={'address': address})
+
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        house = House.objects.filter(couple=couple)
+        context =   {
+                        'couple'  : couple,
+                        'house'   : house,
+                        'form'    : AddHomeForm(),
+                        'editForm': EditHomeForm()
+                    }
+        return render(request, 'core/homebuyerHome.html', context)
 
 
 class EvalView(BaseView):
