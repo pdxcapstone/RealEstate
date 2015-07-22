@@ -151,25 +151,29 @@
 <script src="{% static "debounce.js" %}"></script>
 <script>
 var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+
 // Shows edit and delete icons on div mouseenter.
 $(".home_row").mouseenter( function() {
     homeID = $(this).attr("id").toString().replace(/row_/i, "");
-    $("#delete_"+homeID).fadeIn("slow", function(){
-        $("#delete_"+homeID).click( function(){
-            var sum = $(this).parent().text();
-            $("#confirmDelete").data("id", homeID );
-            $("#confirmDelete .btn-danger").text("Delete " + sum);
-        });
+    $("#delete_"+homeID).fadeIn("slow");
+    $("#delete_"+homeID).unbind('click');
+    $("#delete_"+homeID).click( function(){
+        var sum = $(this).parent().text();
+        $("#confirmDelete").data("id", homeID );
+        $("#confirmDelete .btn-danger").text("Delete " + sum);
     });
-    $("#edit_"+homeID).fadeIn("slow", function(){
-        $("#edit_"+homeID).click( $.debounce(300, editHome));
-        $('input[name="homeId"]').val(homeID);
+    $("#edit_"+homeID).fadeIn("slow");
+    $("#edit_"+homeID).unbind('click');
+    $("#edit_"+homeID).click( function() {
+        editHome();
     });
+    $('input[name="homeId"]').val(homeID);
 }).mouseleave( function() {
     var id = $(this).attr("id").toString().replace(/row_/i, "");
     $("#edit_"+id).stop().fadeOut("fast");
     $("#delete_"+id).stop().fadeOut("fast");
 });
+
 // Updates home given an ID
 function editHome() {
     $.ajax({
@@ -184,6 +188,7 @@ function editHome() {
         }
     });
 }
+
 // Deletes home given an ID
 function deleteHome(deleteID) {
     $.ajax({
