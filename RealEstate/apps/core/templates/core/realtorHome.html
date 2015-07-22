@@ -9,6 +9,7 @@ a.mail { text-decoration: none; }
 ul.list-group { padding-top:30px; }
 .report-container { min-width: 300px; }
 .couple-container { min-width: 400px; }
+.red-alert { color: #e74c3c; }
 .vcenter {
 	display: inline-block;
 	vertical-align: middle;
@@ -36,7 +37,11 @@ ul.list-group { padding-top:30px; }
 				<div class="col-sm-7 vcenter couple-container">
 				    {% for homebuyer in homebuyers %}
 				        <h4>
-				            {{homebuyer}}
+				            {% if isPending %}
+				                {{homebuyer.email}} <span class="red-alert">*</span>
+				            {% else %}
+				                {{homebuyer}}
+				            {% endif %}
 				            <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
 				        </h4>
 	                {% endfor %}
@@ -50,7 +55,9 @@ ul.list-group { padding-top:30px; }
 		</li>
 		{% endfor %}
     </ul>
-     
+    {% if hasPending %}
+        <div class="red-alert">* Pending homebuyers</div>
+    {% endif %}
     <center>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" style="margin:30px">Invite Couple</button>
     </center>

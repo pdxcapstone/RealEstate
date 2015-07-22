@@ -91,14 +91,16 @@ class HomeView(BaseView):
             # There may be a better way to get homebuyers straight from couples, but I didn't see
             # it in the model.
             coupleData = []
+            isPending = True
+            hasPending = True if (len(pendingCouples) > 0) else False
             for couple in couples:
                 homebuyer = Homebuyer.objects.filter(couple=couple)
-                coupleData.append((couple, homebuyer, False))
+                coupleData.append((couple, homebuyer, not isPending))
             for pendingCouple in pendingCouples:
                 pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
-                coupleData.append((pendingCouple, pendingHomebuyer, True))
+                coupleData.append((pendingCouple, pendingHomebuyer, isPending))
             return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                             'form': InviteHomebuyerForm() })
+                                                             'form': InviteHomebuyerForm(), 'hasPending': hasPending })
         else:
             raise Exception("Neither a Homebuyer nor a Realtor")
     def post(self, request, *args, **kwargs):
@@ -125,15 +127,17 @@ class HomeView(BaseView):
                     self._invite_homebuyer(request, pending_couple, second_email)
             
             coupleData = []
+            isPending = True
+            hasPending = True if (len(pendingCouples) > 0) else False
             for couple in couples:
                 homebuyer = Homebuyer.objects.filter(couple=couple)
-                coupleData.append((couple, homebuyer, False))
+                coupleData.append((couple, homebuyer, not isPending))
             for pendingCouple in pendingCouples:
                 pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
-                coupleData.append((pendingCouple, pendingHomebuyer, True))
+                coupleData.append((pendingCouple, pendingHomebuyer, isPending))
                 
             return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                             'form': InviteHomebuyerForm() })
+                                                             'form': InviteHomebuyerForm(), 'hasPending': hasPending })
         else:
             raise Exception("Neither a Homebuyer nor a Realtor")
             
