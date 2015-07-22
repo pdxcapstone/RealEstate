@@ -14,6 +14,7 @@ class AddCategoryForm(forms.ModelForm):
 
 class EditCategoryForm(forms.ModelForm):
     catID = forms.CharField(widget=forms.HiddenInput())
+
     class Meta:
         model = Category
         fields = ('summary', 'description')
@@ -93,6 +94,7 @@ class AddHomeForm(forms.ModelForm):
 
 class EditHomeForm(forms.ModelForm):
     homeId = forms.IntegerField(widget=forms.HiddenInput())
+
     class Meta:
         model = House
         fields = ('nickname', 'address')

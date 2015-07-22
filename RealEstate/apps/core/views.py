@@ -7,10 +7,8 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
-from django.views.generic import View, FormView
+from django.views.generic import View
 from django.http import HttpResponse
-from django.views.generic import UpdateView, ListView
-from django.template.loader import render_to_string
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
@@ -73,7 +71,7 @@ class HomeView(BaseView):
             }
             return HttpResponse(json.dumps(response_data),
                                 content_type="application/json")
-        
+
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
         context =   {
@@ -90,14 +88,15 @@ class HomeView(BaseView):
             id = request.POST['home']
             home = House.objects.get(id=id)
             home.delete()
-            return HttpResponse(json.dumps({"id" : id}),
+            return HttpResponse(json.dumps({"id": id}),
                                 content_type="application/json")
-        
+
         nickname = request.POST["nickname"]
         address = request.POST["address"]
         # Updates a home
         if "homeId" in request.POST:
-            home = get_object_or_404(House.objects.filter(id=request.POST["homeId"]))
+            home = get_object_or_404(House.objects.filter
+                                     (id=request.POST["homeId"]))
             home.nickname = nickname
             home.address = address
             home.save()

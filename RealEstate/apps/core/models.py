@@ -372,11 +372,11 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
         return super(House, self).clean_fields(exclude=exclude)
 
     def evaluation_url(self):
-       """
-       Returns the URL to the evaluation page for a specific house.
-       """
-       return reverse('eval', kwargs={'house_id': self.id})
-       
+        """
+        Returns the URL to the evaluation page for a specific house.
+        """
+        return reverse('eval', kwargs={'house_id': self.id})
+
     class Meta:
         ordering = ['nickname']
         unique_together = (('nickname', 'couple'),)
