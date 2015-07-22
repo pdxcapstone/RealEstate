@@ -13,8 +13,8 @@ from django.views.generic import UpdateView, ListView
 from django.template.loader import render_to_string
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
-                                        RealtorSignupForm, addHomeForm,
-                                        editHomeForm)
+                                        RealtorSignupForm, AddHomeForm,
+                                        EditHomeForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
@@ -79,8 +79,8 @@ class HomeView(BaseView):
         context =   {
                         'couple'  : couple,
                         'house'   : house,
-                        'form'    : addHomeForm(),
-                        'editForm': editHomeForm()
+                        'form'    : AddHomeForm(),
+                        'editForm': EditHomeForm()
                     }
         return render(request, 'core/homebuyerHome.html', context)
 
@@ -93,31 +93,29 @@ class HomeView(BaseView):
             return HttpResponse(json.dumps({"id" : id}),
                                 content_type="application/json")
         
+        nickname = request.POST["nickname"]
+        address = request.POST["address"]
         # Updates a home
         if "homeId" in request.POST:
-            nickname = request.POST["edit_nickname"]
-            address = request.POST["edit_address"]
             home = get_object_or_404(House.objects.filter(id=request.POST["homeId"]))
             home.nickname = nickname
             home.address = address
             home.save()
-        
+
         # Creates new home
         else:
-            nickname = request.POST["nickname"]
-            address = request.POST["address"]
             couple = Couple.objects.filter(homebuyer__user=request.user)
             home, created = House.objects.update_or_create(
                 couple=couple.first(), nickname=nickname,
                 defaults={'address': address})
-        
+
         couple = Couple.objects.filter(homebuyer__user=request.user)
         house = House.objects.filter(couple=couple)
         context =   {
                         'couple'  : couple,
                         'house'   : house,
-                        'form'    : addHomeForm(),
-                        'editForm': editHomeForm()
+                        'form'    : AddHomeForm(),
+                        'editForm': EditHomeForm()
                     }
         return render(request, 'core/homebuyerHome.html', context)
 

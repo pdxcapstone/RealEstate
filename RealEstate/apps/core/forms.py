@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
-from RealEstate.apps.core.models import User, Category
+from RealEstate.apps.core.models import User, Category, House
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
@@ -14,7 +14,6 @@ class AddCategoryForm(forms.ModelForm):
 
 class EditCategoryForm(forms.ModelForm):
     catID = forms.CharField(widget=forms.HiddenInput())
-
     class Meta:
         model = Category
         fields = ('summary', 'description')
@@ -86,29 +85,14 @@ class UserCreationForm(UserCreationForm):
         fields = ('email',)
 
 
-class addHomeForm(forms.Form):
-    """
-    Used for adding a home to a users home list
-    """
-    nickname = forms.CharField(
-        label="Nickname",
-        required=True
-        )
-    address = forms.CharField(
-        label="Address",
-        required=False
-        )
+class AddHomeForm(forms.ModelForm):
+    class Meta:
+        model = House
+        fields = ('nickname', 'address')
 
-class editHomeForm(forms.Form):
-    """
-    Used for adding a home to a users home list
-    """
-    edit_nickname = forms.CharField(
-        label="Nickname",
-        required=True
-        )
-    edit_address = forms.CharField(
-        label="Address",
-        required=False
-        )
-    homeId = forms.CharField(widget=forms.HiddenInput())
+
+class EditHomeForm(forms.ModelForm):
+    homeId = forms.IntegerField(widget=forms.HiddenInput())
+    class Meta:
+        model = House
+        fields = ('nickname', 'address')

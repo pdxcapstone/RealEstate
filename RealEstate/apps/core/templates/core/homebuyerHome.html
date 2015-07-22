@@ -179,12 +179,11 @@ function editHome() {
     $.ajax({
         type: "GET",
         data: {
-            csrfmiddlewaretoken: token,
             home: homeID
         },
         success: function(data) {
-            $('input[name="edit_nickname"]').val(data.nickname);
-            $('input[name="edit_address"]').val(data.address);
+            $('#edit-house input[name="nickname"]').val(data.nickname);
+            $('#edit-house textarea[name="address"]').val(data.address);
         }
     });
 }
