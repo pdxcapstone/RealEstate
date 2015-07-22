@@ -3,35 +3,48 @@
 
 {% block style %}
 <style>
+#heading { padding-bottom: 20px; }
+#mail-icon:hover { color: #337ab7;}
+a.mail { text-decoration: none; }
+ul.list-group { padding-top:30px; }
+.report-container { min-width: 300px; }
+.couple-container { min-width: 400px; }
 .vcenter {
 	display: inline-block;
 	vertical-align: middle;
 	float: none;
 	margin-left:-3px;
 }
+#mail-icon {
+    font-size: 90%;
+    padding-left: 20px;
+    color: #cccccc;
+    display: none;
+}
 </style>
 {% endblock %}
 
 {% block body %}
-    <h2><strong> Dashboard tst</strong> </h2>
+    <div id="heading">
+        <h2><strong>Realtor Dashboard</strong> </h2>
+    </div>
+
     <ul class="list-group">
         {% for couple, homebuyers, isPending in couples %}
-        <li class="list-group-item">
+        <li id="row_{{couple.id}}" class="list-group-item couple_row">
 			<div class="row">
-				<div class="col-sm-6 vcenter">
+				<div class="col-sm-7 vcenter couple-container">
 				    {% for homebuyer in homebuyers %}
 				        <h4>
 				            {{homebuyer}}
-				            {% if isPending %} (*) {% endif %}
+				            <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
 				        </h4>
-                        <a href="mailto:{{homebuyer.email}}" target="_top">Email</a>
 	                {% endfor %}
 				</div>
-				<div class="col-sm-4 vcenter">
-				    Right Holding Block
-				</div>
-				<div class="col-sm-2 vcenter">
-					<a href="homebuyerreport">Report</a>
+				<div class="col-sm-5 vcenter report-container">
+				    <center>
+				        <a class="report" href="homebuyerreport">Report</a>
+				    </center>
 				</div>
 			</div>
 		</li>
@@ -65,4 +78,17 @@
         </div>
       </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Shows mail icon on div mouseenter.
+$(".couple_row").mouseenter( function() {
+    var coupleID = $(this).attr("id").toString().replace(/row_/i, "");
+    $(".mail_" + coupleID).fadeIn("slow");
+}).mouseleave( function() {
+    var coupleID = $(this).attr("id").toString().replace(/row_/i, "");
+    $(".mail_" + coupleID).stop().fadeOut("fast");
+});
+</script>
 {% endblock %}
