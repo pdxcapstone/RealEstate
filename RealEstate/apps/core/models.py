@@ -3,6 +3,7 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import IntegrityError, models
@@ -79,6 +80,15 @@ class Person(BaseModel):
         name = self.full_name
         return name if name else self.email
 
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Returns a boolean indicating whether or not the Person instance can
+        view the report for a given Couple.  This behavior will differ for the
+        different subclasses (Homebuyer/Realtor), so the implementations
+        should be defined there.
+        """
+        raise NotImplementedError
+
     @property
     def email(self):
         return self.user.email
@@ -133,8 +143,13 @@ class CategoryWeight(BaseModel):
     fields.
     """
     weight = models.PositiveSmallIntegerField(
-        help_text="0-100",
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        choices=((1, 'Unimportant'),
+                 (2, 'Below Average'),
+                 (3, 'Average'),
+                 (4, 'Above Average'),
+                 (5, 'Important')),
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
@@ -192,6 +207,11 @@ class Couple(BaseModel):
         elif homebuyers.count() == 1:
             homebuyers = (homebuyers.first(), None)
         return homebuyers
+
+    def report_url(self):
+        if not self.id:
+            return None
+        return reverse('report', kwargs={'couple_id': self.id})
 
     class Meta:
         ordering = ['realtor']
@@ -258,6 +278,12 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                         through='core.CategoryWeight',
                                         verbose_name="Categories")
 
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Homebuyers can only see their own report.
+        """
+        return self.couple_id == couple_id
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
@@ -296,6 +322,9 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                  "should be resolved immediately. "
                                  "(Couple ID: {id})".format(id=self.couple_id))
         return related_homebuyers.first()
+
+    def report_url(self):
+        return self.couple.report_url()
 
     @property
     def role_type(self):
@@ -353,6 +382,12 @@ class Realtor(Person):
     Represents a realtor.  Each Couple instance has a required foreign key to
     Realtor, so each Realtor serves zero or more couples.
     """
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Realtors can view all reports for their client Couples.
+        """
+        return self.couple_set.filter(id=couple_id).exists()
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
@@ -407,7 +442,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         unique=True,
         verbose_name="Email Address",
-        help_text="Required.  Please enter a valid email address.",
         error_messages={
             'unique': ("A user with this email already "
                        "exists.")
