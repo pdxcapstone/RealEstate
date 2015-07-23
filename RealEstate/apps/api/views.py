@@ -75,10 +75,6 @@ class APIHouseView(APIView):
 
             category = Category.objects.filter(couple=couple)
 
-            if category.count() < 1:
-                return Response({'code': 204, 'message': 'No such category under the house.'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
             h = House.objects.filter(pk=hid)
 
             categories = []
@@ -91,6 +87,10 @@ class APIHouseView(APIView):
                         'score': grade[0].score
                     }
                     categories.append(content)
+
+            if len(categories) < 1:
+                return Response({'code': 204, 'message': 'No category under the house.'},
+                                status=status.HTTP_400_BAD_REQUEST)
             query = {
                 'category': categories
             }
@@ -174,8 +174,12 @@ class APIHouseView(APIView):
             ser.save()
             ret = ser.validated_data
             content = {
-                'nickname': ret['nickname'],
-                'address': ret['address']
+                'code': 101,
+                'message': 'OK',
+                'house': {
+                    'nickname': ret['nickname'],
+                    'address': ret['address']
+                }
             }
             return Response(content)
         else:
