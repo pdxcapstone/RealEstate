@@ -7,7 +7,6 @@ from django.core.urlresolvers import reverse
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import IntegrityError, models
-from django.core.urlresolvers import reverse
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
            'Homebuyer', 'House', 'Realtor', 'User']
