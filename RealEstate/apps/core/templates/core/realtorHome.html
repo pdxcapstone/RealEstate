@@ -41,8 +41,10 @@ ul.list-group { padding-top:30px; }
 				<div class="col-sm-7 vcenter couple-container">
 				    {% for homebuyer in homebuyers %}
 				        <h4>
-				            {% if isPending %}
-				                {{homebuyer.email}} <span class="red-alert">*</span> <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
+				            {% if isPending%}
+				                {{homebuyer.email}}
+				                {% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
+				                <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
 				            {% else %}
 				                {{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
 				            {% endif %}
