@@ -13,12 +13,13 @@ from django import forms
 from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
-                                        RealtorSignupForm)
+                                        RealtorSignupForm, AddHomeForm,
+                                        EditHomeForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
                                          User)
-
+										 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
@@ -64,6 +65,9 @@ class HomeView(BaseView):
     View for the home page, which should render different templates based
     on whether or not the the logged in User is a Realtor or Homebuyer.
     """
+    homebuyer_template_name = 'core/homebuyerHome.html'
+    realtor_template_name = 'core/realtorHome.html'
+
     def _invite_homebuyer(self, request, pending_couple, email):
         """
         Create the PendingHomebuyer instance and attach it to the
@@ -74,78 +78,136 @@ class HomeView(BaseView):
             email=email,
             pending_couple=pending_couple)
         homebuyer.send_email_invite(request)
+		
+    def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
+        # Returns summary and description if given category ID
+        if request.is_ajax():
+            id = request.GET['home']
+            home = House.objects.get(id=id)
+            response_data = {
+                'nickname': home.nickname,
+                'address': home.address
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
 
-    
+        couple = homebuyer.couple
+        house = House.objects.filter(couple=couple)
+        context = {
+            'couple': couple,
+            'house': house,
+            'form': AddHomeForm(),
+            'editForm': EditHomeForm()
+        }
+        return render(request, self.homebuyer_template_name, context)
+
+    def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
+        # Deletes a home
+        if request.is_ajax():
+            id = request.POST['home']
+            home = House.objects.get(id=id)
+            home.delete()
+            return HttpResponse(json.dumps({"id": id}),
+                                content_type="application/json")
+
+        nickname = request.POST["nickname"]
+        address = request.POST["address"]
+        # Updates a home
+        if "homeId" in request.POST:
+            home = get_object_or_404(House.objects.filter
+                                     (id=request.POST["homeId"]))
+            home.nickname = nickname
+            home.address = address
+            home.save()
+
+        # Creates new home
+        else:
+            couple = homebuyer.couple
+            home, created = House.objects.update_or_create(
+                couple=couple, nickname=nickname,
+                defaults={'address': address})
+
+        couple = homebuyer.couple
+        house = House.objects.filter(couple=couple)
+        context = {
+            'couple': couple,
+            'house': house,
+            'form': AddHomeForm(),
+            'editForm': EditHomeForm()
+        }
+        return render(request, self.homebuyer_template_name, context)
+
+    def _realtor_get(self, request, realtor, *args, **kwargs):
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+        house = House.objects.filter(couple=couple)
+        # Couple data is a list of touples [(couple1, homebuyers), (couple2, homebuyers)]
+        # There may be a better way to get homebuyers straight from couples, but I didn't see
+        # it in the model.
+        coupleData = []
+        isPending = True
+        hasPending = True if (len(pendingCouples) > 0) else False
+        for couple in couples:
+            homebuyer = Homebuyer.objects.filter(couple=couple)
+            coupleData.append((couple, homebuyer, not isPending))
+        for pendingCouple in pendingCouples:
+            pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
+            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+        return render(request, self.realtor_template_name, {'couples': coupleData, 'house': house, 'realtor': realtor,
+                                                         'form': InviteHomebuyerForm(), 'hasPending': hasPending })
+
+    def _realtor_post(self, request, realtor, *args, **kwargs):
+        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+        house = House.objects.filter(couple=couple)
+        form = InviteHomebuyerForm(request.POST)
+        if form.is_valid():
+            first_email = form.cleaned_data.get('first_email')
+            second_email = form.cleaned_data.get('second_email')
+            with transaction.atomic():
+                pending_couple = PendingCouple.objects.create(
+                    realtor=request.user.realtor)
+                self._invite_homebuyer(request, pending_couple, first_email)
+                self._invite_homebuyer(request, pending_couple, second_email)
+        
+        coupleData = []
+        isPending = True
+        hasPending = True if (len(pendingCouples) > 0) else False
+        for couple in couples:
+            homebuyer = Homebuyer.objects.filter(couple=couple)
+            coupleData.append((couple, homebuyer, not isPending))
+        for pendingCouple in pendingCouples:
+            pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
+            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+            
+        return render(request, self.realtor_template_name, {'couples': coupleData, 'house': house, 'realtor': realtor,
+                                                         'form': InviteHomebuyerForm(), 'hasPending': hasPending })
+
     def get(self, request, *args, **kwargs):
-        global pendingHomebuyer
-        couple = Couple.objects.filter(homebuyer__user=request.user)
-        realtor = Realtor.objects.filter(user=request.user)
-        if couple:
-            house = House.objects.filter(couple=couple)
-            return render(request, 'core/homebuyerHome.html', {'couple': couple, 'house': house})
-        elif realtor:
-            couples = Couple.objects.filter(realtor=realtor)
-            pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-            house = House.objects.filter(couple=couple)
-            # Couple data is a list of touples [(couple1, homebuyers), (couple2, homebuyers)]
-            # There may be a better way to get homebuyers straight from couples, but I didn't see
-            # it in the model.
-            coupleData = []
-            isPending = True
-            hasPending = True if (len(pendingCouples) > 0) else False
-            for couple in couples:
-                homebuyer = Homebuyer.objects.filter(couple=couple)
-                coupleData.append((couple, homebuyer, not isPending))
-            for pendingCouple in pendingCouples:
-                pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
-                coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-            return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                             'form': InviteHomebuyerForm(), 'hasPending': hasPending })
-        else:
-            raise Exception("Neither a Homebuyer nor a Realtor")
-    def post(self, request, *args, **kwargs):
-        realtor = Realtor.objects.filter(user=request.user)
-        couple = Couple.objects.filter(homebuyer__user=request.user)
+        role = request.user.role_object
+        handlers = {
+            'Homebuyer': self._homebuyer_get,
+            'Realtor': self._realtor_get,
+        }
+        return handlers[role.role_type](request, role, *args, **kwargs)
 
-        if couple:
-            #do stuff
-            house = House.objects.filter(couple=couple)
-            return render(request, 'core/homebuyerHome.html', {'couple': couples, 'house': house})
-            
-        elif realtor:
-            couples = Couple.objects.filter(realtor=realtor)
-            pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-            house = House.objects.filter(couple=couple)
-            form = InviteHomebuyerForm(request.POST)
-            if form.is_valid():
-                first_email = form.cleaned_data.get('first_email')
-                second_email = form.cleaned_data.get('second_email')
-                with transaction.atomic():
-                    pending_couple = PendingCouple.objects.create(
-                        realtor=request.user.realtor)
-                    self._invite_homebuyer(request, pending_couple, first_email)
-                    self._invite_homebuyer(request, pending_couple, second_email)
-            
-            coupleData = []
-            isPending = True
-            hasPending = True if (len(pendingCouples) > 0) else False
-            for couple in couples:
-                homebuyer = Homebuyer.objects.filter(couple=couple)
-                coupleData.append((couple, homebuyer, not isPending))
-            for pendingCouple in pendingCouples:
-                pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
-                coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-                
-            return render(request, 'core/realtorHome.html', {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                             'form': InviteHomebuyerForm(), 'hasPending': hasPending })
-        else:
-            raise Exception("Neither a Homebuyer nor a Realtor")
-            
+    def post(self, request, *args, **kwargs):
+        role = request.user.role_object
+        handlers = {
+            'Homebuyer': self._homebuyer_post,
+            'Realtor': self._realtor_post,
+        }
+        return handlers[role.role_type](request, role, *args, **kwargs)
+
+
 class EvalView(BaseView):
     """
     View for the Home Evaluation Page. Currently, this page is decoupled
     from the rest of the app and uses static elements in the database.
     """
+    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
     template_name = 'core/houseEval.html'
 
     def _permission_check(self, request, role, *args, **kwargs):
@@ -154,10 +216,9 @@ class EvalView(BaseView):
         its for a related Homebuyer. This prevents users from grading other
         peoples houses.
         """
-        if role.role_type == 'Homebuyer':
-            house_id = kwargs.get('house_id', None)
-            if role.couple.house_set.filter(id=house_id).exists():
-                return True
+        house_id = kwargs.get('house_id', None)
+        if role.couple.house_set.filter(id=house_id).exists():
+            return True
         return False
 
     def _score_context(self):
@@ -178,9 +239,9 @@ class EvalView(BaseView):
 
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
-        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couple = homebuyer.couple
         categories = Category.objects.filter(couple=couple)
-        house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
+        house = get_object_or_404(House, id=kwargs["house_id"])
         grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
         # Merging grades and categories to provide object with both
@@ -214,13 +275,13 @@ class EvalView(BaseView):
         if not request.is_ajax():
             raise PermissionDenied
 
-        homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
-        house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
+        homebuyer = request.user.role_object
+        house = get_object_or_404(House, id=kwargs["house_id"])
         id = request.POST['category']
         score = request.POST['score']
         category = Category.objects.get(id=id)
         grade, created = Grade.objects.update_or_create(
-            homebuyer=homebuyer.first(), category=category, house=house,
+            homebuyer=homebuyer, category=category, house=house,
             defaults={'score': int(score)})
         response_data = {
             'id': str(id),
@@ -304,7 +365,6 @@ class CategoryView(BaseView):
     View for the Category Ranking Page.
     """
     _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
-
     template_name = 'core/categories.html'
 
     def _permission_check(self, request, role, *args, **kwargs):
@@ -327,7 +387,6 @@ class CategoryView(BaseView):
         }
 
     def get(self, request, *args, **kwargs):
-
         # Returns summary and description if given category ID
         if request.is_ajax():
             id = request.GET['category']
@@ -343,7 +402,7 @@ class CategoryView(BaseView):
         homebuyer = request.user.role_object
         couple = homebuyer.couple
         categories = Category.objects.filter(couple=couple)
-        weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+        weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
 
         weighted = []
         for category in categories:

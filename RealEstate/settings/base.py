@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.User'
 
-
 INSTALLED_APPS = (
     # Default Django apps
     'django.contrib.admin',

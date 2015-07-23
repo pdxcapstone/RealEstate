@@ -225,17 +225,19 @@ function editCategory() {
 // Shows edit and delete icons on div mouseenter.
 $(".category_row").mouseenter( function() {
     catID = $(this).attr("id").toString().replace(/row_/i, "");
-    $("#delete_"+catID).fadeIn("slow", function(){
-        $("#delete_"+catID).click( function(){
-            var sum = $(this).parent().text();
-            $("#confirmDelete").data("id", catID );
-            $("#confirmDelete .btn-danger").text("Delete " + sum);
-        });
+    $("#delete_"+catID).fadeIn("slow");
+    $("#delete_"+catID).unbind('click');
+    $("#delete_"+catID).click( function(){
+        var sum = $(this).parent().text();
+        $("#confirmDelete").data("id", catID );
+        $("#confirmDelete .btn-danger").text("Delete " + sum);
     });
-    $("#edit_"+catID).fadeIn("slow", function(){
-        $("#edit_"+catID).click( $.debounce(300, editCategory))
-        $('input[name="catID"]').val(catID);
+    $("#edit_"+catID).fadeIn("slow");
+    $("#edit_"+catID).unbind('click');
+    $("#edit_"+catID).click(function(){
+        editCategory();
     });
+    $('input[name="catID"]').val(catID);
 }).mouseleave( function() {
     var id = $(this).attr("id").toString().replace(/row_/i, "");
     $("#edit_"+id).stop().fadeOut("fast");
