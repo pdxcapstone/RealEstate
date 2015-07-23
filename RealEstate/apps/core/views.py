@@ -15,8 +15,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         EditHomeForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor,
-                                         User)
+                                         Grade, House, Realtor, User)
 
 
 def login(request, *args, **kwargs):
