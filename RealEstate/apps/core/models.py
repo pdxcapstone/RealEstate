@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import IntegrityError, models
+from django.core.urlresolvers import reverse
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
            'Homebuyer', 'House', 'Realtor', 'User']
@@ -143,8 +144,13 @@ class CategoryWeight(BaseModel):
     fields.
     """
     weight = models.PositiveSmallIntegerField(
-        help_text="0-100",
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        choices=((1, 'Unimportant'),
+                 (2, 'Below Average'),
+                 (3, 'Average'),
+                 (4, 'Above Average'),
+                 (5, 'Important')),
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
@@ -365,6 +371,12 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
         self._validate_min_length('nickname', self._NICKNAME_MIN_LENGTH)
         return super(House, self).clean_fields(exclude=exclude)
 
+    def evaluation_url(self):
+        """
+        Returns the URL to the evaluation page for a specific house.
+        """
+        return reverse('eval', kwargs={'house_id': self.id})
+
     class Meta:
         ordering = ['nickname']
         unique_together = (('nickname', 'couple'),)
@@ -437,7 +449,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         unique=True,
         verbose_name="Email Address",
-        help_text="Required.  Please enter a valid email address.",
         error_messages={
             'unique': ("A user with this email already "
                        "exists.")
