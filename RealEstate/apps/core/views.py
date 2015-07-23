@@ -60,7 +60,10 @@ class HomeView(BaseView):
     View for the home page, which should render different templates based
     on whether or not the the logged in User is a Realtor or Homebuyer.
     """
-    def get(self, request, *args, **kwargs):
+    homebuyer_template_name = 'core/homebuyerHome.html'
+    realtor_template_name = 'core/realtorHome.html'
+
+    def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
             id = request.GET['home']
@@ -72,17 +75,17 @@ class HomeView(BaseView):
             return HttpResponse(json.dumps(response_data),
                                 content_type="application/json")
 
-        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couple = homebuyer.couple
         house = House.objects.filter(couple=couple)
-        context =   {
-                        'couple'  : couple,
-                        'house'   : house,
-                        'form'    : AddHomeForm(),
-                        'editForm': EditHomeForm()
-                    }
-        return render(request, 'core/homebuyerHome.html', context)
+        context = {
+            'couple': couple,
+            'house': house,
+            'form': AddHomeForm(),
+            'editForm': EditHomeForm()
+        }
+        return render(request, self.homebuyer_template_name, context)
 
-    def post(self, request, *args, **kwargs):
+    def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
         # Deletes a home
         if request.is_ajax():
             id = request.POST['home']
@@ -103,20 +106,42 @@ class HomeView(BaseView):
 
         # Creates new home
         else:
-            couple = Couple.objects.filter(homebuyer__user=request.user)
+            couple = homebuyer.couple
             home, created = House.objects.update_or_create(
-                couple=couple.first(), nickname=nickname,
+                couple=couple, nickname=nickname,
                 defaults={'address': address})
 
-        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couple = homebuyer.couple
         house = House.objects.filter(couple=couple)
-        context =   {
-                        'couple'  : couple,
-                        'house'   : house,
-                        'form'    : AddHomeForm(),
-                        'editForm': EditHomeForm()
-                    }
-        return render(request, 'core/homebuyerHome.html', context)
+        context = {
+            'couple': couple,
+            'house': house,
+            'form': AddHomeForm(),
+            'editForm': EditHomeForm()
+        }
+        return render(request, self.homebuyer_template_name, context)
+
+    def _realtor_get(self, request, realtor, *args, **kwargs):
+        return render(request, self.realtor_template_name, {})
+
+    def _realtor_post(self, request, realtor, *args, **kwargs):
+        return render(request, self.realtor_template_name, {})
+
+    def get(self, request, *args, **kwargs):
+        role = request.user.role_object
+        handlers = {
+            'Homebuyer': self._homebuyer_get,
+            'Realtor': self._realtor_get,
+        }
+        return handlers[role.role_type](request, role, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        role = request.user.role_object
+        handlers = {
+            'Homebuyer': self._homebuyer_post,
+            'Realtor': self._realtor_post,
+        }
+        return handlers[role.role_type](request, role, *args, **kwargs)
 
 
 class EvalView(BaseView):
@@ -124,6 +149,7 @@ class EvalView(BaseView):
     View for the Home Evaluation Page. Currently, this page is decoupled
     from the rest of the app and uses static elements in the database.
     """
+    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
     template_name = 'core/houseEval.html'
 
     def _permission_check(self, request, role, *args, **kwargs):
@@ -132,10 +158,9 @@ class EvalView(BaseView):
         its for a related Homebuyer. This prevents users from grading other
         peoples houses.
         """
-        if role.role_type == 'Homebuyer':
-            house_id = kwargs.get('house_id', None)
-            if role.couple.house_set.filter(id=house_id).exists():
-                return True
+        house_id = kwargs.get('house_id', None)
+        if role.couple.house_set.filter(id=house_id).exists():
+            return True
         return False
 
     def _score_context(self):
@@ -156,9 +181,9 @@ class EvalView(BaseView):
 
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
-        couple = Couple.objects.filter(homebuyer__user=request.user)
+        couple = homebuyer.couple
         categories = Category.objects.filter(couple=couple)
-        house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
+        house = get_object_or_404(House, id=kwargs["house_id"])
         grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
 
         # Merging grades and categories to provide object with both
@@ -192,13 +217,13 @@ class EvalView(BaseView):
         if not request.is_ajax():
             raise PermissionDenied
 
-        homebuyer = Homebuyer.objects.filter(user_id=request.user.id)
-        house = get_object_or_404(House.objects.filter(id=kwargs["house_id"]))
+        homebuyer = request.user.role_object
+        house = get_object_or_404(House, id=kwargs["house_id"])
         id = request.POST['category']
         score = request.POST['score']
         category = Category.objects.get(id=id)
         grade, created = Grade.objects.update_or_create(
-            homebuyer=homebuyer.first(), category=category, house=house,
+            homebuyer=homebuyer, category=category, house=house,
             defaults={'score': int(score)})
         response_data = {
             'id': str(id),
@@ -282,7 +307,6 @@ class CategoryView(BaseView):
     View for the Category Ranking Page.
     """
     _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
-
     template_name = 'core/categories.html'
 
     def _permission_check(self, request, role, *args, **kwargs):
@@ -305,7 +329,6 @@ class CategoryView(BaseView):
         }
 
     def get(self, request, *args, **kwargs):
-
         # Returns summary and description if given category ID
         if request.is_ajax():
             id = request.GET['category']
@@ -321,7 +344,7 @@ class CategoryView(BaseView):
         homebuyer = request.user.role_object
         couple = homebuyer.couple
         categories = Category.objects.filter(couple=couple)
-        weights = CategoryWeight.objects.filter(homebuyer__user=request.user)
+        weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
 
         weighted = []
         for category in categories:
