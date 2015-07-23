@@ -97,7 +97,6 @@ class APIHouseView(APIView):
             }
         return Response(query)
 
-
     '''
     Grade a house
     This API will get the house and the category information from the request,
@@ -125,7 +124,6 @@ class APIHouseView(APIView):
                 return Response(d, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
-
 
         house = House.objects.filter(pk=hid)
         category = Category.objects.filter(pk=cat)
