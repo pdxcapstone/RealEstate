@@ -163,7 +163,7 @@ class APIHouseView(APIView):
 
         data = request.data
 
-        if data['nickname'] is None or data['address'] is None:
+        if 'nickname' not in data or 'address' not in data:
             return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
 
         data['couple'] = couple[0].pk
