@@ -202,13 +202,13 @@ class APICategoryView(APIView):
         category = Category.objects.filter(couple=couple)
 
         if category.count() < 1:
-                return Response({'code': 202, 'message': 'No such category under the user.'},
+                return Response({'code': 202, 'message': 'No category under the user.'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
         categories = []
         for c in category:
             cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=category)
-            w = None
+
             if cweight.count() < 1:
                 w = 'NAN'
             else:
