@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import (APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer,
-                          APIHouseFullParamSerializer, APICategoryWeightSerializer, APIGradeSerializer)
+                          APIHouseFullParamSerializer, APICategoryWeightSerializer,
+                          APICategoryParamSerializer, APIGradeSerializer)
 from .utils import jwt_payload_handler
 
 from RealEstate.apps.core.models import House, Category, Couple, Grade, CategoryWeight, Homebuyer
@@ -235,8 +236,8 @@ class APICategoryView(APIView):
         cid = self.request.query_params.get('id', None)
         w = self.request.query_params.get('weight', None)
 
-        paramser = APIHouseFullParamSerializer(data={'id': int(cid), 'weight': int(w)},
-                                               context={'request': self.request})
+        paramser = APICategoryParamSerializer(data={'category': cid, 'weight': w},
+                                              context={'request': self.request})
         if paramser.is_valid():
             d = paramser.val()
             if d is not None:
@@ -246,10 +247,6 @@ class APICategoryView(APIView):
 
         cg = Category.objects.filter(pk=cid)
         cgw = CategoryWeight.objects.filter(category=cg, homebuyer__user=request.user)
-
-        if cgw.count() < 1:
-                return Response({'code': 202, 'message': 'No category under the user.'},
-                                status=status.HTTP_400_BAD_REQUEST)
 
         hb = Homebuyer.objects.filter(user=request.user)
 

@@ -123,7 +123,7 @@ class APIHouseFullParamSerializer(APIHouseParamSerializer):
             return {'code': code, 'message': msg}
 
 class APICategoryParamSerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=True)
+    category = serializers.IntegerField(required=True)
     weight = serializers.IntegerField(required=True)
 
     def create(self, validated_data):
@@ -137,7 +137,7 @@ class APICategoryParamSerializer(serializers.Serializer):
     def val(self):
 
         couple = Couple.objects.filter(homebuyer__user=self.context['request'].user)
-        category = Category.objects.filter(couple=couple)
+        cat = Category.objects.filter(couple=couple, pk=self.data['category'])
 
-        if category.count() < 1:
+        if cat.count() < 1:
                 return {'code': 202, 'message': 'No such category under the user.'}
