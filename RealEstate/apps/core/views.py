@@ -143,7 +143,7 @@ class HomeView(BaseView):
         # homebuyers straight from couples, but I didn't see it in the model.
         coupleData = []
         isPending = True
-        hasPending = True if (len(pendingCouples) > 0) else False
+        hasPending = pendingCouples.exists()
         for couple in couples:
             homebuyer = Homebuyer.objects.filter(couple=couple)
             coupleData.append((couple, homebuyer, not isPending))
@@ -174,7 +174,7 @@ class HomeView(BaseView):
 
         coupleData = []
         isPending = True
-        hasPending = True if (len(pendingCouples) > 0) else False
+        hasPending = pendingCouples.exists()
         for couple in couples:
             homebuyer = Homebuyer.objects.filter(couple=couple)
             coupleData.append((couple, homebuyer, not isPending))
