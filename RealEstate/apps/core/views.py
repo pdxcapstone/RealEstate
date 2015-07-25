@@ -17,7 +17,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
                                          User)
-										 
+
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
@@ -76,7 +76,7 @@ class HomeView(BaseView):
             email=email,
             pending_couple=pending_couple)
         homebuyer.send_email_invite(request)
-		
+
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
@@ -150,13 +150,17 @@ class HomeView(BaseView):
             homebuyer = Homebuyer.objects.filter(couple=couple)
             coupleData.append((couple, homebuyer, not isPending))
         for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
+            pendingHomebuyer = PendingHomebuyer.objects.filter(
+                pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-        return render(request, self.realtor_template_name, {'couples': coupleData,
-                                                            'house': house,
-                                                            'realtor': realtor,
-                                                            'form': InviteHomebuyerForm(),
-                                                            'hasPending': hasPending })
+        context = {
+            'couples': coupleData,
+            'house': house,
+            'realtor': realtor,
+            'form': InviteHomebuyerForm(),
+            'hasPending': hasPending
+        }
+        return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
@@ -172,7 +176,7 @@ class HomeView(BaseView):
                     realtor=request.user.realtor)
                 self._invite_homebuyer(request, pending_couple, first_email)
                 self._invite_homebuyer(request, pending_couple, second_email)
-        
+
         coupleData = []
         isPending = True
         hasPending = True if (len(pendingCouples) > 0) else False
@@ -180,14 +184,17 @@ class HomeView(BaseView):
             homebuyer = Homebuyer.objects.filter(couple=couple)
             coupleData.append((couple, homebuyer, not isPending))
         for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
+            pendingHomebuyer = PendingHomebuyer.objects.filter(
+                pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-            
-        return render(request, self.realtor_template_name, {'couples': coupleData,
-                                                            'house': house,
-                                                            'realtor': realtor,
-                                                            'form': InviteHomebuyerForm(),
-                                                            'hasPending': hasPending })
+        context = {
+            'couples': coupleData,
+            'house': house,
+            'realtor': realtor,
+            'form': InviteHomebuyerForm(),
+            'hasPending': hasPending
+        }
+        return render(request, self.realtor_template_name, context)
 
     def get(self, request, *args, **kwargs):
         role = request.user.role_object
