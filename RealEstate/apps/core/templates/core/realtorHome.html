@@ -1,5 +1,109 @@
 {% extends "core/base.html" %}
+{% load bootstrap3 %}
+
+{% block style %}
+<style>
+#heading { padding-bottom: 20px; }
+#mail-icon:hover { color: #337ab7;}
+a.mail { text-decoration: none; }
+ul.list-group { padding-top:30px; }
+.report-container { min-width: 300px; }
+.couple-container { min-width: 400px; }
+.red-alert { color: #e74c3c; }
+.vcenter {
+	display: inline-block;
+	vertical-align: middle;
+	float: none;
+	margin-left:-3px;
+}
+#mail-icon {
+    font-size: 90%;
+    padding-left: 20px;
+    color: #cccccc;
+    display: none;
+}
+</style>
+{% endblock %}
 
 {% block body %}
-  <p>Home page for realtors.</p>
+    <div id="heading">
+        <h2><strong>Realtor Dashboard</strong> </h2>
+    </div>
+
+    <ul class="list-group">
+        {% for couple, homebuyers, isPending in couples %}
+			{% if isPending %}
+				<li id="row_p{{couple.id}}" class="list-group-item couple_row">
+			{% else %}
+				<li id="row_{{couple.id}}" class="list-group-item couple_row">
+			{% endif %}
+			
+					<div class="row">
+						<div class="col-sm-7 vcenter couple-container">
+							{% for homebuyer in homebuyers %}
+								<h4>
+									{% if isPending %}
+										{{homebuyer.email}}
+										{% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
+										<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
+									{% else %}
+										{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
+									{% endif %}
+								</h4>
+							{% endfor %}
+						</div>
+						<div class="col-sm-5 vcenter report-container">
+							<center>
+								<a class="report" href="{{couple.report_url}}">Report</a>
+							</center>
+						</div>
+					</div>
+					
+				</li>
+				
+		{% endfor %}
+    </ul>
+    {% if hasPending %}
+        <div class="red-alert">* Pending homebuyers</div>
+    {% endif %}
+    <center>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" style="margin:30px">Invite Couple</button>
+    </center>
+    
+    <!-- Invite Couple Modal -->
+    <div id="inviteCouple" class="modal fade" role="dialog" style="height:auto">
+      <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">Invite a couple</h2>
+            </div>
+            <div class="modal-body">
+            <form action="" role="form" method="post">
+            	{% bootstrap_form form %}
+            	{% csrf_token %}
+            	<div style="margin-top: 40px">
+            		<center>
+            			{% buttons submit='Invite' %}{% endbuttons %}
+            			{% bootstrap_messages %}
+            		</center>
+            	</div>
+            </form>
+            </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Shows mail icon on div mouseenter.
+$(".couple_row").mouseenter( function() {
+    var coupleID = $(this).attr("id").toString().replace(/row_/i, "");
+    $(".mail_" + coupleID).fadeIn("slow");
+}).mouseleave( function() {
+    var coupleID = $(this).attr("id").toString().replace(/row_/i, "");
+    $(".mail_" + coupleID).stop().fadeOut("fast");
+});
+</script>
 {% endblock %}

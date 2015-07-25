@@ -15,7 +15,11 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         EditHomeForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, House, Realtor, User)
+                                         Grade, Homebuyer, House, Realtor,
+                                         User)
+
+from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
+from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
 
 def login(request, *args, **kwargs):
@@ -61,6 +65,17 @@ class HomeView(BaseView):
     """
     homebuyer_template_name = 'core/homebuyerHome.html'
     realtor_template_name = 'core/realtorHome.html'
+
+    def _invite_homebuyer(self, request, pending_couple, email):
+        """
+        Create the PendingHomebuyer instance and attach it to the
+        PendingCouple.  Then send out the email invite and flash a message
+        to the user that the invite has been sent.
+        """
+        homebuyer = PendingHomebuyer.objects.create(
+            email=email,
+            pending_couple=pending_couple)
+        homebuyer.send_email_invite(request)
 
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
@@ -121,10 +136,59 @@ class HomeView(BaseView):
         return render(request, self.homebuyer_template_name, context)
 
     def _realtor_get(self, request, realtor, *args, **kwargs):
-        return render(request, self.realtor_template_name, {})
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+        # Couple data is a list of touples [(couple1, homebuyers, isPending),
+        # (couple2, homebuyers, isPending)] There may be a better way to get
+        # homebuyers straight from couples, but I didn't see it in the model.
+        coupleData = []
+        isPending = True
+        hasPending = pendingCouples.exists()
+        for couple in couples:
+            homebuyer = Homebuyer.objects.filter(couple=couple)
+            coupleData.append((couple, homebuyer, not isPending))
+        for pendingCouple in pendingCouples:
+            pendingHomebuyer = PendingHomebuyer.objects.filter(
+                pending_couple=pendingCouple)
+            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+        context = {
+            'couples': coupleData,
+            'realtor': realtor,
+            'form': InviteHomebuyerForm(),
+            'hasPending': hasPending
+        }
+        return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-        return render(request, self.realtor_template_name, {})
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+        form = InviteHomebuyerForm(request.POST)
+        if form.is_valid():
+            first_email = form.cleaned_data.get('first_email')
+            second_email = form.cleaned_data.get('second_email')
+            with transaction.atomic():
+                pending_couple = PendingCouple.objects.create(
+                    realtor=request.user.realtor)
+                self._invite_homebuyer(request, pending_couple, first_email)
+                self._invite_homebuyer(request, pending_couple, second_email)
+
+        coupleData = []
+        isPending = True
+        hasPending = pendingCouples.exists()
+        for couple in couples:
+            homebuyer = Homebuyer.objects.filter(couple=couple)
+            coupleData.append((couple, homebuyer, not isPending))
+        for pendingCouple in pendingCouples:
+            pendingHomebuyer = PendingHomebuyer.objects.filter(
+                pending_couple=pendingCouple)
+            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+        context = {
+            'couples': coupleData,
+            'realtor': realtor,
+            'form': InviteHomebuyerForm(),
+            'hasPending': hasPending
+        }
+        return render(request, self.realtor_template_name, context)
 
     def get(self, request, *args, **kwargs):
         role = request.user.role_object

@@ -18,7 +18,8 @@ def _generate_registration_token():
     SHA-256.
     """
     while True:
-        token = hashlib.sha256(get_random_string(length=64)).hexdigest()
+        token = hashlib.sha256(
+            get_random_string(length=64)).hexdigest()
         if not PendingHomebuyer.objects.filter(registration_token=token):
             return token
 
