@@ -3,13 +3,11 @@ import json
 from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
-from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import View
-from django import forms
 from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
