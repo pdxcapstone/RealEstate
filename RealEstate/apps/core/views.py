@@ -136,10 +136,8 @@ class HomeView(BaseView):
         return render(request, self.homebuyer_template_name, context)
 
     def _realtor_get(self, request, realtor, *args, **kwargs):
-        couple = Couple.objects.filter(homebuyer__user=request.user)
         couples = Couple.objects.filter(realtor=realtor)
         pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        house = House.objects.filter(couple=couple)
         # Couple data is a list of touples [(couple1, homebuyers, isPending),
         # (couple2, homebuyers, isPending)] There may be a better way to get
         # homebuyers straight from couples, but I didn't see it in the model.
@@ -155,7 +153,6 @@ class HomeView(BaseView):
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
         context = {
             'couples': coupleData,
-            'house': house,
             'realtor': realtor,
             'form': InviteHomebuyerForm(),
             'hasPending': hasPending
@@ -163,10 +160,8 @@ class HomeView(BaseView):
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-        couple = Couple.objects.filter(homebuyer__user=request.user)
         couples = Couple.objects.filter(realtor=realtor)
         pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        house = House.objects.filter(couple=couple)
         form = InviteHomebuyerForm(request.POST)
         if form.is_valid():
             first_email = form.cleaned_data.get('first_email')
@@ -189,7 +184,6 @@ class HomeView(BaseView):
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
         context = {
             'couples': coupleData,
-            'house': house,
             'realtor': realtor,
             'form': InviteHomebuyerForm(),
             'hasPending': hasPending
