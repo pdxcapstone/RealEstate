@@ -58,10 +58,6 @@ class InviteHomebuyerView(BaseView):
         return render(request, self.template_name, context)
 
 
-class HomebuyerReportView(BaseView):
-    template_name = 'core/homebuyerreport.html'
-
-
 class HomebuyerSignupView(View):
     """
     This form is used to register homebuyers that have been invited to

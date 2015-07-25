@@ -28,7 +28,6 @@ urlpatterns = [
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
     url(r'^change-password/$', 'django.contrib.auth.views.password_change',
         {'post_change_redirect': 'home'}, name='password_change'),
-    url(r'^homebuyerreport/$', PendingViews.HomebuyerReportView.as_view(), name='report'),
 
     url(r'^invite/$',
         PendingViews.InviteHomebuyerView.as_view(), name='invite'),
