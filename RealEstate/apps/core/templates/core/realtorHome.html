@@ -32,32 +32,35 @@ ul.list-group { padding-top:30px; }
 
     <ul class="list-group">
         {% for couple, homebuyers, isPending in couples %}
-        {% if isPending %}
-            <li id="row_p{{couple.id}}" class="list-group-item couple_row">
-        {% else %}
-            <li id="row_{{couple.id}}" class="list-group-item couple_row">
-        {% endif %}
-			<div class="row">
-				<div class="col-sm-7 vcenter couple-container">
-				    {% for homebuyer in homebuyers %}
-				        <h4>
-				            {% if isPending%}
-				                {{homebuyer.email}}
-				                {% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
-				                <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
-				            {% else %}
-				                {{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
-				            {% endif %}
-				        </h4>
-	                {% endfor %}
-				</div>
-				<div class="col-sm-5 vcenter report-container">
-				    <center>
-				        <a class="report" href="{{couple.report_url}}">Report</a>
-				    </center>
-				</div>
-			</div>
-		</li>
+			{% if isPending %}
+				<li id="row_p{{couple.id}}" class="list-group-item couple_row">
+			{% else %}
+				<li id="row_{{couple.id}}" class="list-group-item couple_row">
+			{% endif %}
+			
+					<div class="row">
+						<div class="col-sm-7 vcenter couple-container">
+							{% for homebuyer in homebuyers %}
+								<h4>
+									{% if isPending %}
+										{{homebuyer.email}}
+										{% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
+										<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
+									{% else %}
+										{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
+									{% endif %}
+								</h4>
+							{% endfor %}
+						</div>
+						<div class="col-sm-5 vcenter report-container">
+							<center>
+								<a class="report" href="{{couple.report_url}}">Report</a>
+							</center>
+						</div>
+					</div>
+					
+				</li>
+				
 		{% endfor %}
     </ul>
     {% if hasPending %}
@@ -77,7 +80,7 @@ ul.list-group { padding-top:30px; }
             </div>
             <div class="modal-body">
             <form action="" role="form" method="post">
-            	{% bootstrap_form form%}
+            	{% bootstrap_form form %}
             	{% csrf_token %}
             	<div style="margin-top: 40px">
             		<center>

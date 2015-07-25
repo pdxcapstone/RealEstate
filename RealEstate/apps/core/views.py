@@ -142,9 +142,9 @@ class HomeView(BaseView):
         couples = Couple.objects.filter(realtor=realtor)
         pendingCouples = PendingCouple.objects.filter(realtor=realtor)
         house = House.objects.filter(couple=couple)
-        # Couple data is a list of touples [(couple1, homebuyers), (couple2, homebuyers)]
-        # There may be a better way to get homebuyers straight from couples, but I didn't see
-        # it in the model.
+        # Couple data is a list of touples [(couple1, homebuyers, isPending),
+        # (couple2, homebuyers, isPending)] There may be a better way to get
+        # homebuyers straight from couples, but I didn't see it in the model.
         coupleData = []
         isPending = True
         hasPending = True if (len(pendingCouples) > 0) else False
@@ -154,8 +154,11 @@ class HomeView(BaseView):
         for pendingCouple in pendingCouples:
             pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-        return render(request, self.realtor_template_name, {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                         'form': InviteHomebuyerForm(), 'hasPending': hasPending })
+        return render(request, self.realtor_template_name, {'couples': coupleData,
+                                                            'house': house,
+                                                            'realtor': realtor,
+                                                            'form': InviteHomebuyerForm(),
+                                                            'hasPending': hasPending })
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
         couple = Couple.objects.filter(homebuyer__user=request.user)
@@ -182,8 +185,11 @@ class HomeView(BaseView):
             pendingHomebuyer = PendingHomebuyer.objects.filter(pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
             
-        return render(request, self.realtor_template_name, {'couples': coupleData, 'house': house, 'realtor': realtor,
-                                                         'form': InviteHomebuyerForm(), 'hasPending': hasPending })
+        return render(request, self.realtor_template_name, {'couples': coupleData,
+                                                            'house': house,
+                                                            'realtor': realtor,
+                                                            'form': InviteHomebuyerForm(),
+                                                            'hasPending': hasPending })
 
     def get(self, request, *args, **kwargs):
         role = request.user.role_object

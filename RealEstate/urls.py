@@ -17,7 +17,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from RealEstate.apps.core import views as CoreViews
-from RealEstate.apps.pending import views as PendingViews
 
 
 urlpatterns = [
@@ -29,12 +28,7 @@ urlpatterns = [
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
     url(r'^change-password/$', 'django.contrib.auth.views.password_change',
         {'post_change_redirect': 'home'}, name='password_change'),
-    url(r'^homebuyerreport/$',PendingViews.HomebuyerReportView.as_view(),name='report'),
 
-    url(r'^invite/$',
-        PendingViews.InviteHomebuyerView.as_view(), name='invite'),
-    url(r'^homebuyer-signup/(?P<registration_token>[0-9a-f]{64})/$',
-        PendingViews.HomebuyerSignupView.as_view(), name='homebuyer-signup'),
     url(r'^realtor-signup/$',
         CoreViews.RealtorSignupView.as_view(), name='realtor-signup'),
     url(r'^eval/(?P<house_id>[\d]+)/$',
