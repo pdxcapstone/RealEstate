@@ -172,33 +172,9 @@ $(".slide").slider({
 
 // Provides user interaction when saving through ajax.
 $(".slide").change($.debounce( 700, slideChange ));
-function slideChange (slideEvt) {
-	var timer;
-	clearTimeout(timer);
-	var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
-	$("#save-status").text("saving...").css("color", "#888");
-	$.ajax({
-		type: "POST",
-		data: {
-			csrfmiddlewaretoken: token,
-			category: categoryID,
-			weight: slideEvt.value.newValue,
-			type: "update"
-		},
-		success: function(data) {
-			timer = setTimeout(function(){
-			    $("#update_"+categoryID).stop().show();
-        		$("#update_"+categoryID).fadeOut(2000);
-        		$("#save-status").text("All changes saved.").show().css("color", "#333");
-			}, 1500);
-		}
-	});
-};
 
 // Shows edit and delete icons on div mouseenter.
-var page = new Page("category_row", "category", "delete", "edit");
-$( ".category_row" ).bind( "mouseenter", hoverActions(page));
-
+$( ".category_row" ).bind( "mouseenter", hoverActions("category_row", "delete", "edit"));
 
 // Handles sizing of columns and breaks columns at appropriate times.
 $(window).on("resize", function () {

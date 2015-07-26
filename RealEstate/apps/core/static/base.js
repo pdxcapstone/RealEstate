@@ -2,33 +2,31 @@
  * Base JQuery functions for RealEstate Web App
  * Capstone Group G, July 2015
  */
-var Page = function() {
-    this.row = arguments[0];
-    this.type = arguments[1];
-    this.icon = [];
-    console.log(arguments.length);
-    for (var i=2; i<arguments.length; i++)
+
+//
+// Displays and acts on hoverable icons. To use, at least one argument is required,
+// the class of the div over which you are hovering. After that, you may list as
+// many showable icons as you wish by listing their id's.
+// EXAMPLE: hoverActions("hover-div", "edit-icon", "delete-icon")
+function hoverActions () {
+    row = arguments[0];
+    icon = [];
+    for (var i=1; i<arguments.length; i++)
         this.icon.push(arguments[i]);
-};
-function hoverActions (Page) {
-    $("." + Page.row).mouseenter( function() {
-        console.log($(this).attr("id"));
+    $("." + row).mouseenter( function() {
         var id = $(this).attr("id").toString().replace(/row_/i, "");
-        console.log(id);
-        for (var i=0; i< Page.icon.length; i++){
-            $("#"+Page.icon[i]+ "_" + id).fadeIn("slow");
-            console.log("#"+Page.icon[i]+ "_" + id);
+        for (var i=0; i< icon.length; i++){
+            $("#" + icon[i]+ "_" + id).fadeIn("slow");
+            console.log("#" + icon[i]+ "_" + id);
         }
-        
         if ( $('#edit-modal').length ) {
             $("#edit_"+id).click(function(){
                 getData(id, function(data) {
                     for(key in data) {
-                        if ($('#edit-modal input[name='+key+']').length ) {
+                        if ($('#edit-modal input[name='+key+']').length )
                             $('#edit-modal input[name='+key+']').val(data[key]);
-                        } else {
+                        else
                             $('#edit-modal textarea[name='+key+']').val(data[key]);
-                        }
                     }
                     $('input[name="id"]').val(id);
                 });
@@ -41,10 +39,11 @@ function hoverActions (Page) {
         }
     }).mouseleave( function() {
         var id = $(this).attr("id").toString().replace(/row_/i, "");
-        for (var i=0; i<Page.icon.length; i++)
-            $("#"+Page.icon[i]+ "_" + id).stop().fadeOut("fast");
+        for (var i=0; i < icon.length; i++)
+            $("#" + icon[i]+ "_" + id).stop().fadeOut("fast");
     });
 }
+
 // Get model data from ID.
 function getData(id, callBack) {
     $.ajax({
@@ -55,7 +54,8 @@ function getData(id, callBack) {
         success: callBack
     });
 }
-// Deletes home given an ID
+
+// Deletes data given an ID
 function deleteData(deleteID) {
     $.ajax({
         type: "POST",
@@ -69,3 +69,27 @@ function deleteData(deleteID) {
         }
     });
 }
+
+// Post slider data.
+function slideChange (slideEvt) {
+	var timer;
+	clearTimeout(timer);
+	var id = $(this).attr("id").toString().replace(/category_/i, "");
+	$("#save-status").text("saving...").css("color", "#888");
+	$.ajax({
+		type: "POST",
+		data: {
+			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+			id: id,
+			value: slideEvt.value.newValue,
+			type: "update"
+		},
+		success: function(data) {
+			timer = setTimeout(function(){
+                $("#update_"+id).stop().show();
+                $("#update_"+id).fadeOut(2000);
+                $("#save-status").text("All changes saved.").show().css("color", "#333");
+			}, 1500);
+		}
+	});
+};

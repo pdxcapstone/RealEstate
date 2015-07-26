@@ -282,8 +282,8 @@ class EvalView(BaseView):
 
         homebuyer = request.user.role_object
         house = get_object_or_404(House, id=kwargs["house_id"])
-        id = request.POST['category']
-        score = request.POST['score']
+        id = request.POST['id']
+        score = request.POST['value']
         category = Category.objects.get(id=id)
         grade, created = Grade.objects.update_or_create(
             homebuyer=homebuyer, category=category, house=house,
@@ -443,7 +443,7 @@ class CategoryView(BaseView):
             # Weight a category
             if request.POST['type'] == 'update':
                 homebuyer = request.user.role_object
-                weight = request.POST['weight']
+                weight = request.POST['value']
                 grade, created = CategoryWeight.objects.update_or_create(
                     homebuyer=homebuyer, category=category,
                     defaults={'weight': int(weight)})

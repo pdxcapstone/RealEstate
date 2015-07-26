@@ -152,7 +152,6 @@
 <script src="{% static "base.js" %}"></script>
 
 <script>
-var page = new Page("home_row", "hbHome", "delete", "edit");
-$( ".home_row" ).bind( "mouseenter", hoverActions(page));
+$( ".home_row" ).bind( "mouseenter", hoverActions("home_row", "delete", "edit"));
 </script>
 {% endblock %}

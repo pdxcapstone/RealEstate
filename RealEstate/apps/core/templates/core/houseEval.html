@@ -74,6 +74,8 @@ ul.list-group {
 {% block scripts %}
 <script src="{% static "slide.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
+<script src="{% static "base.js" %}"></script>
+
 <script>
 var jsScores = {{js_scores|safe}}
 $(".slide").slider({
@@ -81,32 +83,10 @@ $(".slide").slider({
           return jsScores[value] || "";
 	}
 });
-$(".slide").change($.debounce( 700, slideChange ));
-function slideChange (slideEvt) {
-	var timer;
-	clearTimeout(timer);
-	function showStatus() {
-		$("#update_"+categoryID).stop().show();
-		$("#update_"+categoryID).fadeOut(2000);
-		$("#save-status").text("All changes saved.").show().css("color", "#333");
-	}
-	var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
-	$("#save-status").text("saving...").css("color", "#888");
-	$.ajax({
-		type: "POST",
-		data: {
-			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
-			category: categoryID,
-			score: slideEvt.value.newValue
-		},
-		success: function(data) {
-			timer = setTimeout(showStatus, 1500);
-		},
-		error: function(xhr, textStatus, errorThrown) {
-			// Do nothing for now.
-		}
-	});
-};
+
+$(".slide").change($.debounce( 700, slideChange));
+
+
 $(window).on("resize", function () {
 	var divWidth = $(".row").width();
 	if(divWidth < 400){

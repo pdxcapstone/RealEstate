@@ -100,7 +100,6 @@ ul.list-group { padding-top:30px; }
 <script src="{% static "base.js" %}"></script>
 
 <script>
-var page = new Page("couple_row", "rHome", "mail");
-$( ".couple_row" ).bind( "mouseenter", hoverActions(page));
+$( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
 </script>
 {% endblock %}
