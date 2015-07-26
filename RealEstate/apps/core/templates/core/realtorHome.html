@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% load staticfiles %}
 
 {% block style %}
 <style>
@@ -16,7 +17,7 @@ ul.list-group { padding-top:30px; }
 	float: none;
 	margin-left:-3px;
 }
-#mail-icon {
+.mail-icon {
     font-size: 90%;
     padding-left: 20px;
     color: #cccccc;
@@ -45,9 +46,9 @@ ul.list-group { padding-top:30px; }
 									{% if isPending %}
 										{{homebuyer.email}}
 										{% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
-										<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_p{{couple.id}}" ></span></a>
+										<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail-icon" ></span></a>
 									{% else %}
-										{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail-icon" class="glyphicon glyphicon-envelope vcenter mail_{{couple.id}}" ></span></a>
+										{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail-icon" ></span></a>
 									{% endif %}
 								</h4>
 							{% endfor %}
@@ -96,14 +97,10 @@ ul.list-group { padding-top:30px; }
 {% endblock %}
 
 {% block scripts %}
+<script src="{% static "base.js" %}"></script>
+
 <script>
-// Shows mail icon on div mouseenter.
-$(".couple_row").mouseenter( function() {
-    var coupleID = $(this).attr("id").toString().replace(/row_/i, "");
-    $(".mail_" + coupleID).fadeIn("slow");
-}).mouseleave( function() {
-    var coupleID = $(this).attr("id").toString().replace(/row_/i, "");
-    $(".mail_" + coupleID).stop().fadeOut("fast");
-});
+var page = new Page("couple_row", "rHome", "mail");
+$( ".couple_row" ).bind( "mouseenter", hoverActions(page));
 </script>
 {% endblock %}

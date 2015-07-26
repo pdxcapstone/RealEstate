@@ -80,7 +80,7 @@ class HomeView(BaseView):
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
-            id = request.GET['home']
+            id = request.GET['id']
             home = House.objects.get(id=id)
             response_data = {
                 'nickname': home.nickname,
@@ -102,7 +102,7 @@ class HomeView(BaseView):
     def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
         # Deletes a home
         if request.is_ajax():
-            id = request.POST['home']
+            id = request.POST['id']
             home = House.objects.get(id=id)
             home.delete()
             return HttpResponse(json.dumps({"id": id}),
@@ -111,9 +111,9 @@ class HomeView(BaseView):
         nickname = request.POST["nickname"]
         address = request.POST["address"]
         # Updates a home
-        if "homeId" in request.POST:
+        if "id" in request.POST:
             home = get_object_or_404(House.objects.filter
-                                     (id=request.POST["homeId"]))
+                                     (id=request.POST["id"]))
             home.nickname = nickname
             home.address = address
             home.save()
@@ -394,7 +394,7 @@ class CategoryView(BaseView):
     def get(self, request, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
-            id = request.GET['category']
+            id = request.GET['id']
             category = Category.objects.get(id=id)
             response_data = {
                 'summary': category.summary,
@@ -437,7 +437,7 @@ class CategoryView(BaseView):
         """
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
-            id = request.POST['category']
+            id = request.POST['id']
             category = Category.objects.get(id=id)
 
             # Weight a category
@@ -464,9 +464,9 @@ class CategoryView(BaseView):
             description = request.POST["description"]
 
             # Updates a category
-            if "catID" in request.POST:
+            if "id" in request.POST:
                 category = get_object_or_404(Category,
-                                             id=request.POST['catID'])
+                                             id=request.POST['id'])
                 category.summary = summary
                 category.description = description
                 category.save()

@@ -60,7 +60,7 @@ ul.list-group { padding-top:30px; }
 			    <!-- Category Summary -->
 				<div class="col-md-4 vcenter summary-col">
 					<h4>{{category.summary}}
-					    <span data-toggle="modal" data-target="#editCategory" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
+					    <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
 					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
 						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
 					</h4>
@@ -113,7 +113,7 @@ ul.list-group { padding-top:30px; }
 </div>
 
 <!-- Edit Category Modal -->
-<div id="editCategory" class="modal fade" role="dialog" style="height:auto">
+<div id="edit-modal" class="modal fade" role="dialog" style="height:auto">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -147,7 +147,7 @@ ul.list-group { padding-top:30px; }
       <div class="modal-body">
         <p>You're about to delete this category and all associated house rankings.</p>
         <center>
-            <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteCategory($('#confirmDelete').data('id'));">I'm sure!</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
         </center>
       </div>
       </div>
@@ -159,6 +159,8 @@ ul.list-group { padding-top:30px; }
 {% block scripts %}
 <script src="{% static "slide.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
+<script src="{% static "base.js" %}"></script>
+
 <script>
 var jsWeights = {{js_weight|safe}}
 var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
@@ -193,56 +195,10 @@ function slideChange (slideEvt) {
 	});
 };
 
-// Deletes category given an ID
-function deleteCategory(deleteID) {
-    $.ajax({
-		type: "POST",
-		data: {
-			csrfmiddlewaretoken: token,
-			category: deleteID,
-			type: "delete"
-		},
-		success: function(data) {
-		    $("#li_"+data.id).remove();
-		}
-	});
-}
-
-// Gets category summary and description, given id.
-function editCategory() {
-    $.ajax({
-        type: "GET",
-        data: {
-            category: catID
-        },
-        success: function(data) {
-            $('#editCategory input[name="summary"]').val(data.summary);
-            $('#editCategory textarea[name="description"]').val(data.description);
-        }
-    });
-}
-
 // Shows edit and delete icons on div mouseenter.
-$(".category_row").mouseenter( function() {
-    catID = $(this).attr("id").toString().replace(/row_/i, "");
-    $("#delete_"+catID).fadeIn("slow");
-    $("#delete_"+catID).unbind('click');
-    $("#delete_"+catID).click( function(){
-        var sum = $(this).parent().text();
-        $("#confirmDelete").data("id", catID );
-        $("#confirmDelete .btn-danger").text("Delete " + sum);
-    });
-    $("#edit_"+catID).fadeIn("slow");
-    $("#edit_"+catID).unbind('click');
-    $("#edit_"+catID).click(function(){
-        editCategory();
-    });
-    $('input[name="catID"]').val(catID);
-}).mouseleave( function() {
-    var id = $(this).attr("id").toString().replace(/row_/i, "");
-    $("#edit_"+id).stop().fadeOut("fast");
-    $("#delete_"+id).stop().fadeOut("fast");
-});
+var page = new Page("category_row", "category", "delete", "edit");
+$( ".category_row" ).bind( "mouseenter", hoverActions(page));
+
 
 // Handles sizing of columns and breaks columns at appropriate times.
 $(window).on("resize", function () {
