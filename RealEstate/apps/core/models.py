@@ -6,10 +6,50 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
-from django.db import IntegrityError, models
+from django.db import IntegrityError, models, transaction
+from django.dispatch import receiver
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
            'Homebuyer', 'House', 'Realtor', 'User']
+
+
+_CATEGORIES = {
+    'condition': {
+        'summary': 'Condition',
+        'description': 'Rate the overall condition of the house',
+    },
+    'location': {
+        'summary': 'Location',
+        'description': ('Rate the neighborhood, walkability, commute, and '
+                        'nearby attractions'),
+    },
+    'mortgage': {
+        'summary': 'Mortgage',
+        'description': ('Rate the mortgage based on price alone, not relative '
+                        'to other rating categories')
+    },
+    # ...
+}
+
+_DEFAULT_CATEGORIES = [
+    _CATEGORIES['condition'],
+    _CATEGORIES['location'],
+    _CATEGORIES['mortgage']
+]
+
+
+@receiver(models.signals.post_save)
+def _add_default_categories(sender, instance, created, **kwargs):
+    """
+    Add default categories for a couple when the first Homebuyer registers.
+    """
+    if created and sender == Couple:
+        couple_id = instance.id
+        couples = [Category(couple_id=couple_id, **category_data)
+                   for category_data in _DEFAULT_CATEGORIES]
+        with transaction.atomic():
+            Category.objects.bulk_create(couples)
+    return
 
 
 class ValidateCategoryCoupleMixin(object):
