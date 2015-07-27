@@ -1,52 +1,6 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
-
-{% block style %}
-
-<style>
-.row-con{
-   display:table;
-   width:100%;
-}
-.vcenter {
-	display: table-cell;
-	vertical-align: middle;
-	text-align:center;
-	width:50%;
-}
-.icon-edit {
-    display: none;
-    color: #31708f;
-    padding-left: 20px;
-    cursor: pointer;
-    font-size: 90%;
-}
-#heading {
-    padding-bottom: 30px;
-}
-.list-group{
-    padding-top:30px;
-}
-.addButton{
-    margin-bottom:20px;
-}
-.icon-delete {
-    display: none;
-    font-size: 90%;
-    color: #A94431;
-    padding-left: 20px;
-}
-.hbdash-center {
-    display: table-cell;
-    vertical-align: middle;
-    text-align:center;
-    width:50%;
-
-}
-</style>
-{% endblock %}
-
 {% block body %}
 
 <h2><strong> Dashboard </strong> </h2>
@@ -65,7 +19,7 @@
                     </h4>
                 <p>{{home.address}}</p>
                 </div>
-                <div class="vcenter">
+                <div class="hbdash-center">
                     <p>
                         <a href="{{home.evaluation_url}}"> Rate House </a>
                     </p>

@@ -2,46 +2,6 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
-{% block style %}
-<link rel="stylesheet" type="text/css" href="{% static "slide.min.css" %}">
-<style>
-ul.list-group { padding-top:30px; }
-#heading { padding-bottom: 20px; }
-.rating-col { min-width: 500px; }
-.summary-col{ min-width: 150px; }
-.alert-success { margin-top: 30px; }
-.tooltip-main.top.in { z-index:1 !important; }
-.close { z-index: 3000 !important; }
-.inner-rating { padding:20px 0; }
-.slider-selection { background: #BABABA; }
-.icon-edit {
-    display: none;
-    font-size: 90%;
-    color: #31708f;
-    padding-left: 20px;
-    cursor: pointer;
-}
-.icon-ok {
-    display: none;
-    font-size: 90%;
-    color: green;
-    padding-left: 20px;
-}
-.icon-delete {
-    display: none;
-    font-size: 90%;
-    color: #A94431;
-    padding-left: 20px;
-}
-.vcenter {
-    display: inline-block;
-    vertical-align: middle;
-    float: none;
-    margin-left:-3px;
-}
-</style>
-{% endblock %}
-
 {% block body %}
 {% csrf_token %}
 <div id="heading">

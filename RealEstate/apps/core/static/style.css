@@ -1,0 +1,89 @@
+ul.list-group {
+	padding-top:30px;
+}
+#heading {
+	padding-bottom: 30px;
+}
+.alert-success {
+	margin-top: 30px;
+}
+.icon-ok {
+	display: none;
+	font-size: 80%;
+	color: green;
+	padding-left: 20px
+}
+.icon-delete {
+    display: none;
+    font-size: 90%;
+    color: #A94431;
+    padding-left: 20px;
+}
+.icon-edit {
+    display: none;
+    color: #31708f;
+    padding-left: 20px;
+    cursor: pointer;
+    font-size: 90%;
+}
+.mail-icon {
+    font-size: 90%;
+    padding-left: 20px;
+    color: #cccccc;
+    display: none;
+}
+.inner-rating {
+	padding:20px 0;
+}
+.slider-selection {
+	background: #BABABA;
+}
+.vcenter {
+	display: inline-block;
+	vertical-align: middle;
+	float: none;
+	margin-left:-3px;
+}
+.row-con{
+   display:table;
+   width:100%;
+}
+.list-group{
+    padding-top:30px;
+}
+.addButton{
+    margin-bottom:20px;
+}
+.hbdash-center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align:center;
+    width:50%;
+}
+#mail-icon:hover { 
+	color: #337ab7;
+}
+a.mail { 
+	text-decoration: none; 
+}
+.report-container {
+ min-width: 300px; 
+}
+.couple-container { 
+	min-width: 400px; 
+}
+.red-alert { 
+	color: #e74c3c; 
+}
+.rating-col { 
+	min-width: 500px; 
+}
+.summary-col{ 
+	min-width: 150px; 
+}
+.tooltip-main.top.in { 
+	z-index:1 !important; 
+}
+.close { 
+	z-index: 3000 !important; 
+}

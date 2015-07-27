@@ -2,39 +2,6 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
-{% block style %}
-<link rel="stylesheet" type="text/css" href="{% static "slide.min.css" %}">
-<style>
-ul.list-group {
-	padding-top:30px;
-}
-#heading {
-	padding-bottom: 30px;
-}
-.alert-success {
-	margin-top: 30px;
-}
-.icon-ok {
-	display: none;
-	font-size: 80%;
-	color: green;
-	padding-left: 20px
-}
-.inner-rating {
-	padding:20px 0;
-}
-.slider-selection {
-	background: #BABABA;
-}
-.vcenter {
-	display: inline-block;
-	vertical-align: middle;
-	float: none;
-	margin-left:-3px;
-}
-</style>
-{% endblock %}
-
 {% block body %}
 {% csrf_token %}
 <div id="heading">
