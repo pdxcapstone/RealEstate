@@ -81,7 +81,7 @@ class HomeView(BaseView):
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
-            id = request.GET['home']
+            id = request.GET['id']
             home = House.objects.get(id=id)
             response_data = {
                 'nickname': home.nickname,
@@ -112,7 +112,7 @@ class HomeView(BaseView):
 
         # Deletes a home
         if request.is_ajax():
-            id = request.POST['home']
+            id = request.POST['id']
             home = House.objects.get(id=id)
             home.delete()
             return HttpResponse(json.dumps({"id": id}),
@@ -123,9 +123,8 @@ class HomeView(BaseView):
         couple = homebuyer.couple
 
         # Updates a home
-        if "homeId" in request.POST:
-            home = get_object_or_404(House.objects.filter
-                                     (id=request.POST["homeId"]))
+        if "id" in request.POST:
+            home = get_object_or_404(House, id=request.POST["id"])
             if not _house_exists(couple, nickname):
                 home.nickname = nickname
                 home.address = address
@@ -307,8 +306,8 @@ class EvalView(BaseView):
 
         homebuyer = request.user.role_object
         house = get_object_or_404(House, id=kwargs["house_id"])
-        id = request.POST['category']
-        score = request.POST['score']
+        id = request.POST['id']
+        score = request.POST['value']
         category = Category.objects.get(id=id)
         grade, created = Grade.objects.update_or_create(
             homebuyer=homebuyer, category=category, house=house,
@@ -431,7 +430,7 @@ class CategoryView(BaseView):
     def get(self, request, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
-            id = request.GET['category']
+            id = request.GET['id']
             category = Category.objects.get(id=id)
             response_data = {
                 'summary': category.summary,
@@ -486,12 +485,12 @@ class CategoryView(BaseView):
 
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
-            id = request.POST['category']
+            id = request.POST['id']
             category = Category.objects.get(id=id)
 
             # Weight a category
             if request.POST['type'] == 'update':
-                weight = request.POST['weight']
+                weight = request.POST['value']
                 CategoryWeight.objects.update_or_create(
                     homebuyer=homebuyer, category=category,
                     defaults={'weight': int(weight)})
@@ -511,9 +510,8 @@ class CategoryView(BaseView):
             description = request.POST["description"]
 
             # Updates a category
-            if "catID" in request.POST:
-                category = get_object_or_404(Category,
-                                             id=request.POST['catID'])
+            if "id" in request.POST:
+                category = get_object_or_404(Category, id=request.POST['id'])
                 if not _category_exists(couple, summary):
                     category.summary = summary
                     category.description = description
