@@ -1,13 +1,16 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.db import transaction
+from django.forms.models import modelformset_factory
 from django.shortcuts import redirect, render
+from django.utils.html import escape
 from django.views.generic import View
 
 from RealEstate.apps.core.models import Couple, Homebuyer, User
 from RealEstate.apps.core.views import BaseView
 from RealEstate.apps.pending.forms import (HomebuyerSignupForm,
-                                           InviteHomebuyerForm)
+                                           InviteHomebuyerForm,
+                                           InviteHomebuyersFormSet)
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 
 
@@ -20,21 +23,16 @@ class InviteHomebuyerView(BaseView):
     _USER_TYPES_ALLOWED = User._REALTOR_ONLY
     template_name = 'pending/inviteHomebuyer.html'
 
-    def _invite_homebuyer(self, request, pending_couple, email):
-        """
-        Create the PendingHomebuyer instance and attach it to the
-        PendingCouple.  Then send out the email invite and flash a message
-        to the user that the invite has been sent.
-        """
-        homebuyer = PendingHomebuyer.objects.create(
-            email=email,
-            pending_couple=pending_couple)
-        homebuyer.send_email_invite(request)
-        messages.success(request,
-                         "Email invite sent to {email}".format(email=email))
+    def _build_formset(self):
+        return modelformset_factory(PendingHomebuyer,
+                                    form=InviteHomebuyerForm,
+                                    formset=InviteHomebuyersFormSet,
+                                    extra=2,
+                                    max_num=2)
 
     def get(self, request, *args, **kwargs):
-        context = {'invite_homebuyer_form': InviteHomebuyerForm()}
+        formset = self._build_formset()
+        context = {'formset': formset}
         return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
@@ -43,18 +41,26 @@ class InviteHomebuyerView(BaseView):
         with the errors displayed.  Otherwise the form is valid; create the
         PendingHomebuyer instances and send out the email invites.
         """
-        form = InviteHomebuyerForm(request.POST)
-        if form.is_valid():
-            first_email = form.cleaned_data.get('first_email')
-            second_email = form.cleaned_data.get('second_email')
+        formset = self._build_formset()(request.POST)
+        if formset.is_valid():
+            pending_homebuyers = [form.instance for form in formset.forms]
             with transaction.atomic():
                 pending_couple = PendingCouple.objects.create(
                     realtor=request.user.realtor)
-                self._invite_homebuyer(request, pending_couple, first_email)
-                self._invite_homebuyer(request, pending_couple, second_email)
+                for pending_homebuyer in pending_homebuyers:
+                    pending_homebuyer.pending_couple = pending_couple
+                    pending_homebuyer.save()
+
+            for pending_homebuyer in pending_homebuyers:
+                pending_homebuyer.send_email_invite(request)
+                message = escape(
+                    "Email invite sent to {homebuyer}".format(
+                        homebuyer=unicode(pending_homebuyer)))
+                print message
+                messages.success(request, message)
             return redirect('invite')
 
-        context = {'invite_homebuyer_form': form}
+        context = {'formset': formset}
         return render(request, self.template_name, context)
 
 

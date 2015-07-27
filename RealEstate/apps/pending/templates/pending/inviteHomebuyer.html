@@ -16,7 +16,7 @@
       <div style="margin: 10px 0" class="well">
         <form style="margin-bottom:20px" action="{% url 'invite' %}" role="form" method="post">
           {% csrf_token %}
-          {% bootstrap_form invite_homebuyer_form %}
+          {% bootstrap_formset formset %}
           <div class="pull-right" style="margin-top: 40px">
             {% buttons submit='Invite' %}{% endbuttons %}
           </div>
