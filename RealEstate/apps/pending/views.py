@@ -5,10 +5,8 @@ from django.shortcuts import redirect, render
 from django.views.generic import View
 
 from RealEstate.apps.core.models import Couple, Homebuyer, User
-from RealEstate.apps.core.views import BaseView
-from RealEstate.apps.pending.forms import (HomebuyerSignupForm,
-                                           InviteHomebuyerForm)
-from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
+from RealEstate.apps.pending.forms import HomebuyerSignupForm
+from RealEstate.apps.pending.models import PendingHomebuyer
 
 
 class HomebuyerSignupView(View):
