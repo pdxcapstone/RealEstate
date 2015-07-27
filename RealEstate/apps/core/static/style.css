@@ -56,21 +56,15 @@ ul.list-group {
 .addButton{
     margin-bottom:20px;
 }
-
-/* hombuyerHome */
-
 .row-con{
    display:table;
    width:100%;
-}
-.list-group{
-    padding-top:30px;
 }
 .hbdash-center {
     display: table-cell;
     vertical-align: middle;
     text-align:center;
-    width:25%;
+    width:50%;
 }
 
 /* categories */
