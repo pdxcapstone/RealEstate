@@ -15,10 +15,8 @@ function hoverActions () {
         this.icon.push(arguments[i]);
     $("." + row).mouseenter( function() {
         var id = $(this).attr("id").toString().replace(/row_/i, "");
-        for (var i=0; i< icon.length; i++){
+        for (var i=0; i< icon.length; i++)
             $("#" + icon[i]+ "_" + id).fadeIn("slow");
-            console.log("#" + icon[i]+ "_" + id);
-        }
         if ( $('#edit-modal').length ) {
             $("#edit_"+id).click(function(){
                 getData(id, function(data) {

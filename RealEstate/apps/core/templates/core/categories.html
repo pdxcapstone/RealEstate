@@ -3,7 +3,7 @@
 {% load staticfiles %}
 
 {% block style %}
-<link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "slide.min.css" %}">
 <style>
 ul.list-group { padding-top:30px; }
 #heading { padding-bottom: 20px; }
@@ -157,7 +157,7 @@ ul.list-group { padding-top:30px; }
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static "slide.js" %}"></script>
+<script src="{% static "slide.min.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
 <script src="{% static "base.js" %}"></script>
 
