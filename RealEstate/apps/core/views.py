@@ -152,7 +152,8 @@ class HomeView(BaseView):
                 pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
 
-        invite_formset = self._build_invite_formset()()
+        invite_formset = self._build_invite_formset()(
+            queryset=PendingHomebuyer.objects.none())
         context = {
             'couples': coupleData,
             'realtor': realtor,
