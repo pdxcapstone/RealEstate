@@ -44,11 +44,11 @@
         <div class="red-alert">* Pending homebuyers</div>
     {% endif %}
     <center>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" style="margin:30px">Invite Couple</button>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" id="button-margin">Invite Couple</button>
     </center>
     
     <!-- Invite Couple Modal -->
-    <div id="inviteCouple" class="modal fade" role="dialog" style="height:auto">
+    <div id="inviteCouple" class="modal fade" role="dialog" id="modalHeight">
       <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -59,7 +59,7 @@
             <form action="" role="form" method="post">
             	{% bootstrap_form form %}
             	{% csrf_token %}
-            	<div style="margin-top: 40px">
+            	<div id="saveButtonMargin">
             		<center>
             			{% buttons submit='Invite' %}{% endbuttons %}
             			{% bootstrap_messages %}

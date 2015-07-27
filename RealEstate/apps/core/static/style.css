@@ -1,11 +1,10 @@
+/* common */
+
 ul.list-group {
 	padding-top:30px;
 }
 #heading {
 	padding-bottom: 30px;
-}
-.alert-success {
-	margin-top: 30px;
 }
 .icon-ok {
 	display: none;
@@ -26,24 +25,40 @@ ul.list-group {
     cursor: pointer;
     font-size: 90%;
 }
-.mail-icon {
-    font-size: 90%;
-    padding-left: 20px;
-    color: #cccccc;
-    display: none;
-}
-.inner-rating {
-	padding:20px 0;
-}
-.slider-selection {
-	background: #BABABA;
-}
 .vcenter {
 	display: inline-block;
 	vertical-align: middle;
 	float: none;
 	margin-left:-3px;
 }
+.inner-rating {
+	padding:20px 0;
+	padding-left:10%
+}
+.slider-selection {
+	background: #BABABA;
+}
+#helptext-L{
+	padding-right: 15px;
+}
+#helptext-R{
+	padding-left: 15px;
+}
+#button-margin{
+	margin:30px;
+}
+#saveButtonMargin{
+	margin-top: 40px;
+}
+#modalHeight{
+	height:auto;
+}
+.addButton{
+    margin-bottom:20px;
+}
+
+/* hombuyerHome */
+
 .row-con{
    display:table;
    width:100%;
@@ -51,14 +66,41 @@ ul.list-group {
 .list-group{
     padding-top:30px;
 }
-.addButton{
-    margin-bottom:20px;
-}
 .hbdash-center {
     display: table-cell;
     vertical-align: middle;
     text-align:center;
-    width:50%;
+    width:25%;
+}
+
+/* categories */
+
+.rating-col { 
+	min-width: 500px; 
+}
+.alert-success {
+	margin-top: 30px;
+}
+.summary-col{ 
+	min-width: 150px; 
+}
+.tooltip-main.top.in { 
+	z-index:1 !important; 
+}
+.close { 
+	z-index: 3000 !important; 
+}
+#catRating-out{
+	padding-left:10%
+}
+
+/*realtorHome */
+
+.mail-icon {
+    font-size: 90%;
+    padding-left: 20px;
+    color: #cccccc;
+    display: none;
 }
 #mail-icon:hover { 
 	color: #337ab7;
@@ -75,15 +117,12 @@ a.mail {
 .red-alert { 
 	color: #e74c3c; 
 }
-.rating-col { 
-	min-width: 500px; 
+
+/* realtorSignup */
+
+#regForm {
+	margin: 10px 0;
 }
-.summary-col{ 
-	min-width: 150px; 
-}
-.tooltip-main.top.in { 
-	z-index:1 !important; 
-}
-.close { 
-	z-index: 3000 !important; 
+.signUpHeader{
+	margin-top:50px;
 }
