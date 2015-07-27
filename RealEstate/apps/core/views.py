@@ -3,6 +3,7 @@ import json
 from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
+from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
@@ -100,6 +101,15 @@ class HomeView(BaseView):
         return render(request, self.homebuyer_template_name, context)
 
     def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
+        def _house_exists(couple, nickname):
+            exists = House.objects.filter(
+                couple=couple, nickname=nickname).exists()
+            if exists:
+                error = ("House with nickname '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            return exists
+
         # Deletes a home
         if request.is_ajax():
             id = request.POST['home']
@@ -110,22 +120,27 @@ class HomeView(BaseView):
 
         nickname = request.POST["nickname"]
         address = request.POST["address"]
+        couple = homebuyer.couple
+
         # Updates a home
         if "homeId" in request.POST:
             home = get_object_or_404(House.objects.filter
                                      (id=request.POST["homeId"]))
-            home.nickname = nickname
-            home.address = address
-            home.save()
+            if not _house_exists(couple, nickname):
+                home.nickname = nickname
+                home.address = address
+                home.save()
+                messages.success(
+                    request,
+                    "House '{nickname}' updated".format(nickname=nickname))
 
         # Creates new home
-        else:
-            couple = homebuyer.couple
-            home, created = House.objects.update_or_create(
-                couple=couple, nickname=nickname,
-                defaults={'address': address})
+        elif not _house_exists(couple, nickname):
+            House.objects.create(
+                couple=couple, nickname=nickname, address=address)
+            messages.success(
+                request, "House '{nickname}' added".format(nickname=nickname))
 
-        couple = homebuyer.couple
         house = House.objects.filter(couple=couple)
         context = {
             'couple': couple,
@@ -171,6 +186,16 @@ class HomeView(BaseView):
                     realtor=request.user.realtor)
                 self._invite_homebuyer(request, pending_couple, first_email)
                 self._invite_homebuyer(request, pending_couple, second_email)
+            success_msg = "Email invitation sent to '{email}'"
+            messages.success(request, success_msg.format(email=first_email))
+            messages.success(request, success_msg.format(email=second_email))
+        else:
+            for form_field, errors in form.errors.iteritems():
+                errors = ", ".join(errors)
+                value = form.data.get(form_field)
+                messages.error(
+                    request,
+                    "{value}: {errors}".format(value=value, errors=errors))
 
         coupleData = []
         isPending = True
@@ -296,6 +321,16 @@ class EvalView(BaseView):
                             content_type="application/json")
 
 
+class PasswordChangeDoneView(BaseView):
+    """
+    This is needed to provide a message to the user that their password change
+    was successful.
+    """
+    def get(self, request, *args, **kwargs):
+        messages.success(request, "Password change successful")
+        return redirect('home')
+
+
 class RealtorSignupView(View):
     """
     This form is used to register realtors.
@@ -338,7 +373,9 @@ class RealtorSignupView(View):
                 Realtor.objects.create(user=user)
             user = authenticate(email=email, password=password)
             _login(request, user)
+            messages.success(request, "Realtor welcome message")
             return redirect('home')
+
         context = {
             'signup_form': signup_form
         }
@@ -435,6 +472,18 @@ class CategoryView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
+        def _category_exists(couple, summary):
+            exists = Category.objects.filter(
+                couple=couple, summary=summary).exists()
+            if exists:
+                error = ("Category with summary '{summary}' already exists"
+                         .format(summary=summary))
+                messages.error(request, error)
+            return exists
+
+        homebuyer = request.user.role_object
+        couple = homebuyer.couple
+
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
             id = request.POST['category']
@@ -442,9 +491,8 @@ class CategoryView(BaseView):
 
             # Weight a category
             if request.POST['type'] == 'update':
-                homebuyer = request.user.role_object
                 weight = request.POST['weight']
-                grade, created = CategoryWeight.objects.update_or_create(
+                CategoryWeight.objects.update_or_create(
                     homebuyer=homebuyer, category=category,
                     defaults={'weight': int(weight)})
                 return HttpResponse(json.dumps({"id": id}),
@@ -459,7 +507,6 @@ class CategoryView(BaseView):
         # Creates or updates a category
         else:
             homebuyer = request.user.role_object
-            couple = homebuyer.couple
             summary = request.POST["summary"]
             description = request.POST["description"]
 
@@ -467,15 +514,22 @@ class CategoryView(BaseView):
             if "catID" in request.POST:
                 category = get_object_or_404(Category,
                                              id=request.POST['catID'])
-                category.summary = summary
-                category.description = description
-                category.save()
+                if not _category_exists(couple, summary):
+                    category.summary = summary
+                    category.description = description
+                    category.save()
+                    messages.success(
+                        request,
+                        "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            else:
-                grade, created = Category.objects.update_or_create(
-                    couple=couple, summary=summary,
-                    defaults={'description': str(description)})
+            elif not _category_exists(couple, summary):
+                Category.objects.create(couple=couple,
+                                        summary=summary,
+                                        description=description)
+                messages.success(
+                    request,
+                    "Category '{summary}' added.".format(summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)

@@ -77,6 +77,12 @@
       </div><!-- /.container-fluid -->
     </nav>
     <div class="container">
+      {% block messages %}
+        <div class="row">
+          {% bootstrap_messages %}
+        </div>
+      {% endblock %}
+
       {% block body %}
       {% endblock %}
     </div>
