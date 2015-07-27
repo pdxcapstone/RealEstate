@@ -124,8 +124,16 @@ class HomeView(BaseView):
 
         # Updates a home
         if "id" in request.POST:
-            home = get_object_or_404(House, id=request.POST["id"])
-            if not _house_exists(couple, nickname):
+            id_home = get_object_or_404(House, id=request.POST["id"])
+            nickname_home = House.objects.filter(
+                couple=couple, nickname=nickname).first()
+            if (id_home and nickname_home and
+                    id_home.id != nickname_home.id):
+                error = (u"House '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            else:
+                home = id_home
                 home.nickname = nickname
                 home.address = address
                 home.save()
@@ -134,7 +142,11 @@ class HomeView(BaseView):
                     "House '{nickname}' updated".format(nickname=nickname))
 
         # Creates new home
-        elif not _house_exists(couple, nickname):
+        elif House.objects.filter(couple=couple, nickname=nickname).exists():
+            error = (u"House '{nickname}' already exists"
+                     .format(nickname=nickname))
+            messages.error(request, error)
+        else:
             House.objects.create(
                 couple=couple, nickname=nickname, address=address)
             messages.success(
@@ -471,15 +483,6 @@ class CategoryView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
-        def _category_exists(couple, summary):
-            exists = Category.objects.filter(
-                couple=couple, summary=summary).exists()
-            if exists:
-                error = ("Category with summary '{summary}' already exists"
-                         .format(summary=summary))
-                messages.error(request, error)
-            return exists
-
         homebuyer = request.user.role_object
         couple = homebuyer.couple
 
@@ -505,14 +508,22 @@ class CategoryView(BaseView):
 
         # Creates or updates a category
         else:
-            homebuyer = request.user.role_object
             summary = request.POST["summary"]
             description = request.POST["description"]
 
             # Updates a category
             if "id" in request.POST:
-                category = get_object_or_404(Category, id=request.POST['id'])
-                if not _category_exists(couple, summary):
+                id_category = get_object_or_404(
+                    Category, id=request.POST['id'])
+                summary_category = Category.objects.filter(
+                    couple=couple, summary=summary).first()
+                if (id_category and summary_category and
+                        id_category.id != summary_category.id):
+                    error = (u"Category '{summary}' already exists"
+                             .format(summary=summary))
+                    messages.error(request, error)
+                else:
+                    category = id_category
                     category.summary = summary
                     category.description = description
                     category.save()
@@ -521,13 +532,18 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            elif not _category_exists(couple, summary):
+            elif Category.objects.filter(
+                    couple=couple, summary=summary).exists():
+                error = (u"Category '{summary}' already exists"
+                         .format(summary=summary))
+                messages.error(request, error)
+            else:
                 Category.objects.create(couple=couple,
                                         summary=summary,
                                         description=description)
                 messages.success(
                     request,
-                    "Category '{summary}' added.".format(summary=summary))
+                    u"Category '{summary}' added".format(summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
