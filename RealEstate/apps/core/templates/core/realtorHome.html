@@ -37,7 +37,7 @@ ul.list-group { padding-top:30px; }
 			{% else %}
 				<li id="row_{{couple.id}}" class="list-group-item couple_row">
 			{% endif %}
-			
+
 					<div class="row">
 						<div class="col-sm-7 vcenter couple-container">
 							{% for homebuyer in homebuyers %}
@@ -58,9 +58,9 @@ ul.list-group { padding-top:30px; }
 							</center>
 						</div>
 					</div>
-					
+
 				</li>
-				
+
 		{% endfor %}
     </ul>
     {% if hasPending %}
@@ -69,7 +69,7 @@ ul.list-group { padding-top:30px; }
     <center>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" style="margin:30px">Invite Couple</button>
     </center>
-    
+
     <!-- Invite Couple Modal -->
     <div id="inviteCouple" class="modal fade" role="dialog" style="height:auto">
       <div class="modal-dialog">
@@ -80,12 +80,11 @@ ul.list-group { padding-top:30px; }
             </div>
             <div class="modal-body">
             <form action="" role="form" method="post">
-            	{% bootstrap_form form %}
+            	{% bootstrap_formset invite_formset %}
             	{% csrf_token %}
             	<div style="margin-top: 40px">
             		<center>
             			{% buttons submit='Invite' %}{% endbuttons %}
-            			{% bootstrap_messages %}
             		</center>
             	</div>
             </form>

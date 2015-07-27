@@ -1,14 +1,17 @@
 import json
 
+from django.contrib import messages
 from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.forms.models import modelformset_factory
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
+from django.utils.html import escape
 from django.views.generic import View
-from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
@@ -19,7 +22,8 @@ from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          User)
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
-from RealEstate.apps.pending.forms import InviteHomebuyerForm
+from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
+                                           InviteHomebuyersFormSet)
 
 
 def login(request, *args, **kwargs):
@@ -66,16 +70,12 @@ class HomeView(BaseView):
     homebuyer_template_name = 'core/homebuyerHome.html'
     realtor_template_name = 'core/realtorHome.html'
 
-    def _invite_homebuyer(self, request, pending_couple, email):
-        """
-        Create the PendingHomebuyer instance and attach it to the
-        PendingCouple.  Then send out the email invite and flash a message
-        to the user that the invite has been sent.
-        """
-        homebuyer = PendingHomebuyer.objects.create(
-            email=email,
-            pending_couple=pending_couple)
-        homebuyer.send_email_invite(request)
+    def _build_invite_formset(self):
+        return modelformset_factory(PendingHomebuyer,
+                                    form=InviteHomebuyerForm,
+                                    formset=InviteHomebuyersFormSet,
+                                    extra=2,
+                                    max_num=2)
 
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
@@ -151,27 +151,38 @@ class HomeView(BaseView):
             pendingHomebuyer = PendingHomebuyer.objects.filter(
                 pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+
+        invite_formset = self._build_invite_formset()()
         context = {
             'couples': coupleData,
             'realtor': realtor,
-            'form': InviteHomebuyerForm(),
-            'hasPending': hasPending
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        form = InviteHomebuyerForm(request.POST)
-        if form.is_valid():
-            first_email = form.cleaned_data.get('first_email')
-            second_email = form.cleaned_data.get('second_email')
+        invite_formset = self._build_invite_formset()(request.POST)
+        if invite_formset.is_valid():
+            pending_homebuyers = [
+                form.instance for form in invite_formset.forms]
             with transaction.atomic():
                 pending_couple = PendingCouple.objects.create(
                     realtor=request.user.realtor)
-                self._invite_homebuyer(request, pending_couple, first_email)
-                self._invite_homebuyer(request, pending_couple, second_email)
+                for pending_homebuyer in pending_homebuyers:
+                    pending_homebuyer.pending_couple = pending_couple
+                    pending_homebuyer.save()
 
+            for pending_homebuyer in pending_homebuyers:
+                pending_homebuyer.send_email_invite(request)
+                message = escape(
+                    "Email invite sent to {homebuyer}".format(
+                        homebuyer=unicode(pending_homebuyer)))
+                messages.success(request, message)
+            return redirect('home')
+
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
         coupleData = []
         isPending = True
         hasPending = pendingCouples.exists()
@@ -185,8 +196,8 @@ class HomeView(BaseView):
         context = {
             'couples': coupleData,
             'realtor': realtor,
-            'form': InviteHomebuyerForm(),
-            'hasPending': hasPending
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
