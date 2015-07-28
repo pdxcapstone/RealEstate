@@ -1,7 +1,7 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
-
+<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% block body %}
     <div id="heading">
         <h2><strong>Realtor Dashboard</strong> </h2>
@@ -15,7 +15,7 @@
 				<li id="row_{{couple.id}}" class="list-group-item couple_row">
 			{% endif %}
 			
-					<div class="row home_row" id="row_{{couple.id}}">
+					<div class="row" id="row_{{couple.id}}">
                         <div class="row-con">
         					<div class="col-sm-6">
         						{% for homebuyer in homebuyers %}
@@ -23,9 +23,9 @@
         								{% if isPending %}
         									{{homebuyer.email}}
         									{% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
-        									<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail-icon" ></span></a>
+        									<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail icon" ></span></a>
         								{% else %}
-        									{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail-icon" ></span></a>
+        									{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail icon" ></span></a>
         								{% endif %}
         							</h4>
         						{% endfor %}
@@ -46,11 +46,11 @@
         <div class="red-alert">* Pending homebuyers</div>
     {% endif %}
     <center>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" id="button-margin">Invite Couple</button>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" id="button">Invite Couple</button>
     </center>
     
     <!-- Invite Couple Modal -->
-    <div id="inviteCouple" class="modal fade" role="dialog" id="modalHeight">
+    <div id="inviteCouple" class="modal fade modalHeight" role="dialog">
       <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -61,12 +61,10 @@
             <form action="" role="form" method="post">
             	{% bootstrap_form form %}
             	{% csrf_token %}
-            	<div id="saveButtonMargin">
-            		<center>
-            			{% buttons submit='Invite' %}{% endbuttons %}
-            			{% bootstrap_messages %}
-            		</center>
-            	</div>
+        		<center>
+        			{% buttons submit='Invite' %}{% endbuttons %}
+        			{% bootstrap_messages %}
+        		</center>
             </form>
             </div>
         </div>

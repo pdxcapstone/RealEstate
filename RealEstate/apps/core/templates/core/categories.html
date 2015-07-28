@@ -1,6 +1,7 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 
 {% block body %}
 {% csrf_token %}
@@ -20,9 +21,9 @@
 			    <!-- Category Summary -->
 				<div class="col-md-4 vcenter summary-col">
 					<h4>{{category.summary}}
-					    <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
-					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
+					    <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
 					</h4>
 					{% if category.description %}
 						<p>{{ category.description }}</p>
@@ -45,11 +46,11 @@
 	{% endfor %}
 </ul>
 <center>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory" id="button-margin">Add Category</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory" id="button">Add Category</button>
 </center>
 
 <!-- Add Category Modal -->
-<div id="addCategory" class="modal fade" role="dialog" id="modalHeight">
+<div id="addCategory" class="modal fade modalHeight" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -60,12 +61,10 @@
         <form action="" role="form" method="post">
         	{% bootstrap_form form%}
         	{% csrf_token %}
-        	<div id="saveButtonMargin">
-        		<center>
-        			{% buttons submit='Save Category' %}{% endbuttons %}
-        			{% bootstrap_messages %}
-        		</center>
-        	</div>
+    		<center>
+    			{% buttons submit='Save Category' %}{% endbuttons %}
+    			{% bootstrap_messages %}
+    		</center>
         </form>
         </div>
     </div>
@@ -73,7 +72,7 @@
 </div>
 
 <!-- Edit Category Modal -->
-<div id="edit-modal" class="modal fade" role="dialog" id="modalHeight">
+<div id="edit-modal" class="modal fade modalHeight" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -101,7 +100,7 @@
     <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <button type="button" class=xr"close" data-dismiss="modal">&times;</button>
             <h2 class="modal-title">Are you sure about this?</h4>
         </div>
       <div class="modal-body">

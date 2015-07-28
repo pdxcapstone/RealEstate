@@ -6,22 +6,20 @@ ul.list-group {
 #heading {
 	padding-bottom: 30px;
 }
-.icon-ok {
-	display: none;
+.icon {
+	display:none;
+	padding-left: 20px;
+}
+.ok {
 	font-size: 80%;
 	color: green;
-	padding-left: 20px
 }
-.icon-delete {
-    display: none;
+.delete {
     font-size: 90%;
     color: #A94431;
-    padding-left: 20px;
 }
-.icon-edit {
-    display: none;
+.edit {
     color: #31708f;
-    padding-left: 20px;
     cursor: pointer;
     font-size: 90%;
 }
@@ -44,17 +42,11 @@ ul.list-group {
 #helptext-R{
 	padding-left: 15px;
 }
-#button-margin{
+#button{
 	margin:30px;
 }
-#saveButtonMargin{
-	margin-top: 40px;
-}
-#modalHeight{
+.modalHeight{
 	height:auto;
-}
-.addButton{
-    margin-bottom:20px;
 }
 .row-con{
    display:table;
@@ -90,13 +82,11 @@ ul.list-group {
 
 /*realtorHome */
 
-.mail-icon {
+.mail {
     font-size: 90%;
-    padding-left: 20px;
     color: #cccccc;
-    display: none;
 }
-#mail-icon:hover { 
+.mail:hover { 
 	color: #337ab7;
 }
 a.mail { 
