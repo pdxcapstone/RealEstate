@@ -17,7 +17,7 @@
         <form class="addButton" action="" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form signup_form %}
-          <div class="pull-right" id="saveButtonMargin">
+          <div class="pull-right alert-success">
             {% buttons submit='Register' %}{% endbuttons %}
           </div>
         </form>

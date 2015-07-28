@@ -1,7 +1,11 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+
+{% block style %}
 <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
+{% endblock %}
+
 {% block body %}
     <div id="heading">
         <h2><strong>Realtor Dashboard</strong> </h2>

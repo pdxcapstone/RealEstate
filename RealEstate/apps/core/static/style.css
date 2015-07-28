@@ -9,19 +9,18 @@ ul.list-group {
 .icon {
 	display:none;
 	padding-left: 20px;
+	font-size: 90%;
 }
 .ok {
-	font-size: 80%;
 	color: green;
 }
 .delete {
-    font-size: 90%;
     color: #A94431;
+    cursor: pointer;
 }
 .edit {
     color: #31708f;
     cursor: pointer;
-    font-size: 90%;
 }
 .vcenter {
 	display: inline-block;
@@ -83,7 +82,6 @@ button{
 /*realtorHome */
 
 .mail {
-    font-size: 90%;
     color: #cccccc;
 }
 .mail:hover { 

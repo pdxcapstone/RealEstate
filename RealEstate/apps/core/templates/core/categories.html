@@ -1,8 +1,11 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
+{% endblock %}
+       
 {% block body %}
 {% csrf_token %}
 <div id="heading">
