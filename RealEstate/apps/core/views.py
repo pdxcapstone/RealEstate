@@ -1,14 +1,19 @@
 import json
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import login as auth_login
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View
-from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
@@ -31,6 +36,22 @@ def login(request, *args, **kwargs):
     if request.user.is_authenticated():
         return redirect('home')
     return auth_login(request, *args, **kwargs)
+
+
+@sensitive_post_parameters()
+@csrf_protect
+@never_cache
+def async_login(request, *args, **kwargs):
+    if not request.method == 'POST':
+        return HttpResponseBadRequest("Invalid request method")
+
+    response = {'success': False}
+    form = AuthenticationForm(request.POST)
+    if form.is_valid():
+        _login(request, form.get_user())
+        response['success'] = True
+        response['redirect'] = settings.LOGIN_REDIRECT_URL
+    return HttpResponse(json.dumps(response), content_type="application/json")
 
 
 class BaseView(View):
