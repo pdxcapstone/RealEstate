@@ -5,6 +5,9 @@
     var $loginForm = $('#login-form');
     var $loginFeedback = $('#login-feedback');
 
+    var $emailInput = $('#modal-login #id_username');
+    var $passwordInput = $("#modal-login #id_password");
+
     $loginForm.submit(function(e) {
         e.preventDefault();
         if (this.classList.contains(loadingClass)) {
@@ -16,7 +19,7 @@
             node.classList.remove(loadingClass);
             $loginFeedback.addClass(errorClass)
                           .text(error);
-            $("input[type='password']").val("");
+            $passwordInput.val("").focus();
         }
 
         var self = this;
@@ -38,5 +41,19 @@
               resetForm(self, "Server Error");
           },
         });
+    });
+
+    // Focus on the email input field if it is empty, otherwise focus password
+    $('#modal-login').on('shown.bs.modal', function shownModal() {
+        var $emailInput = $('#modal-login #id_username');
+        if (!$emailInput.val()) {
+            $emailInput.focus();
+        } else {
+            $passwordInput.focus();
+        }
+    });
+
+    $('#modal-login').on('hidden.bs.modal', function hiddenModal() {
+        $loginFeedback.removeClass().empty();
     });
 })();
