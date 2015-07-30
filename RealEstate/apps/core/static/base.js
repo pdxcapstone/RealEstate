@@ -91,3 +91,30 @@ function slideChange (slideEvt) {
 		}
 	});
 };
+
+
+/*
+<div class="alert alert-success alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+        You have successfully changed your password
+    </div>
+*/
+// Close dismissable message windows.
+function closeMessages () {
+    return $(".alert.alert-dismissable button").click();
+}
+
+// Display appropriate message when an object is deleted.
+function renderDeleteMessage(objectText) {
+    closeMessages();
+    var div = $('<div>')
+              .appendTo('#messages')
+              .addClass('alert alert-info alert-dismissable');
+    $("<button>").appendTo(div)
+                 .attr('type', 'button')
+                 .attr('data-dismiss', 'alert')
+                 .attr('aria-hidden', 'true')
+                 .addClass('close')
+                 .html("&times;");
+    div.append("Successfully deleted '"+objectText+"'");
+}
