@@ -197,9 +197,9 @@ class HomeView(BaseView):
                     realtor=request.user.realtor)
                 self._invite_homebuyer(request, pending_couple, first_email)
                 self._invite_homebuyer(request, pending_couple, second_email)
-            success_msg = "Email invitation sent to '{email}'"
-            messages.success(request, success_msg.format(email=first_email))
-            messages.success(request, success_msg.format(email=second_email))
+            success_msg = ("Email invitations sent to '{first}' and '{second}'"
+                           .format(first=first_email, second=second_email))
+            messages.success(request, success_msg)
         else:
             for form_field, errors in form.errors.iteritems():
                 errors = ", ".join(errors)
@@ -338,7 +338,8 @@ class PasswordChangeDoneView(BaseView):
     was successful.
     """
     def get(self, request, *args, **kwargs):
-        messages.success(request, "Password change successful")
+        messages.success(request,
+                         "You have successfully changed your password")
         return redirect('home')
 
 
@@ -384,7 +385,7 @@ class RealtorSignupView(View):
                 Realtor.objects.create(user=user)
             user = authenticate(email=email, password=password)
             _login(request, user)
-            messages.success(request, "Realtor welcome message")
+            messages.success(request, "Welcome!")
             return redirect('home')
 
         context = {

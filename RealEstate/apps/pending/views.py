@@ -111,7 +111,7 @@ class HomebuyerSignupView(View):
                     pending_couple.delete()
             user = authenticate(email=email, password=password)
             login(request, user)
-            messages.success(request, "Homebuyer welcome message")
+            messages.success(request, "Welcome!")
             return redirect('home')
 
         context = {
