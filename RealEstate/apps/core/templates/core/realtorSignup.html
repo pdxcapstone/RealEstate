@@ -10,14 +10,14 @@
     <div class="col-sm-3"></div>
     <div class="col-sm-6">
       {% bootstrap_messages %}
-      <h2 style="margin-top:50px">
+      <h2 class="signUpHeader">
         <strong>Realtor Registration Form</strong>
       </h2>
-      <div style="margin: 10px 0" class="well">
-        <form style="margin-bottom:20px" action="" role="form" method="post">
+      <div id="regForm" class="well">
+        <form class="addButton" action="" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form signup_form %}
-          <div class="pull-right" style="margin-top: 40px">
+          <div class="pull-right alert-success">
             {% buttons submit='Register' %}{% endbuttons %}
           </div>
         </form>

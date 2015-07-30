@@ -1,52 +1,6 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
-
-{% block style %}
-
-<style>
-.row-con{
-   display:table;
-   width:100%;
-}
-.vcenter {
-	display: table-cell;
-	vertical-align: middle;
-	text-align:center;
-	width:50%;
-}
-.icon-edit {
-    display: none;
-    color: #31708f;
-    padding-left: 20px;
-    cursor: pointer;
-    font-size: 90%;
-}
-#heading {
-    padding-bottom: 30px;
-}
-.list-group{
-    padding-top:30px;
-}
-.addButton{
-    margin-bottom:20px;
-}
-.icon-delete {
-    display: none;
-    font-size: 90%;
-    color: #A94431;
-    padding-left: 20px;
-}
-.hbdash-center {
-    display: table-cell;
-    vertical-align: middle;
-    text-align:center;
-    width:50%;
-
-}
-</style>
-{% endblock %}
-
 {% block body %}
 
 <h2><strong> Dashboard </strong> </h2>
@@ -60,12 +14,12 @@
                 <div class="col-sm-6">
                     <h4>
                         {{home}}
-                        <span data-toggle="modal" data-target="#edit-modal" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
-                        <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{home.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
+                        <span data-toggle="modal" data-target="#edit-modal" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                        <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{home.id}}' class='glyphicon glyphicon-remove icon delete'></span>
                     </h4>
                 <p>{{home.address}}</p>
                 </div>
-                <div class="vcenter">
+                <div class="hbdash-center">
                     <p>
                         <a href="{{home.evaluation_url}}"> Rate House </a>
                     </p>
@@ -93,7 +47,7 @@
                 <p>You're about to delete this home and all associated evaluations.
                 </p>
                 <center>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
                 </center>
             </div>
         </div>
