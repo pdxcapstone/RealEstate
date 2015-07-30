@@ -44,6 +44,9 @@ ul.list-group {
 button{
 	margin:30px;
 }
+button.close{
+	margin:auto;
+}
 .modalHeight{
 	height:auto;
 }
@@ -81,10 +84,11 @@ button{
 
 /*realtorHome */
 
-.mail {
+.email {
     color: #cccccc;
+    display: none;
 }
-.mail:hover { 
+.email:hover { 
 	color: #337ab7;
 }
 a.mail { 

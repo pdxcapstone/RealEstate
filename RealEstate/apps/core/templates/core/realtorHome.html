@@ -27,9 +27,9 @@
         								{% if isPending %}
         									{{homebuyer.email}}
         									{% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
-        									<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail icon" ></span></a>
+        									<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
         								{% else %}
-        									{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter mail icon" ></span></a>
+        									{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
         								{% endif %}
         							</h4>
         						{% endfor %}
@@ -50,7 +50,7 @@
         <div class="red-alert">* Pending homebuyers</div>
     {% endif %}
     <center>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple" id="button">Invite Couple</button>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple">Invite Couple</button>
     </center>
     
     <!-- Invite Couple Modal -->
