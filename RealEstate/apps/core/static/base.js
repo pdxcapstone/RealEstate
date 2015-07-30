@@ -64,6 +64,9 @@ function deleteData(deleteID) {
         },
         success: function(data) {
             $("#li_"+data.id).remove();
+            if (data.name) {
+                renderDeleteMessage(data.name);
+            }
         }
     });
 }
@@ -93,12 +96,6 @@ function slideChange (slideEvt) {
 };
 
 
-/*
-<div class="alert alert-success alert-dismissable">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-        You have successfully changed your password
-    </div>
-*/
 // Close dismissable message windows.
 function closeMessages () {
     return $(".alert.alert-dismissable button").click();

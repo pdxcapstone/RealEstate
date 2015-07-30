@@ -114,8 +114,9 @@ class HomeView(BaseView):
         if request.is_ajax():
             id = request.POST['id']
             home = House.objects.get(id=id)
+            name = home.nickname
             home.delete()
-            return HttpResponse(json.dumps({"id": id}),
+            return HttpResponse(json.dumps({"id": id, "name": name}),
                                 content_type="application/json")
 
         nickname = request.POST["nickname"]
@@ -503,8 +504,9 @@ class CategoryView(BaseView):
 
             # Delete a category
             elif request.POST['type'] == 'delete':
+                name = category.summary
                 category.delete()
-                return HttpResponse(json.dumps({"id": id}),
+                return HttpResponse(json.dumps({"id": id, "name": name}),
                                     content_type="application/json")
 
         # Creates or updates a category
