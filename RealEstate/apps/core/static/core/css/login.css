@@ -2,14 +2,14 @@ img#login-loading {
     display: none;
 }
 
+#login-form.loading button {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
 #login-form.loading img#login-loading {
     display: inline;
     height: 16px;
     width: 16px;
     margin-right: 8px;
-}
-
-#login-form.loading button {
-    opacity: 0.3;
-    pointer-events: none;
 }

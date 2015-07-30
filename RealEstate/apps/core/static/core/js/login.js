@@ -1,6 +1,4 @@
 (function () {
-    var LOGIN_DELAY = 800;
-
     var errorClass = 'alert alert-danger';
     var loadingClass = 'loading';
 
@@ -24,23 +22,21 @@
         var self = this;
         self.classList.add(loadingClass);
         $loginFeedback.removeClass().empty();
-        setTimeout(function() {
-            $.ajax({
-              type: "POST",
-              url: "/login-handler/",
-              dataType: 'json',
-              data: $loginForm.serialize(),
-              success: function (response) {
-                  if (response.success) {
-                      window.location = response.location;
-                  } else {
-                      resetForm(self, "Login Failed");
-                  }
-              },
-              error: function() {
-                  resetForm(self, "Server Error");
-              },
-            });
-        }, LOGIN_DELAY);
+        $.ajax({
+          type: "POST",
+          url: "/login-handler/",
+          dataType: 'json',
+          data: $loginForm.serialize(),
+          success: function (response) {
+              if (response.success) {
+                  window.location = response.location;
+              } else {
+                  resetForm(self, "Login Failed");
+              }
+          },
+          error: function() {
+              resetForm(self, "Server Error");
+          },
+        });
     });
 })();

@@ -1,4 +1,5 @@
 import json
+import time
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login as _login
@@ -27,6 +28,8 @@ from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
+LOGIN_DELAY = 1.5   # Seconds
+
 
 def login(request, *args, **kwargs):
     """
@@ -46,6 +49,7 @@ def async_login_handler(request, *args, **kwargs):
     if not (request.is_ajax() and request.method == 'POST'):
         return HttpResponseBadRequest("Invalid request")
 
+    time.sleep(LOGIN_DELAY)
     response = {'success': False}
     form = AuthenticationForm(data=request.POST)
     if form.is_valid():
