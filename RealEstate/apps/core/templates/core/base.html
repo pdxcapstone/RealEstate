@@ -14,6 +14,7 @@
     <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
     <meta name="description" content="Real Estate Decisions">
     <meta name="keywords" content="realestate">
+    <link href={% static "core/css/login.css" %} rel="stylesheet" type="text/css" />
     {% bootstrap_css %}
 
     {% block style %}
@@ -90,21 +91,19 @@
                   <button type="button" class="close" data-dismiss="modal">&times;</button>
                   <h2 class="modal-title">Login</h2>
                 </div>
-                <form action="{% url 'auth_login' %}" role="form" method="post">
+                <form id="login-form" action="" role="form" method="post">
+                  <div id="login-feedback" style="margin: 10px; text-align: center;"></div>
                   <div class="modal-body">
                 	{% bootstrap_form login_form %}
                 	{% csrf_token %}
                   </div>
                   <div class="modal-footer">
                     <div class="input-group pull-right">
-                      <span>img</span>
+                      <img id="login-loading" src={% static "core/images/loading.gif" %} />
                       <span>
                         <button class="btn btn-primary" type="submit">Login</button>
                       </span>
                     </div>
-                    {% comment %}
-                    {% buttons submit='Login' %}{% endbuttons %}
-                    {% endcomment %}
                   </div>
                 </form>
               </div>
@@ -114,10 +113,7 @@
       </div>
       {% bootstrap_javascript jquery=1 %}
       {% if not authenticated %}
-        <script src="{% static "core/login.js" %}"></script>
-        <script>
-            // login shit
-        </script>
+        <script src="{% static "core/js/login.js" %}"></script>
       {% endif %}
 
       {% block scripts %}
