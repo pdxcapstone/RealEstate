@@ -26,11 +26,13 @@ ul.list-group { padding-top:30px; }
 </style>
 {% endblock %}
 
-{% block body %}
-    <div id="heading">
-        <h2><strong>Realtor Dashboard</strong> </h2>
-    </div>
+{% block header %}
+  <div id="heading">
+    <h2><strong>Realtor Dashboard</strong></h2>
+  </div>
+{% endblock header %}
 
+{% block body %}
     <ul class="list-group">
         {% for couple, homebuyers, isPending in couples %}
 			{% if isPending %}

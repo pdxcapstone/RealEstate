@@ -35,12 +35,15 @@ ul.list-group {
 </style>
 {% endblock %}
 
+{% block header %}
+  <div id="heading">
+    <h2><strong> Evaluation for {{house}}</strong></h2>
+    <h4><em>{{house.address}}</em></h4>
+  </div>
+{% endblock header %}
+
 {% block body %}
 {% csrf_token %}
-<div id="heading">
-	<h2><strong> Evaluation for {{house}}</strong> </h2>
-	<h4><em>{{house.address}}</em></h4>
-</div>
 <p id="save-status" class="pull-right"></p>
 <ul class="list-group">
 	{% for category, score in grades %}

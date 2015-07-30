@@ -42,12 +42,15 @@ ul.list-group { padding-top:30px; }
 </style>
 {% endblock %}
 
+{% block header %}
+  <div id="heading">
+    <h2><strong>Categories</strong></h2>
+    <h4>How important are the categories below when choosing a home?</h4>
+  </div>
+{% endblock header %}
+
 {% block body %}
 {% csrf_token %}
-<div id="heading">
-	<h2><strong>Categories</strong> </h2>
-	<h4>How important are the categories below when choosing a home?</h4>
-</div>
 <p id="save-status" class="pull-right"></p>
 
 <!-- Category List -->
