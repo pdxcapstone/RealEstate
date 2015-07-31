@@ -100,6 +100,7 @@ class LoginView(View):
                 Realtor.objects.create(user=user)
             user = authenticate(email=email, password=password)
             login(request, user)
+            messages.success(request, "Welcome!")
             return redirect('home')
         context = {
             'signup_form': signup_form
