@@ -5,15 +5,19 @@
   Login
 {% endblock %}
 
+{% block header %}
+  <div class="col-sm-2"></div>
+    <h2 style="margin-top:50px">
+      <strong>Sign up as a Realtor</strong>
+    </h2>
+  <div class="col-sm-2"></div>
+{% endblock header %}
+
 {% block body %}
   <div class="row">
-    <div class="col-sm-3"></div>
-    <div class="col-sm-6">
-      {% bootstrap_messages %}
-      <h2 style="margin-top:50px">
-        <strong>Sign up as a Realtor</strong>
-      </h2>
-      <div style="margin: 10px 0" class="well">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-8">
+      <div style="margin: 10px 0" class="well" >
         <form style="margin-bottom:20px" action="" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form signup_form %}
@@ -23,13 +27,13 @@
         </form>
       </div>
       <div style="margin-top:100px; text-align: center;">
-          ...or
-            <a href="#" data-toggle="modal" data-target="#modal-login">
-              <strong>Log in</strong>
-            </a>
-          to an existing account.
+        ...or
+          <a href="#" data-toggle="modal" data-target="#modal-login">
+            <strong>Log in</strong>
+          </a>
+        to an existing account.
       </div>
     </div>
-    <div class="col-sm-3"></div>
+    <div class="col-sm-2"></div>
   </div>
 {% endblock %}

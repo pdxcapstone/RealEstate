@@ -73,7 +73,6 @@
                     </ul>
                   </li>
                 {% else %}
-                  <!--li><a href="{% url 'auth_login' %}"> Log In</a></li-->
                   <li><a href="#" data-toggle="modal" data-target="#modal-login"> Log In</a></li>
                 {% endif %}
               </ul>
@@ -81,10 +80,25 @@
           </div><!-- /.container-fluid -->
         </nav>
         <div class="container">
-          {% block body %}
+          <div class="row">
+            {% block header %}
+            {% endblock %}
+          </div>
+
+          {% block messages %}
+            <div class="row">
+              <div class="col-sm-2"></div>
+              <div id="messages" class="col-sm-8" style="margin: 8px;">
+                {% bootstrap_messages %}
+              </div>
+              <div class="col-sm-2"></div>
+            </div>
           {% endblock %}
-        </div>
-      </div>
+
+          {% block body %}
+          {% endblock body %}
+        </div><!-- /.container -->
+      </div><!-- /#main-content -->
 
       {% if not authenticated %}
         <div id="modal-login" class="modal fade" role="dialog">
@@ -120,7 +134,6 @@
       {% if not authenticated %}
         <script src="{% static "core/js/login.js" %}"></script>
       {% endif %}
-
       {% block scripts %}
       {% endblock %}
     {% endwith %}

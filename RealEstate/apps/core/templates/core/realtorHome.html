@@ -6,11 +6,13 @@
   <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
 
-{% block body %}
+{% block header %}
   <div id="heading">
     <h2><strong>Realtor Dashboard</strong></h2>
   </div>
+{% endblock header %}
 
+{% block body %}
   <ul class="list-group">
     {% for couple, homebuyers, isPending in couples %}
       <li id="row_{% if isPending %}p{% endif %}{{couple.id}}" class="list-group-item couple_row">
@@ -39,6 +41,7 @@
       </li>
     {% endfor %}
   </ul>
+
   {% if hasPending %}
     <div class="red-alert">* Pending homebuyers</div>
   {% endif %}
@@ -60,7 +63,6 @@
             {% csrf_token %}
             <center>
               {% buttons submit='Invite' %}{% endbuttons %}
-              {% bootstrap_messages %}
             </center>
           </form>
         </div>
@@ -70,9 +72,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static "base.js" %}"></script>
-
-<script>
-    $( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
-</script>
+  <script src="{% static "base.js" %}"></script>
+  <script>
+      $( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
+  </script>
 {% endblock %}

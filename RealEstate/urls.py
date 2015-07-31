@@ -27,11 +27,12 @@ urlpatterns = [
     url(r'^login-handler/$', CoreViews.async_login_handler, name='login_handler'),
     url(r'^logout/$',
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
-    url(r'^change-password/$', 'django.contrib.auth.views.password_change',
-        {'post_change_redirect': 'home'}, name='password_change'),
+    url(r'^change-password/$',
+        'django.contrib.auth.views.password_change', name='password_change'),
+    url(r'^change-password-done/$',
+        CoreViews.PasswordChangeDoneView.as_view(),
+        name='password_change_done'),
 
-    url(r'^invite/$',
-        PendingViews.InviteHomebuyerView.as_view(), name='invite'),
     url(r'^homebuyer-signup/(?P<registration_token>[0-9a-f]{64})/$',
         PendingViews.HomebuyerSignupView.as_view(), name='homebuyer-signup'),
 
@@ -39,6 +40,6 @@ urlpatterns = [
         CoreViews.EvalView.as_view(), name='eval'),
     url(r'^report/(?P<couple_id>[\d]+)/$',
         CoreViews.ReportView.as_view(), name='report'),
-    url(r'^$', CoreViews.HomeView.as_view(), name='home'),
     url(r'^categories/$', CoreViews.CategoryView.as_view(), name='categories'),
+    url(r'^$', CoreViews.HomeView.as_view(), name='home'),
 ]
