@@ -21,12 +21,12 @@
         <form style="margin-bottom:20px" action="" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form signup_form %}
-          <div class="pull-right" style="margin-top: 40px">
-            {% buttons submit='Register' %}{% endbuttons %}
+          <div style="padding-top: 20px;" class="text-center">
+            <button style="margin: 0"; class="btn btn-lg btn-primary" type="submit">Register</button>
           </div>
         </form>
       </div>
-      <div style="margin-top:100px; text-align: center;">
+      <div style="margin: 20px 0; text-align: center;">
         ...or
           <a href="#" data-toggle="modal" data-target="#modal-login">
             <strong>Log in</strong>
