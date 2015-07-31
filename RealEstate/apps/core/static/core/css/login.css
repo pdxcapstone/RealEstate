@@ -1,8 +1,12 @@
+#login-button {
+    margin: 0;
+}
+
 img#login-loading {
     display: none;
 }
 
-body.modal-open #main-content {
+#main-content.modal-login-active {
     opacity: 0.1;
 }
 
