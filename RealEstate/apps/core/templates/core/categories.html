@@ -3,45 +3,9 @@
 {% load staticfiles %}
 
 {% block style %}
-<link rel="stylesheet" type="text/css" href="{% static "slide.min.css" %}">
-<style>
-ul.list-group { padding-top:30px; }
-#heading { padding-bottom: 20px; }
-.rating-col { min-width: 500px; }
-.summary-col{ min-width: 150px; }
-.alert-success { margin-top: 30px; }
-.tooltip-main.top.in { z-index:1 !important; }
-.close { z-index: 3000 !important; }
-.inner-rating { padding:20px 0; }
-.slider-selection { background: #BABABA; }
-.icon-edit {
-    display: none;
-    font-size: 90%;
-    color: #31708f;
-    padding-left: 20px;
-    cursor: pointer;
-}
-.icon-ok {
-    display: none;
-    font-size: 90%;
-    color: green;
-    padding-left: 20px;
-}
-.icon-delete {
-    display: none;
-    font-size: 90%;
-    color: #A94431;
-    padding-left: 20px;
-}
-.vcenter {
-    display: inline-block;
-    vertical-align: middle;
-    float: none;
-    margin-left:-3px;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
-
+       
 {% block body %}
 {% csrf_token %}
 <div id="heading">
@@ -60,9 +24,9 @@ ul.list-group { padding-top:30px; }
 			    <!-- Category Summary -->
 				<div class="col-md-4 vcenter summary-col">
 					<h4>{{category.summary}}
-					    <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon-edit'></span>
-					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon-delete'></span>
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
+					    <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
 					</h4>
 					{% if category.description %}
 						<p>{{ category.description }}</p>
@@ -71,11 +35,11 @@ ul.list-group { padding-top:30px; }
 
 				<!-- Category Weighting -->
 				<div class="col-md-7 vcenter rating rating-col">
-					<div class="inner-rating" style="padding-left:10%" >
+					<div class="inner-rating" id="catRating-out" >
 						<center>
-							<span class="help-text" style="text-size:60%; padding-right: 20px">{{min_choice}}</span>
+							<span class="help-text" id="helptext-L">{{min_choice}}</span>
 							<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_weight}} data-slider-max={{max_weight}} data-slider-step="1" data-slider-value="{% if not weight %}{{default_weight}}{% else %}{{ weight }}{% endif %}"/>
-							<span class="help-text" style="text-size:60%; padding-left: 20px">{{max_choice}}</span>
+							<span class="help-text" id="helptext-R">{{max_choice}}</span>
 						</center>
 					</div>
 				</div>
@@ -85,11 +49,11 @@ ul.list-group { padding-top:30px; }
 	{% endfor %}
 </ul>
 <center>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory" style="margin:30px">Add Category</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
 </center>
 
 <!-- Add Category Modal -->
-<div id="addCategory" class="modal fade" role="dialog" style="height:auto">
+<div id="addCategory" class="modal fade modalHeight" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -100,12 +64,10 @@ ul.list-group { padding-top:30px; }
         <form action="" role="form" method="post">
         	{% bootstrap_form form%}
         	{% csrf_token %}
-        	<div style="margin-top: 40px">
-        		<center>
-        			{% buttons submit='Save Category' %}{% endbuttons %}
-        			{% bootstrap_messages %}
-        		</center>
-        	</div>
+    		<center>
+    			{% buttons submit='Save Category' %}{% endbuttons %}
+    			{% bootstrap_messages %}
+    		</center>
         </form>
         </div>
     </div>
@@ -113,7 +75,7 @@ ul.list-group { padding-top:30px; }
 </div>
 
 <!-- Edit Category Modal -->
-<div id="edit-modal" class="modal fade" role="dialog" style="height:auto">
+<div id="edit-modal" class="modal fade modalHeight" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
         <div class="modal-header">
@@ -124,7 +86,7 @@ ul.list-group { padding-top:30px; }
         <form action="" role="form" method="post">
         	{% bootstrap_form editForm%}
         	{% csrf_token %}
-        	<div style="margin-top: 40px">
+        	<div id="saveButtonMargin">
         		<center>
         			{% buttons submit='Save Category'%}{% endbuttons %}
         			{% bootstrap_messages %}
@@ -147,7 +109,7 @@ ul.list-group { padding-top:30px; }
       <div class="modal-body">
         <p>You're about to delete this category and all associated house rankings.</p>
         <center>
-            <button type="button" class="btn btn-danger" data-dismiss="modal" style="margin:30px" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
+            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
         </center>
       </div>
       </div>
