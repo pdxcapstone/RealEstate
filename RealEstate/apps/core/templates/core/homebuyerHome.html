@@ -1,10 +1,12 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 {% load staticfiles %}
+
+{% block header %}
+  <h2><strong>Dashboard</strong></h2>
+{% endblock header %}
+
 {% block body %}
-
-<h2><strong> Dashboard </strong> </h2>
-
 <ul class="list-group">
 <!--Home list -->
     {% for home in house %}
