@@ -2,6 +2,10 @@ img#login-loading {
     display: none;
 }
 
+body.modal-open #main-content {
+    opacity: 0.1;
+}
+
 #login-form.loading button {
     opacity: 0.3;
     pointer-events: none;

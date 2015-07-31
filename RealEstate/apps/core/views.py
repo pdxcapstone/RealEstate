@@ -41,7 +41,7 @@ def async_login_handler(request, *args, **kwargs):
     the redirect location is returned (currently just the home page).
     """
     if not (request.is_ajax() and request.method == 'POST'):
-        return HttpResponseBadRequest("Invalid request")
+        raise PermissionDenied
 
     time.sleep(LOGIN_DELAY)
     response = {'success': False}

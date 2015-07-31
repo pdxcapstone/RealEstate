@@ -43,8 +43,10 @@
         });
     });
 
+    var $modalLogin = $('#modal-login')
+
     // Focus on the email input field if it is empty, otherwise focus password
-    $('#modal-login').on('shown.bs.modal', function shownModal() {
+    $modalLogin.on('shown.bs.modal', function shownModal() {
         var $emailInput = $('#modal-login #id_username');
         if (!$emailInput.val()) {
             $emailInput.focus();
@@ -53,7 +55,7 @@
         }
     });
 
-    $('#modal-login').on('hidden.bs.modal', function hiddenModal() {
+    $modalLogin.on('hidden.bs.modal', function hiddenModal() {
         $loginFeedback.removeClass().empty();
     });
 })();
