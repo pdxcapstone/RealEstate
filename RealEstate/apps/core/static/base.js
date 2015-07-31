@@ -64,6 +64,9 @@ function deleteData(deleteID) {
         },
         success: function(data) {
             $("#li_"+data.id).remove();
+            if (data.name) {
+                renderDeleteMessage(data.name);
+            }
         }
     });
 }
@@ -91,3 +94,24 @@ function slideChange (slideEvt) {
 		}
 	});
 };
+
+
+// Close dismissable message windows.
+function closeMessages () {
+    return $(".alert.alert-dismissable button").click();
+}
+
+// Display appropriate message when an object is deleted.
+function renderDeleteMessage(objectText) {
+    closeMessages();
+    var div = $('<div>')
+              .appendTo('#messages')
+              .addClass('alert alert-info alert-dismissable');
+    $("<button>").appendTo(div)
+                 .attr('type', 'button')
+                 .attr('data-dismiss', 'alert')
+                 .attr('aria-hidden', 'true')
+                 .addClass('close')
+                 .html("&times;");
+    div.append("Successfully deleted '"+objectText+"'");
+}
