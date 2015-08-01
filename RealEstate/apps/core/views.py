@@ -281,13 +281,7 @@ class HomeView(BaseView):
                            .format(first=escape(unicode(first_homebuyer)),
                                    second=escape(unicode(second_homebuyer))))
             messages.success(request, success_msg)
-        else:
-            for form_field, errors in form.errors.iteritems():
-                errors = ", ".join(errors)
-                value = form.data.get(form_field)
-                messages.error(
-                    request,
-                    "{value}: {errors}".format(value=value, errors=errors))
+            return redirect('home')
 
         couples = Couple.objects.filter(realtor=realtor)
         pendingCouples = PendingCouple.objects.filter(realtor=realtor)

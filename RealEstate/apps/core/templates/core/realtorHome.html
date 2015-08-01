@@ -75,5 +75,15 @@
   <script src="{% static "base.js" %}"></script>
   <script>
       $( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
+
+      $(document).ready(function() {
+          var $errorMessages = $('#inviteCouple .alert.alert-danger');
+          var $helpBlocks = $('#inviteCouple span.help-block');
+
+          // If errors on invite submit...
+          if ($errorMessages.length || $helpBlocks.length) {
+              $('#inviteCouple').modal();
+          }
+      });
   </script>
 {% endblock %}
