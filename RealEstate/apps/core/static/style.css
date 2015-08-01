@@ -112,3 +112,22 @@ a.mail {
 .signUpHeader{
 	margin-top:50px;
 }
+
+/* login */
+
+#bg-img {
+  background: white url(images/homepage_sunset.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width:inherit;
+}
+
+/* base */
+.navbar-alt {
+	position: relative;
+    min-height: 50px;
+    /* margin-bottom: 20px; */
+    border: 1px solid transparent;
+}
