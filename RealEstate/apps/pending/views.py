@@ -1,67 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.db import transaction
-from django.forms.models import modelformset_factory
 from django.shortcuts import redirect, render
-from django.utils.html import escape
 from django.views.generic import View
 
 from RealEstate.apps.core.models import Couple, Homebuyer, User
-from RealEstate.apps.core.views import BaseView
-from RealEstate.apps.pending.forms import (HomebuyerSignupForm,
-                                           InviteHomebuyerForm,
-                                           InviteHomebuyersFormSet)
-from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
-
-
-class InviteHomebuyerView(BaseView):
-    """
-    This view supplies a form for sending out email invites to Homebuyers.
-    This is temporarily a separate view but we will probably want to integrate
-    this into the Realtor home page.
-    """
-    _USER_TYPES_ALLOWED = User._REALTOR_ONLY
-    template_name = 'pending/inviteHomebuyer.html'
-
-    def _build_formset(self):
-        return modelformset_factory(PendingHomebuyer,
-                                    form=InviteHomebuyerForm,
-                                    formset=InviteHomebuyersFormSet,
-                                    extra=2,
-                                    max_num=2)
-
-    def get(self, request, *args, **kwargs):
-        formset = self._build_formset()
-        context = {'formset': formset}
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        """
-        Populate the form with the submitted data.  If invalid, re-render it
-        with the errors displayed.  Otherwise the form is valid; create the
-        PendingHomebuyer instances and send out the email invites.
-        """
-        formset = self._build_formset()(request.POST)
-        if formset.is_valid():
-            pending_homebuyers = [form.instance for form in formset.forms]
-            with transaction.atomic():
-                pending_couple = PendingCouple.objects.create(
-                    realtor=request.user.realtor)
-                for pending_homebuyer in pending_homebuyers:
-                    pending_homebuyer.pending_couple = pending_couple
-                    pending_homebuyer.save()
-
-            for pending_homebuyer in pending_homebuyers:
-                pending_homebuyer.send_email_invite(request)
-                message = escape(
-                    "Email invite sent to {homebuyer}".format(
-                        homebuyer=unicode(pending_homebuyer)))
-                print message
-                messages.success(request, message)
-            return redirect('invite')
-
-        context = {'formset': formset}
-        return render(request, self.template_name, context)
+from RealEstate.apps.pending.forms import HomebuyerSignupForm
+from RealEstate.apps.pending.models import PendingHomebuyer
 
 
 class HomebuyerSignupView(View):
@@ -168,6 +113,7 @@ class HomebuyerSignupView(View):
                     pending_couple.delete()
             user = authenticate(email=email, password=password)
             login(request, user)
+            messages.success(request, "Welcome!")
             return redirect('home')
 
         context = {

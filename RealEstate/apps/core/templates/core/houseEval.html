@@ -3,44 +3,18 @@
 {% load staticfiles %}
 
 {% block style %}
-<link rel="stylesheet" type="text/css" href="{% static "slide.min.css" %}">
-<style>
-ul.list-group {
-	padding-top:30px;
-}
-#heading {
-	padding-bottom: 30px;
-}
-.alert-success {
-	margin-top: 30px;
-}
-.icon-ok {
-	display: none;
-	font-size: 80%;
-	color: green;
-	padding-left: 20px
-}
-.inner-rating {
-	padding:20px 0;
-}
-.slider-selection {
-	background: #BABABA;
-}
-.vcenter {
-	display: inline-block;
-	vertical-align: middle;
-	float: none;
-	margin-left:-3px;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
+
+{% block header %}
+  <div id="heading">
+    <h2><strong> Evaluation for {{house}}</strong></h2>
+    <h4><em>{{house.address}}</em></h4>
+  </div>
+{% endblock header %}
 
 {% block body %}
 {% csrf_token %}
-<div id="heading">
-	<h2><strong> Evaluation for {{house}}</strong> </h2>
-	<h4><em>{{house.address}}</em></h4>
-</div>
 <p id="save-status" class="pull-right"></p>
 <ul class="list-group">
 	{% for category, score in grades %}
@@ -48,7 +22,7 @@ ul.list-group {
 			<div class="row">
 				<div class="col-sm-6 vcenter">
 					<h4>{{category.summary}}
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon-ok'></span>
+						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
 					</h4>
 					{% if category.description %}
 						<p>
@@ -57,11 +31,11 @@ ul.list-group {
 					{% endif %}
 				</div>
 				<div class="col-sm-6 vcenter rating">
-					<div class="inner-rating" style="padding-left:10%" >
+					<div class="inner-rating">
 						<center>
-							<span class="help-text" style="text-size:60%; padding-right: 15px">{{min_choice}}</span>
+							<span class="help-text" id="helptext-L">{{min_choice}}</span>
 							<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
-							<span class="help-text" style="text-size:60%; padding-left: 15px">{{max_choice}}</span>
+							<span class="help-text" id="helptext-R">{{max_choice}}</span>
 						</center>
 					</div>
 				</div>
