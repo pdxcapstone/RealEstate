@@ -115,13 +115,10 @@ a.mail {
 
 /* login */
 
-#bg-img {
-  background: white url(images/homepage_sunset.jpg) no-repeat center center fixed; 
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
-  width:inherit;
+.well-alt {
+	min-height: 20px;
+    padding: 19px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
 }
 
 /* base */
@@ -136,4 +133,12 @@ a.mail {
 .navbar-alt a{
 	color:black;
 	font-size:150%;
+}
+#bg-img {
+  background: white url(images/homepage_sunset.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width:inherit;
 }
