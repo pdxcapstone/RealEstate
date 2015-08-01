@@ -9,8 +9,8 @@ from RealEstate.apps.pending.models import PendingHomebuyer
 
 class HomebuyerSignupForm(BaseSignupForm):
     class Meta(BaseSignupForm.Meta):
-        fields = ('password', 'password_confirmation', 'first_name',
-                  'last_name', 'phone')
+        fields = ('first_name', 'last_name', 'phone', 'password',
+                  'password_confirmation')
 
 
 class InviteHomebuyerForm(forms.ModelForm):
