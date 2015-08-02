@@ -5,22 +5,29 @@
 {% endblock header %}
 
 {% block body %}
-    <h4>Weighting</h4>
-    {% for weight in categoryImportance %}
-        <row>
-            <h5>{{weight}}</h5>
-        </row>
-    {%  endfor %}
+    <h2>Weighting</h2>
+    {% for category, weight1, weight2 in categoryImportance %}
+        <h4>{{category}}</h4>
+        <h5>{{weight1}} | {{weight2}}</h5>
+    {% endfor %}
 
-    <h4>Homebuyer Pie Chart Data</h4>
-    {% for homebuyerPie in homebuyerPies %}
-        {% for hb in homebuyerPie %}
-        <row>
-            <h5>{{hb}}</h5>
-        </row>
+    <h2>Homebuyer Pie Chart Data</h2>
+    {% for homebuyer, weights in homebuyerPies %}
+        <h4>{{homebuyer}}</h4>
+        <h5>{{weights}}</h5>
+    {% endfor %}
+
+    <h2>Category Data</h2>
+    {% for category, homes in categoryData %}
+        <h4>{{category}}</h4>
+        {% for home, score in homes %}
+        <h5>{{home}} --> {{score}}</h5>
         {%  endfor %}
-    {%  endfor %}
+    {% endfor %}
 
-    <h1>{{ megaScore }}</h1>
-
+    <h2>Total Score</h2>
+    {% for key, value in totalScore.items %}
+        <h4>{{key}}</h4>
+        {{value}}
+    {% endfor %}
 {% endblock body %}

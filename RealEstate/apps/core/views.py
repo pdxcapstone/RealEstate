@@ -412,55 +412,54 @@ class ReportView(BaseView):
         return role.can_view_report_for_couple(couple_id)
 
     def get(self, request, *args, **kwargs):
+        first = 0
+        second = 1
         couple_id = int(kwargs.get('couple_id', 0))
         couple = Couple.objects.get(id=couple_id)
         homebuyers = couple.homebuyer_set.all()
+        data1 = homebuyers[first].report_data
+        data2 = homebuyers[second].report_data
 
-        categories = Category.objects.filter(couple=couple)
-        houses = House.objects.filter(couple=couple)
-        weightTotalDict = {}
+        categoryImportance = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            categoryImportance.append((category, weight1, weight2))
 
-        categoryImportance = ()
-        for c in categories:
-            weights = []
-            for hb in homebuyers:
-                weight = CategoryWeight.objects.filter(category=c, homebuyer=hb)
-                weights.append(weight.first().weight)
-            categoryImportance += (c, weights)
+        weights1 = []
+        weights2=  []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            weights1.append(weight1)
+            weights2.append(weight2)
+        homebuyerPies = [(homebuyers[first], weights1), (homebuyers[second], weights2)]
 
-        homebuyerPies = []
-        for hb in homebuyers:
-            homebuyerPie = ()
-            weights = CategoryWeight.objects.filter(homebuyer=hb)
-            weightTotal = float(sum(w.weight for w in weights))
-            weightTotalDict[hb.id] = weightTotal
+        categoryData = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data1[category]["weight"]) / homebuyers[second].category_weight_total
+            scores = []
+            for house in data1[category]["houses"]:
+                score1 = data1[category]["houses"][house] * weight1
+                score2 = data2[category]["houses"][house] * weight2
+                averageScore = (score1 + score2) / 2
+                scores.append((house, averageScore))
+            categoryData.append((category, scores))
 
-            for w in weights:
-                weightFrac = w.weight / weightTotal
-                homebuyerPie += (w.category, weightFrac)
-            homebuyerPies.append(homebuyerPie)
-
-        homebuyerData = []
-        for hb in homebuyers:
-            categoryData = []
-            for c in categories:
-                weight = CategoryWeight.objects.get(homebuyer=hb, category=c)
-                houseData = []
-                for h in houses:
-                    grade = Grade.objects.get(house=h, homebuyer=hb, category=c)
-                    score = weight.weight / weightTotalDict[hb.id] * grade.score
-                    houseData.append((h, score))
-                categoryData.append((c, houseData))
-            homebuyerData.append((hb, categoryData))
-
-        score1 = homebuyerData[0][1][0][1][0][1]
-        score2 = homebuyerData[1][1][0][1][0][1]
-        megaScore = (score1 + score2) / 2.0
+        totalScore = {}
+        for category, homes in categoryData:
+            for home, score in homes:
+                if(home in totalScore.keys()):
+                    totalScore[home] += score
+                else:
+                    totalScore[home] = score
 
         context = {
             'categoryImportance': categoryImportance,
             'homebuyerPies': homebuyerPies,
-            'megaScore': megaScore
+            'categoryData': categoryData,
+            'totalScore': totalScore
         }
         return render(request, self.template_name, context)
 
