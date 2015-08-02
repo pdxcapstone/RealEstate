@@ -291,6 +291,14 @@ class Couple(BaseModel):
             homebuyers = (homebuyers.first(), None)
         return homebuyers
 
+    @property
+    def report_data(self):
+        """
+        Report data for all homebuyers for this Couple, keyed by email.
+        """
+        return {homebuyer.email: homebuyer.report_data
+                for homebuyer in self.homebuyer_set.all()}
+
     def report_url(self):
         if not self.id:
             return None
