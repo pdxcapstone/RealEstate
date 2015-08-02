@@ -367,6 +367,15 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         """
         return self.couple_id == couple_id
 
+    @property
+    def category_weight_total(self):
+        """
+        Sums up all the weight properties for each CategoryWeight object on the
+        Homebuyer.
+        """
+        total = self.categoryweight_set.aggregate(models.Sum('weight'))
+        return total.get('weight__sum') or 0
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
