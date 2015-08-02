@@ -5,4 +5,22 @@
 {% endblock header %}
 
 {% block body %}
+    <h4>Weighting</h4>
+    {% for weight in categoryImportance %}
+        <row>
+            <h5>{{weight}}</h5>
+        </row>
+    {%  endfor %}
+
+    <h4>Homebuyer Pie Chart Data</h4>
+    {% for homebuyerPie in homebuyerPies %}
+        {% for hb in homebuyerPie %}
+        <row>
+            <h5>{{hb}}</h5>
+        </row>
+        {%  endfor %}
+    {%  endfor %}
+
+    <h1>{{ megaScore }}</h1>
+
 {% endblock body %}

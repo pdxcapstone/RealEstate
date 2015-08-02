@@ -412,7 +412,57 @@ class ReportView(BaseView):
         return role.can_view_report_for_couple(couple_id)
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {})
+        couple_id = int(kwargs.get('couple_id', 0))
+        couple = Couple.objects.get(id=couple_id)
+        homebuyers = couple.homebuyer_set.all()
+
+        categories = Category.objects.filter(couple=couple)
+        houses = House.objects.filter(couple=couple)
+        weightTotalDict = {}
+
+        categoryImportance = ()
+        for c in categories:
+            weights = []
+            for hb in homebuyers:
+                weight = CategoryWeight.objects.filter(category=c, homebuyer=hb)
+                weights.append(weight.first().weight)
+            categoryImportance += (c, weights)
+
+        homebuyerPies = []
+        for hb in homebuyers:
+            homebuyerPie = ()
+            weights = CategoryWeight.objects.filter(homebuyer=hb)
+            weightTotal = float(sum(w.weight for w in weights))
+            weightTotalDict[hb.id] = weightTotal
+
+            for w in weights:
+                weightFrac = w.weight / weightTotal
+                homebuyerPie += (w.category, weightFrac)
+            homebuyerPies.append(homebuyerPie)
+
+        homebuyerData = []
+        for hb in homebuyers:
+            categoryData = []
+            for c in categories:
+                weight = CategoryWeight.objects.get(homebuyer=hb, category=c)
+                houseData = []
+                for h in houses:
+                    grade = Grade.objects.get(house=h, homebuyer=hb, category=c)
+                    score = weight.weight / weightTotalDict[hb.id] * grade.score
+                    houseData.append((h, score))
+                categoryData.append((c, houseData))
+            homebuyerData.append((hb, categoryData))
+
+        score1 = homebuyerData[0][1][0][1][0][1]
+        score2 = homebuyerData[1][1][0][1][0][1]
+        megaScore = (score1 + score2) / 2.0
+
+        context = {
+            'categoryImportance': categoryImportance,
+            'homebuyerPies': homebuyerPies,
+            'megaScore': megaScore
+        }
+        return render(request, self.template_name, context)
 
 
 class CategoryView(BaseView):
