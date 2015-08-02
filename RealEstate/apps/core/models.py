@@ -512,6 +512,19 @@ class Realtor(Person):
                                   .format(user=self.user))
         return super(Realtor, self).clean()
 
+    def get_couples_and_pending_couples(self):
+        """
+        Returns a 2-tuple where the first item is a queryset of Couple
+        instances, and the second item is a queryset of PendingCouple instances
+        for the realtor.  The Couple query is filtered to exclude those where
+        only one of the homebuyers has registered.
+        """
+        pending_couples = self.pendingcouple_set.all()
+        emails = pending_couples.values_list(
+            'pendinghomebuyer__email', flat=True)
+        couples = self.couple_set.exclude(homebuyer__user__email__in=emails)
+        return (couples, pending_couples)
+
     @property
     def role_type(self):
         return 'Realtor'
