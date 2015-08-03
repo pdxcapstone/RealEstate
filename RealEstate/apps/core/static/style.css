@@ -1,0 +1,108 @@
+/* common */
+
+ul.list-group {
+	padding-top:30px;
+}
+#heading {
+	padding-bottom: 30px;
+}
+.icon {
+	display:none;
+	padding-left: 20px;
+	font-size: 90%;
+}
+.ok {
+	color: green;
+}
+.delete {
+    color: #A94431;
+    cursor: pointer;
+}
+.edit {
+    color: #31708f;
+    cursor: pointer;
+}
+.vcenter {
+	display: inline-block;
+	vertical-align: middle;
+	float: none;
+	margin-left:-3px;
+}
+.inner-rating {
+	padding:20px 0;
+	padding-left:10%
+}
+.slider-selection {
+	background: #BABABA;
+}
+#helptext-L{
+	padding-right: 15px;
+}
+#helptext-R{
+	padding-left: 15px;
+}
+button{
+	margin:30px;
+}
+button.close{
+	margin:auto;
+}
+.modalHeight{
+	height:auto;
+}
+.row-con{
+   display:table;
+   width:100%;
+}
+.hbdash-center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align:center;
+    width:50%;
+}
+
+/* categories */
+
+.rating-col {
+	min-width: 500px;
+}
+.summary-col{
+	min-width: 150px;
+}
+.tooltip-main.top.in {
+	z-index:1 !important;
+}
+#catRating-out{
+	padding-left:10%
+}
+
+/*realtorHome */
+
+.email {
+    color: #cccccc;
+    display: none;
+}
+.email:hover {
+	color: #337ab7;
+}
+a.mail {
+	text-decoration: none;
+}
+.report-container {
+ min-width: 300px;
+}
+.couple-container {
+	min-width: 400px;
+}
+.red-alert {
+	color: #e74c3c;
+}
+
+/* realtorSignup */
+
+#regForm {
+	margin: 10px 0;
+}
+.signUpHeader{
+	margin-top:50px;
+}

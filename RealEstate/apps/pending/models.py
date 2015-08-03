@@ -18,7 +18,8 @@ def _generate_registration_token():
     SHA-256.
     """
     while True:
-        token = hashlib.sha256(get_random_string(length=64)).hexdigest()
+        token = hashlib.sha256(
+            get_random_string(length=64)).hexdigest()
         if not PendingHomebuyer.objects.filter(registration_token=token):
             return token
 
@@ -71,7 +72,7 @@ class PendingHomebuyer(BaseModel):
     database.
     """
     _HOMEBUYER_INVITE_MESSAGE = """
-        Hello,
+        Hello {name},
 
         You have been invited to the Real Estate app.
         Register at the following link:
@@ -80,6 +81,8 @@ class PendingHomebuyer(BaseModel):
     """
 
     email = models.EmailField(unique=True, verbose_name="Email")
+    first_name = models.CharField(max_length=30, verbose_name="First Name")
+    last_name = models.CharField(max_length=30, verbose_name="Last Name")
     registration_token = models.CharField(max_length=64,
                                           default=_generate_registration_token,
                                           editable=False,
@@ -89,9 +92,9 @@ class PendingHomebuyer(BaseModel):
                                        verbose_name="Pending Couple")
 
     def __unicode__(self):
-        return u"{email} ({registration_status})".format(
-            email=self.email,
-            registration_status=self.registration_status)
+        return u"{first} {last} <{email}>".format(first=self.first_name,
+                                                  last=self.last_name,
+                                                  email=self.email)
 
     def _signup_link(self, host):
         """
@@ -107,11 +110,13 @@ class PendingHomebuyer(BaseModel):
         Referenced pending_couple instance should be related to a maximum
         of two PendingHomebuyer instances.
         """
-        pending_homebuyers = set(self.pending_couple.pendinghomebuyer_set
-                                 .values_list('id', flat=True).distinct())
-        pending_homebuyers.add(self.id)
-        if len(pending_homebuyers) > 2:
-            raise ValidationError("PendingCouple already has 2 Homebuyers.")
+        if self.id:
+            pending_homebuyers = set(self.pending_couple.pendinghomebuyer_set
+                                     .values_list('id', flat=True).distinct())
+            pending_homebuyers.add(self.id)
+            if len(pending_homebuyers) > 2:
+                raise ValidationError(
+                    "PendingCouple already has 2 Homebuyers.")
         return super(PendingHomebuyer, self).clean()
 
     @property
@@ -139,9 +144,7 @@ class PendingHomebuyer(BaseModel):
         homebuyer.  The homebuyer is considered registered if the email exists
         in the User table.
         """
-        if Homebuyer.objects.filter(user__email=self.email).exists():
-            return True
-        return False
+        return Homebuyer.objects.filter(user__email=self.email).exists()
 
     @property
     def registration_status(self):
@@ -157,6 +160,7 @@ class PendingHomebuyer(BaseModel):
             return None
 
         message = self._HOMEBUYER_INVITE_MESSAGE.format(
+            name=self.first_name,
             signup_link=self._signup_link(request.get_host()))
         return send_mail('Real Estate Invite', message,
                          settings.EMAIL_HOST_USER, [self.email],
