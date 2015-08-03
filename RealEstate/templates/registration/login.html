@@ -11,7 +11,7 @@
         <form class="login-form" action="{% url 'auth_login' %}" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form form %}
-          <div class="pull-right alert-success">
+          <div class="pull-right login-margin">
             {% buttons submit='Log in' %}{% endbuttons %}
           </div>
         </form>

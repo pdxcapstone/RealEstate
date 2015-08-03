@@ -60,9 +60,6 @@ button.close{
     text-align:center;
     width:50%;
 }
-.alert-success {
-	margin-top: 30px;
-}
 .signUpHeader{
 	margin-top:50px;
 }
@@ -133,6 +130,14 @@ a.mail {
 	margin-top:100px; 
 	text-align: center;
 }
+.login-margin {
+	margin-top: 30px;
+}
+.login-margin button{
+	background-color:#e4e4e4;
+	color:#696969;
+	border:1px solid #e4e4e4;
+}
 
 /* base */
 .navbar-alt {
@@ -144,11 +149,14 @@ a.mail {
     padding-bottom:20px;
 }
 .navbar-alt a{
-	color:black;
+	color:#ededed;
 	font-size:150%;
 }
+.nav a:hover{
+		background-color:transparent !important;
+}
 #bg-img {
-  background: white url(images/homepage_sunset.jpg) no-repeat center center fixed; 
+  background: url(images/homepage_sunset.jpg) no-repeat center center fixed; 
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
