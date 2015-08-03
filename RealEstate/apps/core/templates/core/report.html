@@ -1,4 +1,5 @@
 {% extends "core/base.html" %}
+{% load staticfiles %}
 
 {% block header %}
    <h2><strong>REPORT</strong></h2>
@@ -6,12 +7,25 @@
 
 {% block body %}
     <h2>Weighting</h2>
-    {% for category, weight1, weight2 in categoryImportance %}
-        <h4>{{category}}</h4>
-        <h5>{{weight1}} | {{weight2}}</h5>
-    {% endfor %}
+    <div class="row">
+        <div class="col-lg-6"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
+        <div class="col-lg-6">
+        </div>
+    </div>
+    
+    
+    <!--{% for category, weight1, weight2 in categoryImportance %}-->
+    <!--    <h4>{{category}}</h4>-->
+    <!--    <h5>{{weight1}} | {{weight2}}</h5>-->
+    <!--{% endfor %}-->
 
     <h2>Homebuyer Pie Chart Data</h2>
+    <div class="row">
+        <div class="col-lg-6"><canvas id="PieChart1" style="height:400px; width: 100%"></canvas></div>
+        <div class="col-lg-6">
+        </div>
+    </div>
+    
     {% for homebuyer, weights in homebuyerPies %}
         <h4>{{homebuyer}}</h4>
         <h5>{{weights}}</h5>
@@ -31,3 +45,70 @@
         {{value}}
     {% endfor %}
 {% endblock body %}
+
+{% block scripts %}
+<script src="{% static "chart.min.js" %}"></script>
+<script>
+    var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}]
+    var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}]
+    var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}]
+    var data = {
+        labels: catLabel,
+        datasets: [
+            {
+                label: "Homebuyer #1",
+                fillColor: "rgba(220,220,220,0.5)",
+                strokeColor: "rgba(220,220,220,0.8)",
+                highlightFill: "rgba(220,220,220,0.75)",
+                highlightStroke: "rgba(220,220,220,1)",
+                data: data1
+            },
+            {
+                label: "Homebuyer #2",
+                fillColor: "rgba(151,187,205,0.5)",
+                strokeColor: "rgba(151,187,205,0.8)",
+                highlightFill: "rgba(151,187,205,0.75)",
+                highlightStroke: "rgba(151,187,205,1)",
+                data: data2
+            }
+        ]
+    };
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var myBarChart = new Chart(ctx).Bar(data, {
+        barShowStroke: false,
+        scaleShowGridLines: false,
+        barValueSpacing : 20,
+        showTooltips: false
+    });
+
+    
+    var data1 = [
+    {
+        value: 300,
+        color:"#F7464A",
+        highlight: "#FF5A5E",
+        label: "Red"
+    },
+    {
+        value: 50,
+        color: "#46BFBD",
+        highlight: "#5AD3D1",
+        label: "Green"
+    },
+    {
+        value: 100,
+        color: "#FDB45C",
+        highlight: "#FFC870",
+        label: "Yellow"
+    }
+]
+    
+    var ctx1 = document.getElementById("PieChart1").getContext("2d");
+    var pieChart1 = new Chart(ctx1).Pie(data1,{
+        barShowStroke: false,
+        scaleShowGridLines: false,
+        barValueSpacing : 20,
+    });
+    
+</script>
+{% endblock %}
