@@ -60,14 +60,17 @@ button.close{
     text-align:center;
     width:50%;
 }
+.alert-success {
+	margin-top: 30px;
+}
+.signUpHeader{
+	margin-top:50px;
+}
 
 /* categories */
 
 .rating-col { 
 	min-width: 500px; 
-}
-.alert-success {
-	margin-top: 30px;
 }
 .summary-col{ 
 	min-width: 150px; 
@@ -109,9 +112,6 @@ a.mail {
 #regForm {
 	margin: 10px 0;
 }
-.signUpHeader{
-	margin-top:50px;
-}
 
 /* login */
 
@@ -119,6 +119,19 @@ a.mail {
 	min-height: 20px;
     padding: 19px;
     box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    margin: 10px 0
+}
+.login-text{
+	margin-top:50px; 
+	margin-left:15px;
+	font-style: bold;
+}
+.login-form{
+	margin-bottom:20px;
+}
+.create-text{
+	margin-top:100px; 
+	text-align: center;
 }
 
 /* base */
