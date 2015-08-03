@@ -1,15 +1,23 @@
 import json
+import time
 
-from django.contrib.auth import authenticate, login as _login
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import login as auth_login
+from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.forms.models import modelformset_factory
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
+from django.utils.html import escape
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View
-from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
@@ -20,18 +28,87 @@ from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          User)
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
-from RealEstate.apps.pending.forms import InviteHomebuyerForm
+from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
+                                           InviteHomebuyersFormSet)
+
+LOGIN_DELAY = 1.5   # Seconds
 
 
-def login(request, *args, **kwargs):
+@sensitive_post_parameters()
+@csrf_protect
+@never_cache
+def async_login_handler(request, *args, **kwargs):
     """
-    If the user is already logged in and they navigate to the login URL,
-    just redirect them home. Otherwise just delegate to the default
-    Django login view.
+    Login requests are handled asynchronously from the modal login window.
+    These should always be AJAX POST requests.  The login delay is a crude
+    method to reduce login attempt spam.  If the login attempt is successful,
+    the redirect location is returned (currently just the home page).
     """
-    if request.user.is_authenticated():
-        return redirect('home')
-    return auth_login(request, *args, **kwargs)
+    if not (request.is_ajax() and request.method == 'POST'):
+        raise PermissionDenied
+
+    time.sleep(LOGIN_DELAY)
+    response = {'success': False}
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+        login(request, form.get_user())
+        response = {
+            'location': reverse(settings.LOGIN_REDIRECT_URL),
+            'success': True,
+        }
+    return HttpResponse(json.dumps(response), content_type="application/json")
+
+
+class LoginView(View):
+    """
+    This form is the landing page used to sign up realtors.
+    """
+    template_name = 'registration/login.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Redirect to home page if already logged in.
+        """
+        if request.user.is_authenticated():
+            return redirect('home')
+        return super(LoginView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Renders the signup form for registering a realtor.
+        """
+        context = {
+            'signup_form': RealtorSignupForm()
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles the creation of User/Realtor instances when signing up a new
+        realtor. If the form is not valid, re-render it with errors
+        so the user can correct them. If valid, create the User/Realtor.
+        """
+        signup_form = RealtorSignupForm(request.POST)
+        if signup_form.is_valid():
+            cleaned_data = signup_form.cleaned_data
+            email = cleaned_data['email']
+            password = cleaned_data['password']
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=cleaned_data['first_name'],
+                    last_name=cleaned_data['last_name'],
+                    phone=cleaned_data['phone'])
+                Realtor.objects.create(user=user)
+            user = authenticate(email=email, password=password)
+            login(request, user)
+            messages.success(request, "Welcome!")
+            return redirect('home')
+        context = {
+            'signup_form': signup_form
+        }
+        return render(request, self.template_name, context)
 
 
 class BaseView(View):
@@ -67,16 +144,12 @@ class HomeView(BaseView):
     homebuyer_template_name = 'core/homebuyerHome.html'
     realtor_template_name = 'core/realtorHome.html'
 
-    def _invite_homebuyer(self, request, pending_couple, email):
-        """
-        Create the PendingHomebuyer instance and attach it to the
-        PendingCouple.  Then send out the email invite and flash a message
-        to the user that the invite has been sent.
-        """
-        homebuyer = PendingHomebuyer.objects.create(
-            email=email,
-            pending_couple=pending_couple)
-        homebuyer.send_email_invite(request)
+    def _build_invite_formset(self):
+        return modelformset_factory(PendingHomebuyer,
+                                    form=InviteHomebuyerForm,
+                                    formset=InviteHomebuyersFormSet,
+                                    extra=2,
+                                    max_num=2)
 
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
@@ -178,37 +251,40 @@ class HomeView(BaseView):
             pendingHomebuyer = PendingHomebuyer.objects.filter(
                 pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+
+        invite_formset = self._build_invite_formset()(
+            queryset=PendingHomebuyer.objects.none())
         context = {
             'couples': coupleData,
             'realtor': realtor,
-            'form': InviteHomebuyerForm(),
-            'hasPending': hasPending
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        form = InviteHomebuyerForm(request.POST)
-        if form.is_valid():
-            first_email = form.cleaned_data.get('first_email')
-            second_email = form.cleaned_data.get('second_email')
+        invite_formset = self._build_invite_formset()(request.POST)
+        if invite_formset.is_valid():
+            pending_homebuyers = [
+                form.instance for form in invite_formset.forms]
             with transaction.atomic():
                 pending_couple = PendingCouple.objects.create(
                     realtor=request.user.realtor)
-                self._invite_homebuyer(request, pending_couple, first_email)
-                self._invite_homebuyer(request, pending_couple, second_email)
-            success_msg = ("Email invitations sent to '{first}' and '{second}'"
-                           .format(first=first_email, second=second_email))
-            messages.success(request, success_msg)
-        else:
-            for form_field, errors in form.errors.iteritems():
-                errors = ", ".join(errors)
-                value = form.data.get(form_field)
-                messages.error(
-                    request,
-                    "{value}: {errors}".format(value=value, errors=errors))
+                for pending_homebuyer in pending_homebuyers:
+                    pending_homebuyer.pending_couple = pending_couple
+                    pending_homebuyer.save()
 
+            first_homebuyer, second_homebuyer = pending_homebuyers
+            first_homebuyer.send_email_invite(request)
+            second_homebuyer.send_email_invite(request)
+            success_msg = ("Email invitations sent to '{first}' and '{second}'"
+                           .format(first=escape(unicode(first_homebuyer)),
+                                   second=escape(unicode(second_homebuyer))))
+            messages.success(request, success_msg)
+            return redirect('home')
+
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
         coupleData = []
         isPending = True
         hasPending = pendingCouples.exists()
@@ -222,8 +298,8 @@ class HomeView(BaseView):
         context = {
             'couples': coupleData,
             'realtor': realtor,
-            'form': InviteHomebuyerForm(),
-            'hasPending': hasPending
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
@@ -342,57 +418,6 @@ class PasswordChangeDoneView(BaseView):
         messages.success(request,
                          "You have successfully changed your password")
         return redirect('home')
-
-
-class RealtorSignupView(View):
-    """
-    This form is used to register realtors.
-    """
-    template_name = 'core/realtorSignup.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
-            return redirect('home')
-        return super(
-            RealtorSignupView, self).dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        """
-        Renders the signup form for registering a realtor.
-        """
-        context = {
-            'signup_form': RealtorSignupForm()
-        }
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        """
-        Handles the creation of User/Realtor instances when signing up a new
-        realtor. If the form is not valid, re-render it with errors
-        so the user can correct them. If valid, create the User/Realtor.
-        """
-        signup_form = RealtorSignupForm(request.POST)
-        if signup_form.is_valid():
-            cleaned_data = signup_form.cleaned_data
-            email = cleaned_data['email']
-            password = cleaned_data['password']
-            with transaction.atomic():
-                user = User.objects.create_user(
-                    email=email,
-                    password=password,
-                    first_name=cleaned_data['first_name'],
-                    last_name=cleaned_data['last_name'],
-                    phone=cleaned_data['phone'])
-                Realtor.objects.create(user=user)
-            user = authenticate(email=email, password=password)
-            _login(request, user)
-            messages.success(request, "Welcome!")
-            return redirect('home')
-
-        context = {
-            'signup_form': signup_form
-        }
-        return render(request, self.template_name, context)
 
 
 class ReportView(BaseView):

@@ -56,14 +56,16 @@ class HomebuyerSignupView(View):
         context = {
             'registration_token': token,
             'signup_form': HomebuyerSignupForm(initial={
-                'email': pending_homebuyer.email
+                'email': pending_homebuyer.email,
+                'first_name': pending_homebuyer.first_name,
+                'last_name': pending_homebuyer.last_name,
             }),
         }
 
-        msg = ("Welcome, {email}.<br>You have been invited by {realtor_name} "
+        msg = ("Welcome, {name}.<br>You have been invited by {realtor_name} "
                "({realtor_email}).<br>Please fill out the form below to "
                "register for the Real Estate App.".format(
-                   email=pending_homebuyer.email,
+                   name=pending_homebuyer.first_name,
                    realtor_name=realtor.full_name,
                    realtor_email=realtor.email))
         messages.info(request, msg)

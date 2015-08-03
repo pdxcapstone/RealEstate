@@ -160,8 +160,8 @@ class Person(BaseModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
-        name = self.full_name
-        return name if name else self.email
+        name = self.full_name or '?'
+        return u"{name} <{email}>".format(name=name, email=self.email)
 
     def can_view_report_for_couple(self, couple_id):
         """
