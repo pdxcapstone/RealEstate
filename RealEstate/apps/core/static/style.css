@@ -116,12 +116,14 @@ a.mail {
 	min-height: 20px;
     padding: 19px;
     box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
-    margin: 10px 0
+    margin: 10px 0;
+    color:#e4e4e4;
 }
 .login-text{
 	margin-top:50px; 
 	margin-left:15px;
 	font-style: bold;
+	color:#e4e4e4;
 }
 .login-form{
 	margin-bottom:20px;
@@ -129,6 +131,10 @@ a.mail {
 .create-text{
 	margin-top:100px; 
 	text-align: center;
+	color:#e4e4e4;
+}
+.create-text a{
+	color:#66CCFF;
 }
 .login-margin {
 	margin-top: 30px;
@@ -149,14 +155,14 @@ a.mail {
     padding-bottom:20px;
 }
 .navbar-alt a{
-	color:#ededed;
+	color:#696969;
 	font-size:150%;
 }
 .nav a:hover{
 		background-color:transparent !important;
 }
 #bg-img {
-  background: url(images/homepage_sunset.jpg) no-repeat center center fixed; 
+  background: url(images/homepage_house.jpg) no-repeat center center fixed; 
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
