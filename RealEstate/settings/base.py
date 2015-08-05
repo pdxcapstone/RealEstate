@@ -32,7 +32,6 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.User'
 
-
 INSTALLED_APPS = (
     # Default Django apps
     'django.contrib.admin',
@@ -97,8 +96,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'RealEstate.urls'
 
-TEMPLATES = [
-    {
+TEMPLATES = [ {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'RealEstate', 'templates')],
         'APP_DIRS': True,
@@ -108,6 +106,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'RealEstate.apps.core.context_processors.async_login_form',
             ],
         },
     },

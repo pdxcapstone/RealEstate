@@ -1,0 +1,40 @@
+#login-button {
+    margin: 0;
+}
+
+img#login-loading {
+    display: none;
+}
+
+#main-content.modal-login-active {
+    opacity: 0.1;
+}
+
+#login-form.loading button {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+#login-form.loading img#login-loading {
+    display: inline;
+    height: 16px;
+    width: 16px;
+    margin-right: 8px;
+}
+
+#modal-login.modal {
+    text-align: center;
+}
+
+#modal-login.modal:before {
+  display: inline-block;
+  vertical-align: middle;
+  content: " ";
+  height: 100%;
+}
+
+#modal-login .modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}

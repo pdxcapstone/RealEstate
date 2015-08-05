@@ -1,26 +1,39 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 
+{% block title %}
+  Login
+{% endblock %}
+
+{% block header %}
+  <div class="col-sm-2"></div>
+  <div class="col-sm-8">
+    <h2><strong>Sign up as a Realtor</strong></h2>
+  </div>
+  <div class="col-sm-2"></div>
+{% endblock header %}
+
 {% block body %}
   <div class="row">
-    <div class="col-sm-3"></div>
-    <div class="col-sm-6">
-      <h2 style="margin-top:50px"><strong> Login </strong> </h2>
-      {% bootstrap_messages %}
+    <div class="col-sm-2"></div>
+    <div class="col-sm-8">
       <div style="margin: 10px 0" class="well" >
-        <form style="margin-bottom:20px" action="{% url 'auth_login' %}" role="form" method="post">
+        <form style="margin-bottom:20px" action="" role="form" method="post">
           {% csrf_token %}
-          {% bootstrap_form form %}
-          <div class="pull-right" style="margin-top: 40px">
-            {% buttons submit='Log in' %}{% endbuttons %}
+          {% bootstrap_form signup_form %}
+          <div style="padding-top: 20px;" class="text-center">
+            <button style="margin: 0"; class="btn btn-lg btn-primary" type="submit">Register</button>
           </div>
         </form>
       </div>
-      <div style="margin-top:100px; text-align: center;">
-          ...or <a href="{% url 'realtor-signup' %}">Create an account</a>
-          as a Realtor.
+      <div style="margin: 20px 0; text-align: center;">
+        ...or
+          <a href="#" data-toggle="modal" data-target="#modal-login">
+            <strong>Log in</strong>
+          </a>
+        to an existing account.
       </div>
     </div>
-    <div class="col-sm-3"></div>
+    <div class="col-sm-2"></div>
   </div>
 {% endblock %}
