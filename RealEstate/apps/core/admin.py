@@ -171,6 +171,7 @@ class UserAdmin(UserAdmin, BaseAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'phone')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
+                                    'email_confirmed', 'email_confirmation_token',
                                     'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
     )
@@ -185,7 +186,8 @@ class UserAdmin(UserAdmin, BaseAdmin):
 
     add_form = UserCreationForm
     list_display = ('email', 'homebuyer_realtor_link', 'first_name',
-                    'last_name', 'phone', 'is_staff', 'last_login')
+                    'last_name', 'phone', 'email_confirmed', 'is_staff',
+                    'last_login')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',
                    'last_login')
     search_fields = ('first_name', 'last_name', 'email')
