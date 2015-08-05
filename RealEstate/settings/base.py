@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.User'
 
+APP_NAME = 'Real Estate App'
+
 INSTALLED_APPS = (
     # Default Django apps
     'django.contrib.admin',
@@ -106,6 +108,7 @@ TEMPLATES = [ {
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'RealEstate.apps.core.context_processors.app_name',
                 'RealEstate.apps.core.context_processors.async_login_form',
             ],
         },
