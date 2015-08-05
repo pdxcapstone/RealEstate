@@ -83,6 +83,9 @@ JWT_AUTH = {
 
 # End REST API settings
 
+LOGIN_URL = 'signup'
+LOGIN_REDIRECT_URL = 'dashboard'
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -132,5 +135,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-LOGIN_REDIRECT_URL = 'home'
-LOGIN_URL = 'auth_login'
