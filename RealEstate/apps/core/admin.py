@@ -171,9 +171,9 @@ class UserAdmin(UserAdmin, BaseAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'phone')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
+                                    'email_confirmed',
                                     'email_confirmation_token',
-                                    'email_confirmed', 'groups',
-                                    'user_permissions')}),
+                                    'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
     )
     add_fieldsets = (
