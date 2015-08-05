@@ -22,22 +22,14 @@
     <h2>Homebuyer Pie Chart Data</h2>
     <div class="row">
         <div class="col-lg-6"><canvas id="PieChart1" style="height:400px; width: 100%"></canvas></div>
-        <div class="col-lg-6">
-        </div>
+        <div class="col-lg-6"><canvas id="PieChart2" style="height:400px; width: 100%"></canvas></div>
     </div>
     
-    {% for homebuyer, weights in homebuyerPies %}
-        <h4>{{homebuyer}}</h4>
-        <h5>{{weights}}</h5>
-    {% endfor %}
-
     <h2>Category Data</h2>
-    {% for category, homes in categoryData %}
-        <h4>{{category}}</h4>
-        {% for home, score in homes %}
-        <h5>{{home}} --> {{score}}</h5>
-        {%  endfor %}
+    {% for category, houses in categoryData %}
+        <canvas id="{{category}}bar" style="height:400px; width: 400px"></canvas>
     {% endfor %}
+    
 
     <h2>Total Score</h2>
     {% for key, value in totalScore.items %}
@@ -49,26 +41,26 @@
 {% block scripts %}
 <script src="{% static "chart.min.js" %}"></script>
 <script>
-    var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}]
-    var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}]
-    var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}]
+    var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
+    var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
+    var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
     var data = {
         labels: catLabel,
         datasets: [
             {
                 label: "Homebuyer #1",
-                fillColor: "rgba(220,220,220,0.5)",
-                strokeColor: "rgba(220,220,220,0.8)",
-                highlightFill: "rgba(220,220,220,0.75)",
-                highlightStroke: "rgba(220,220,220,1)",
+                fillColor: "rgba(217, 95, 73, 0.9)",
+                strokeColor: "rgba(217, 95, 73, 0.8)",
+                highlightFill: "rgba(217, 95, 73, 0.8)",
+                highlightStroke: "rgba(217, 95, 73, 1)",
                 data: data1
             },
             {
                 label: "Homebuyer #2",
-                fillColor: "rgba(151,187,205,0.5)",
-                strokeColor: "rgba(151,187,205,0.8)",
-                highlightFill: "rgba(151,187,205,0.75)",
-                highlightStroke: "rgba(151,187,205,1)",
+                fillColor: "rgba(237, 194, 51, 0.9)",
+                strokeColor: "rgba(237, 194, 51, 0.8)",
+                highlightFill: "rgba(237, 194, 51, 0.8)",
+                highlightStroke: "rgba(237, 194, 51, 1)",
                 data: data2
             }
         ]
@@ -82,33 +74,73 @@
     });
 
     
-    var data1 = [
-    {
-        value: 300,
-        color:"#F7464A",
-        highlight: "#FF5A5E",
-        label: "Red"
-    },
-    {
-        value: 50,
-        color: "#46BFBD",
-        highlight: "#5AD3D1",
-        label: "Green"
-    },
-    {
-        value: 100,
-        color: "#FDB45C",
-        highlight: "#FFC870",
-        label: "Yellow"
-    }
-]
+    var pie1 = [
+    {% for color, category, weight in pie1 %}
+        {
+            value : {{weight}},
+            color : '{{color}}',
+            label : '{{category}}'
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
+    
+    var pie2 = [
+    {% for color, category, weight in pie2 %}
+        {
+            value : {{weight}},
+            color : '{{color}}',
+            label : '{{category}}'
+        }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
     
     var ctx1 = document.getElementById("PieChart1").getContext("2d");
-    var pieChart1 = new Chart(ctx1).Pie(data1,{
+    var pieChart1 = new Chart(ctx1).Pie(pie1,{
         barShowStroke: false,
         scaleShowGridLines: false,
         barValueSpacing : 20,
     });
+    
+    var ctx2 = document.getElementById("PieChart2").getContext("2d");
+    var pieChart2 = new Chart(ctx2).Pie(pie2,{
+        barShowStroke: false,
+        scaleShowGridLines: false,
+        barValueSpacing : 20,
+    });
+    
+    var houseLabel = [
+    {% for house, score, color in categoryData.0.1 %}
+        "{{house}}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ]
+    
+    {% for category, houses in categoryData %}
+     var {{category}}Data = {
+        labels: houseLabel,
+        datasets: [
+        {% for house, score, color in houses %}
+            {
+                label: "{{house}}",
+                fillColor: "rgba(217, 95, 73, 0.9)",
+                strokeColor: "rgba(217, 95, 73, 0.8)",
+                highlightFill: "{{color}}",
+                highlightStroke: "rgba(217, 95, 73, 1)",
+                data: {{score}}
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+        ]
+    };
+    {% endfor %}
+    
+    {% for category, houses in categoryData %}
+        var {{category}} = document.getElementById("{{category}}bar").getContext("2d");
+        var {{category}}Chart = new Chart({{category}}).Bar({{category}}Data, {
+            barShowStroke: false,
+            scaleShowGridLines: false,
+            barValueSpacing : 20,
+            showTooltips: false
+        });
+    {% endfor %}
     
 </script>
 {% endblock %}

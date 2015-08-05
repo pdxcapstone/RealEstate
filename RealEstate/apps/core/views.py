@@ -1,4 +1,5 @@
 import json
+import math
 
 from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
@@ -419,7 +420,8 @@ class ReportView(BaseView):
         homebuyers = couple.homebuyer_set.all()
         data1 = homebuyers[first].report_data
         data2 = homebuyers[second].report_data
-
+        colors = ["#d95f49", "#edc233", "#489ad8", "#db8438", "#818b8d", "#64c271", "#374a5d", "#b44b37", "#54b59a", "#c76026"]
+        
         categoryImportance = []
         for category in data1:
             weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
@@ -428,12 +430,15 @@ class ReportView(BaseView):
 
         weights1 = []
         weights2=  []
+        index1 = 0
+        index2 = 5
         for category in data1:
             weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
             weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
-            weights1.append(weight1)
-            weights2.append(weight2)
-        homebuyerPies = [(homebuyers[first], weights1), (homebuyers[second], weights2)]
+            weights1.append((colors[index1], category, int(weight1 * 100)))
+            index1 = (index1 + 1) % len(colors)
+            weights2.append((colors[index2], category, int(weight2 * 100)))
+            index2 = (index2 + 1) % len(colors)
 
         categoryData = []
         for category in data1:
@@ -444,12 +449,13 @@ class ReportView(BaseView):
                 score1 = data1[category]["houses"][house] * weight1
                 score2 = data2[category]["houses"][house] * weight2
                 averageScore = (score1 + score2) / 2
-                scores.append((house, averageScore))
+                scores.append((house, averageScore, colors[index1]))
+                index1 = (index1 + 1) % len(colors)
             categoryData.append((category, scores))
 
         totalScore = {}
         for category, homes in categoryData:
-            for home, score in homes:
+            for home, score, color in homes:
                 if(home in totalScore.keys()):
                     totalScore[home] += score
                 else:
@@ -457,7 +463,8 @@ class ReportView(BaseView):
 
         context = {
             'categoryImportance': categoryImportance,
-            'homebuyerPies': homebuyerPies,
+            'pie1': weights1,
+            'pie2': weights2,
             'categoryData': categoryData,
             'totalScore': totalScore
         }
