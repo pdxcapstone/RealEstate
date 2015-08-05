@@ -1,8 +1,8 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.core.exceptions import ValidationError
 
-from RealEstate.apps.core.models import User, Category, House
+from RealEstate.apps.core.models import Category, House, User
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
@@ -75,6 +75,15 @@ class RealtorSignupForm(BaseSignupForm):
     class Meta(BaseSignupForm.Meta):
         fields = ('email', 'first_name', 'last_name', 'phone', 'password',
                   'password_confirmation')
+
+
+class UserChangeForm(UserChangeForm):
+    """
+    Uses core.User instead of django.contrib.auth.User
+    """
+    class Meta:
+        model = User
+        fields = '__all__'
 
 
 class UserCreationForm(UserCreationForm):

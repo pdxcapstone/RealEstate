@@ -655,7 +655,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text=("Designates if this user has confirmed their email "
                    "address or not."),
-        verbose_name="Active")
+        verbose_name="Email Confirmed")
     email_confirmation_token = models.CharField(
         max_length=64,
         default=_generate_email_confirmation_token,
