@@ -66,10 +66,11 @@ class HomebuyerSignupView(View):
 
         msg = ("Welcome, {name}.<br>You have been invited by {realtor_name} "
                "({realtor_email}).<br>Please fill out the form below to "
-               "register for the Real Estate App.".format(
+               "register for {app_name}.".format(
                    name=pending_homebuyer.first_name,
                    realtor_name=realtor.full_name,
-                   realtor_email=realtor.email))
+                   realtor_email=realtor.email,
+                   app_name=settings.APP_NAME))
         messages.info(request, msg)
         return render(request, self.template_name, context)
 

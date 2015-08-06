@@ -9,9 +9,9 @@
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <meta charset="UTF-8">
-    <title>{% block title %}Real Estate{% endblock %}</title>
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
     <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
-    <meta name="description" content="Real Estate Decisions">
+    <meta name="description" content="{{ app_name }}">
     <meta name="keywords" content="realestate">
     <link href={% static "core/css/login.css" %} rel="stylesheet" type="text/css" />
     {% bootstrap_css %}
@@ -36,7 +36,8 @@
                 <span class="icon-bar"></span>
               </button>
               <a class="navbar-brand" href="{% url 'signup' %}">
-                <span class="glyphicon glyphicon-home" aria-hidden="true"></span> Real Estate App
+                <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                {{ app_name }}
               </a>
             </div>
 
