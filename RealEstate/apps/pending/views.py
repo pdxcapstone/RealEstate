@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.shortcuts import redirect, render
 from django.views.generic import View
@@ -28,20 +30,20 @@ class HomebuyerSignupView(View):
             - Otherwise perform the get or post.
         """
         if request.user.is_authenticated():
-            return redirect('home')
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
         token = kwargs.get('registration_token')
         pending_homebuyer_filter = PendingHomebuyer.objects.filter(
             registration_token=token)
         if not pending_homebuyer_filter.exists():
             messages.error(request, "Invalid Registration Link.")
-            return redirect('auth_login')
+            return redirect(reverse(settings.LOGIN_URL))
 
         pending_homebuyer = pending_homebuyer_filter.first()
         if pending_homebuyer.registered:
             messages.info(request, ("{email} is already registered."
                                     .format(email=pending_homebuyer.email)))
-            return redirect('auth_login')
+            return redirect(reverse(settings.LOGIN_URL))
         return super(
             HomebuyerSignupView, self).dispatch(request, *args, **kwargs)
 
@@ -114,7 +116,7 @@ class HomebuyerSignupView(View):
             user = authenticate(email=email, password=password)
             login(request, user)
             messages.success(request, "Welcome!")
-            return redirect('home')
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
         context = {
             'registration_token': token,

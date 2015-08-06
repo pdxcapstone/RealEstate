@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('RealEstate.apps.api.urls')),
 
-    url(r'^login/$', CoreViews.LoginView.as_view(), name='auth_login'),
+    url(r'^$', CoreViews.RealtorSignupView.as_view(), name='signup'),
     url(r'^login-handler/$', CoreViews.async_login_handler, name='login_handler'),
     url(r'^logout/$',
         'django.contrib.auth.views.logout_then_login', name='auth_logout'),
@@ -33,13 +33,12 @@ urlpatterns = [
         CoreViews.PasswordChangeDoneView.as_view(),
         name='password_change_done'),
 
+    url(r'^dashboard/$', CoreViews.DashboardView.as_view(), name='dashboard'),
     url(r'^homebuyer-signup/(?P<registration_token>[0-9a-f]{64})/$',
         PendingViews.HomebuyerSignupView.as_view(), name='homebuyer-signup'),
-
     url(r'^eval/(?P<house_id>[\d]+)/$',
         CoreViews.EvalView.as_view(), name='eval'),
     url(r'^report/(?P<couple_id>[\d]+)/$',
         CoreViews.ReportView.as_view(), name='report'),
     url(r'^categories/$', CoreViews.CategoryView.as_view(), name='categories'),
-    url(r'^$', CoreViews.HomeView.as_view(), name='home'),
 ]
