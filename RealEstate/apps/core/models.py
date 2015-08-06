@@ -617,8 +617,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     _EMAIL_CONFIRMATION_MESSAGE = u"""
         Hello {name},
 
-        Thank you for registering! Please follow the link below to complete
-        {app_name} registration:
+        Thank you for registering for {app_name}!
+        Please login and then click the link below to complete registration:
             {email_confirmation_link}
 
     """
@@ -731,8 +731,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         app_name = settings.APP_NAME
         subject = u"{app_name} Email Confirmation".format(app_name=app_name)
-        email_confirmation_link = request.get_host() + reverse('confirm-email')
-        message = _EMAIL_CONFIRMATION_MESSAGE.format(
+        email_kwargs = {
+            'email_confirmation_token': self.email_confirmation_token
+        }
+        email_confirmation_link = (
+            request.get_host() + reverse('confirm-email', kwargs=email_kwargs))
+        message = self._EMAIL_CONFIRMATION_MESSAGE.format(
             name=self.get_short_name(),
             app_name=app_name,
             email_confirmation_link=email_confirmation_link)

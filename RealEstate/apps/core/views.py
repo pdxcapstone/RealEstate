@@ -104,6 +104,7 @@ class RealtorSignupView(View):
                 Realtor.objects.create(user=user)
             user = authenticate(email=email, password=password)
             login(request, user)
+            user.send_email_confirmation(request)
             messages.success(request, "Welcome!")
             return redirect(reverse(settings.LOGIN_REDIRECT_URL))
         context = {
@@ -475,6 +476,24 @@ class DashboardView(BaseView):
             'Realtor': self._realtor_post,
         }
         return handlers[role.role_type](request, role, *args, **kwargs)
+
+
+class EmailConfirmationView(BaseView):
+    """
+    Used to confirm that a Realtor has signed up with a valid email address.
+    """
+    _USER_TYPES_ALLOWED = User._REALTOR_ONLY
+
+    def get(self, request, *args, **kwargs):
+        email_confirmation_token = kwargs.get('email_confirmation_token', None)
+        user = request.user
+        if (not user.email_confirmed and
+                user.email_confirmation_token == email_confirmation_token):
+            user.email_confirmed = True
+            user.save()
+            messages.success(
+                request, u"Email confirmed ({email})".format(email=user.email))
+        return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
 
 class EvalView(BaseView):

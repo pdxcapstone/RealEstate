@@ -32,6 +32,8 @@ urlpatterns = [
     url(r'^change-password-done/$',
         CoreViews.PasswordChangeDoneView.as_view(),
         name='password_change_done'),
+    url(r'^confirm-email/(?P<email_confirmation_token>[0-9a-f]{64})/$',
+        CoreViews.EmailConfirmationView.as_view(), name='confirm-email'),
 
     url(r'^dashboard/$', CoreViews.DashboardView.as_view(), name='dashboard'),
     url(r'^homebuyer-signup/(?P<registration_token>[0-9a-f]{64})/$',

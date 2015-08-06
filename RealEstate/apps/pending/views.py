@@ -105,7 +105,8 @@ class HomebuyerSignupView(View):
                     password=password,
                     first_name=cleaned_data['first_name'],
                     last_name=cleaned_data['last_name'],
-                    phone=cleaned_data['phone'])
+                    phone=cleaned_data['phone'],
+                    email_confirmed=True)
                 pending_couple = pending_homebuyer.pending_couple
                 couple = pending_couple.couple
                 if not couple:
