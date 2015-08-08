@@ -21,7 +21,7 @@ from django.views.generic import View
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
-                                        EditHomeForm)
+                                        EditHomeForm, AddRealtorHomeForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
@@ -416,11 +416,14 @@ class DashboardView(BaseView):
             'couples': coupleData,
             'realtor': realtor,
             'hasPending': hasPending,
+             'form': AddRealtorHomeForm(),
             'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
+
+        print request.POST
         invite_formset = self._build_invite_formset()(request.POST)
         if invite_formset.is_valid():
             pending_homebuyers = [
@@ -440,6 +443,9 @@ class DashboardView(BaseView):
                                    second=escape(unicode(second_homebuyer))))
             messages.success(request, success_msg)
             return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+
+        if "id" in request.POST:
+            print request
 
         couples = Couple.objects.filter(realtor=realtor)
         pendingCouples = PendingCouple.objects.filter(realtor=realtor)

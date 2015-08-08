@@ -30,6 +30,10 @@
                   {% endif %}
                 </h4>
               {% endfor %}
+
+              <div class = "addButton"> 
+    <center><button type="button" id="home_{couple.id}" class="btn btn-primary add-home" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
+</div>
             </div>
             <div class="hbdash-center">
               <center>
@@ -69,6 +73,27 @@
       </div>
     </div>
   </div>
+
+  <!-- Add Home Modal -->
+<div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
+                <h4 class = "modal-title">Add Home</h4>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="" role="form" class="uniForm">
+                {% bootstrap_form form %}
+                {% csrf_token %}
+                <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -84,6 +109,11 @@
           if ($errorMessages.length || $helpBlocks.length) {
               $('#inviteCouple').modal();
           }
+      });
+
+      $(.add-home).click(function() {
+        var id = $(this).attr("id").toString().replace(/home_/i, "");
+        $('#AddHomeModal input[name='id']').val(id);
       });
   </script>
 {% endblock %}
