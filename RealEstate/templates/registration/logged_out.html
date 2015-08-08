@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+{% load bootstrap3 %}
+
+{% block title %}
+  Logged out
+{% endblock %}
+
+{% block style %}
+    <style>
+        div.row {
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block header %}
+  <div class="col-sm-2"></div>
+  <div class="col-sm-8">
+    <h2><strong>Thank you for using {{ app_name }}</strong></h2>
+  </div>
+  <div class="col-sm-2"></div>
+{% endblock header %}
+
+{% block body %}
+  <div class="row">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-8" >
+      <a href="#" data-toggle="modal" data-target="#modal-login"><strong>Click here</strong></a>
+      to log back into the app.
+    </div>
+    <div class="col-sm-2"></div>
+  </div>
+{% endblock %}

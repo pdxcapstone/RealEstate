@@ -24,9 +24,9 @@ urlpatterns = [
     url(r'^api/', include('RealEstate.apps.api.urls')),
 
     url(r'^$', CoreViews.RealtorSignupView.as_view(), name='signup'),
-    url(r'^login-handler/$', CoreViews.async_login_handler, name='login_handler'),
-    url(r'^logout/$',
-        'django.contrib.auth.views.logout_then_login', name='auth_logout'),
+    url(r'^login-handler/$',
+        CoreViews.async_login_handler, name='login_handler'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout', name='auth_logout'),
     url(r'^change-password/$',
         'django.contrib.auth.views.password_change', name='password_change'),
     url(r'^change-password-done/$',
