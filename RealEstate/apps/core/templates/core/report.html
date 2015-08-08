@@ -122,7 +122,7 @@
 {% endblock body %}
 
 {% block scripts %}
-<script src="{% static "chart.min.js" %}"></script>
+<script src="{% static "Chart.min.js" %}"></script>
 <script>
     var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
     var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
@@ -197,7 +197,7 @@
     ]
 
     {% for category, houses in categoryData %}
-        var {{category}}Score = [{% for house, score, color in houses %}{{score}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        var {{category}}Score = [{% for house, score, color in houses %}{{score}}*20{% if not forloop.last %},{% endif %}{% endfor %}];
         var {{category}}Data = {
         labels: houseLabel,
         datasets: [
@@ -216,6 +216,11 @@
     {% for category, houses in categoryData %}
         var {{category}}brx = document.getElementById("{{category}}bar").getContext("2d");
         var {{category}}Chart = new Chart({{category}}brx).Bar({{category}}Data, {
+            scaleOverride : true,
+            scaleSteps : 10,
+            scaleStepWidth : 10,
+            scaleStartValue : 0,
+
             barShowStroke: false,
             scaleShowGridLines: false,
             barValueSpacing : 20,
