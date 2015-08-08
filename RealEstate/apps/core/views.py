@@ -462,6 +462,8 @@ class ReportView(BaseView):
                     totalScore[home] = score
 
         context = {
+            'homebuyer1': homebuyers[0],
+            'homebuyer2': homebuyers[1],
             'categoryImportance': categoryImportance,
             'pie1': weights1,
             'pie2': weights2,
