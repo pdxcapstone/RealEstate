@@ -6,69 +6,119 @@
 {% endblock header %}
 
 {% block body %}
-    <div class="col-lg-4">
-        <h2>Final Grade</h2>
-        {% for key, value in totalScore.items %}
-            <h5>{{key}}</h5>
-            {% if value >= 3.5 %}
-                <h3>A+</h3>
-            {% elif value >= 3.0 %}
-                <h3>A</h3>
-            {% elif value >= 2.5 %}
-                <h3>B</h3>
-            {% elif value >= 2.2 %}
-                <h3>C</h3>
-            {% elif value >= 1.9 %}
-                <h3>D</h3>
-            {% else %}
-                <h3>F</h3>
-            {% endif %}
-        {% endfor %}
-    </div>
 
-    <div class="col-lg-8">
-        <h2>Weighting</h2>
-        <div class="row">
-            <div class="col-lg-8"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
-            <div class="col-lg-4">
+    <div class="container">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#graphics">Graphics</a></li>
+            <li><a data-toggle="tab" href="#numbers">Numbers</a></li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!--GRAPHICS TAB!!-->
+            <div id="graphics" class="tab-pane fade in active">
+                <h3>GRAPHICS</h3>
+                <p>A simplified visual representation of all collected data for a quick breakdowns and decision making.</p>
+
+
+
                 <div class="row">
-                    <h5 class="col-lg-8" style="background-color:rgba(217, 95, 73, 0.9)"><center>{{ homebuyer1 }}</center></h5>
+                    <div class="col-lg-4">
+                        <h2>Final Grade</h2>
+                        {% for key, value in totalScore.items %}
+                            <h5>{{key}}</h5>
+                            {% if value >= 3.5 %}
+                                <h3 id="finalGrade-Ap">A+</h3>
+                            {% elif value >= 3.0 %}
+                                <h3 id="finalGrade-A">A</h3>
+                            {% elif value >= 2.5 %}
+                                <h3 id="finalGrade-B">B</h3>
+                            {% elif value >= 2.2 %}
+                                <h3 id="finalGrade-C">C</h3>
+                            {% elif value >= 1.9 %}
+                                <h3 id="finalGrade-D">D</h3>
+                            {% else %}
+                                <h3 id="finalGrade-F">F</h3>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-lg-8">
+                        <h2>Weighting</h2>
+                        <div class="row">
+                            <div class="col-lg-8"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
+                            <div class="col-lg-4">
+                                <div class="row">
+                                    <h5 class="col-lg-8" style="background-color:rgba(217, 95, 73, 0.9)"><center>{{ homebuyer1 }}</center></h5>
+                                </div>
+                                <div class="row">
+                                   <h5 class="col-lg-8" style="background-color:rgba(237, 194, 51, 0.9)"><center>{{ homebuyer2 }}</center></h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <hr>
+
+                <h2>Homebuyer Pie Chart Data</h2>
                 <div class="row">
-                   <h5 class="col-lg-8" style="background-color:rgba(237, 194, 51, 0.9)"><center>{{ homebuyer2 }}</center></h5>
+                    <div class="col-lg-6">
+                        <h4>{{ homebuyer1 }}</h4>
+                        <div><canvas id="PieChart1" style="height:400px; width: 100%"></canvas></div>
+                    </div>
+                    <div class="col-lg-6">
+                        <h4>{{ homebuyer2 }}</h4>
+                        <div><canvas id="PieChart2" style="height:400px; width: 100%"></canvas></div>
+                    </div>
                 </div>
+
+                <hr>
+
+                <h2>Category Data</h2>
+                {% for category, houses in categoryData %}
+                    <div class="col-lg-4">
+                        <div class="col-lg-10"><center>
+                            <h5>{{ category }}</h5>
+                            <canvas id="{{category}}bar" style="height:400px; width: 300px"></canvas>
+                        </center></div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!--NUMBERS TAB!!-->
+            <div id="numbers" class="tab-pane fade">
+                <h3>NUMBERS</h3>
+                <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
+
+                <h2>Weighting</h2>
+                {% for category, weight1, weight2 in categoryImportance %}
+                    <h4>{{category}}</h4>
+                    <h5>{{weight1}} | {{weight2}}</h5>
+                {% endfor %}
+
+                <h2>Homebuyer Pie Chart Data</h2>
+                {% for homebuyer, weights in homebuyerPies %}
+                    <h4>{{homebuyer}}</h4>
+                    <h5>{{weights}}</h5>
+                {% endfor %}
+
+                <h2>Category Data</h2>
+                {% for category, homes in categoryData %}
+                    <h4>{{category}}</h4>
+                    {% for home, score in homes %}
+                    <h5>{{home}} --> {{score}}</h5>
+                    {%  endfor %}
+                {% endfor %}
+
+                <h2>Total Score</h2>
+                {% for key, value in totalScore.items %}
+                    <h4>{{key}}</h4>
+                    {{value}}
+                {% endfor %}
             </div>
         </div>
     </div>
-    
-    
-{#    <!--{% for category, weight1, weight2 in categoryImportance %}-->#}
-{#    <!--    <h4>{{category}}</h4>-->#}
-{#    <!--    <h5>{{weight1}} | {{weight2}}</h5>-->#}
-{#    <!--{% endfor %}-->#}
-
-    <h2>Homebuyer Pie Chart Data</h2>
-    <div class="row">
-        <div class="col-lg-6">
-            <h4>{{ homebuyer1 }}</h4>
-            <div><canvas id="PieChart1" style="height:400px; width: 100%"></canvas></div>
-        </div>
-        <div class="col-lg-6">
-            <h4>{{ homebuyer2 }}</h4>
-            <div><canvas id="PieChart2" style="height:400px; width: 100%"></canvas></div>
-        </div>
-    </div>
-    
-    <h2>Category Data</h2>
-
-    {% for category, houses in categoryData %}
-        <div class="col-lg-4">
-            <div class="col-lg-10"><center>
-                <h5>{{ category }}</h5>
-                <canvas id="{{category}}bar" style="height:400px; width: 300px"></canvas>
-            </center></div>
-        </div>
-    {% endfor %}
 {% endblock body %}
 
 {% block scripts %}
