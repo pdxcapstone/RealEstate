@@ -34,6 +34,8 @@ AUTH_USER_MODEL = 'core.User'
 
 APP_NAME = 'Real Estate App'
 
+PASSWORD_COMMON_SEQUENCES = []
+
 INSTALLED_APPS = (
     # Default Django apps
     'django.contrib.admin',
@@ -43,6 +45,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'passwords',
 
     # Third party apps
     'django_extensions',
