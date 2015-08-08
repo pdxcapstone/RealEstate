@@ -1,4 +1,5 @@
 import json
+import math
 
 from django.contrib.auth import authenticate, login as _login
 from django.contrib.auth.decorators import login_required
@@ -412,7 +413,64 @@ class ReportView(BaseView):
         return role.can_view_report_for_couple(couple_id)
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {})
+        first = 0
+        second = 1
+        couple_id = int(kwargs.get('couple_id', 0))
+        couple = Couple.objects.get(id=couple_id)
+        homebuyers = couple.homebuyer_set.all()
+        data1 = homebuyers[first].report_data
+        data2 = homebuyers[second].report_data
+        colors = ["#d95f49", "#edc233", "#489ad8", "#db8438", "#818b8d", "#64c271", "#374a5d", "#b44b37", "#54b59a", "#c76026"]
+        
+        categoryImportance = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            categoryImportance.append((category, weight1, weight2))
+
+        weights1 = []
+        weights2=  []
+        index1 = 0
+        index2 = 5
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            weights1.append((colors[index1], category, int(weight1 * 100)))
+            index1 = (index1 + 1) % len(colors)
+            weights2.append((colors[index2], category, int(weight2 * 100)))
+            index2 = (index2 + 1) % len(colors)
+
+        categoryData = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data1[category]["weight"]) / homebuyers[second].category_weight_total
+            scores = []
+            for house in data1[category]["houses"]:
+                score1 = data1[category]["houses"][house] * weight1
+                score2 = data2[category]["houses"][house] * weight2
+                averageScore = (score1 + score2) / 2
+                scores.append((house, averageScore, colors[index1]))
+                index1 = (index1 + 1) % len(colors)
+            categoryData.append((category, scores))
+
+        totalScore = {}
+        for category, homes in categoryData:
+            for home, score, color in homes:
+                if(home in totalScore.keys()):
+                    totalScore[home] += score
+                else:
+                    totalScore[home] = score
+
+        context = {
+            'homebuyer1': homebuyers[0],
+            'homebuyer2': homebuyers[1],
+            'categoryImportance': categoryImportance,
+            'pie1': weights1,
+            'pie2': weights2,
+            'categoryData': categoryData,
+            'totalScore': totalScore
+        }
+        return render(request, self.template_name, context)
 
 
 class CategoryView(BaseView):

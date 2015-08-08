@@ -106,3 +106,35 @@ a.mail {
 .signUpHeader{
 	margin-top:50px;
 }
+
+/* report */
+#finalGrade-Ap{
+	font-style: oblique;
+    font-weight: bold;
+    color: #00CC00;
+}
+#finalGrade-A{
+	font-style: oblique;
+    font-weight: bold;
+    color: #009900;
+}
+#finalGrade-B{
+	font-style: oblique;
+    font-weight: bold;
+    color: #CCCC00;
+}
+#finalGrade-C{
+	font-style: oblique;
+    font-weight: bold;
+    color: #FF9900;
+}
+#finalGrade-D{
+	font-style: oblique;
+    font-weight: bold;
+    color: #FF6600;
+}
+#finalGrade-F{
+	font-style: oblique;
+    font-weight: bold;
+    color: #FF0000;
+}
