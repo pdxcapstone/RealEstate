@@ -197,7 +197,8 @@
     ]
 
     {% for category, houses in categoryData %}
-     var {{category}}Data = {
+        var {{category}}Score = [{% for house, score, color in houses %}{{score}}{% if not forloop.last %},{% endif %}{% endfor %}];
+        var {{category}}Data = {
         labels: houseLabel,
         datasets: [
             {
@@ -206,7 +207,7 @@
                 strokeColor: "rgba(217, 95, 73, 0.8)",
                 highlightFill: "{{houses.0.2}}",
                 highlightStroke: "rgba(217, 95, 73, 1)",
-                data: [{{houses.0.1}}, {{houses.1.1}}]
+                data: {{category}}Score
             }
         ]
     };
