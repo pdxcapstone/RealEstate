@@ -164,6 +164,9 @@ a.mail {
 .nav a:hover{
 		background-color:transparent !important;
 }
+.nav a{
+		background-color:transparent !important;
+}
 #bg-img {
   background: url(images/homepage_house.jpg) no-repeat center center fixed; 
   -webkit-background-size: cover;

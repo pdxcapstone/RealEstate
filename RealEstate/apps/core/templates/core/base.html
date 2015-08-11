@@ -22,7 +22,8 @@
   </head>
 
   <body>
-    {% if user.is_authenicated %}
+    {% with authenticated=user.is_authenticated %}
+    {% if user.is_authenticated %}
       <nav class="navbar navbar-default">
     {% else %}
       <div id="bg-img" class="img-responsive">
@@ -76,7 +77,7 @@
                   </ul>
                 </li>
               {% else %}
-                <li><a class="login-color" href="#" data-target="#modal-login"> Log In</a></li>
+                <li><a class="login-color" href="#" data-toggle="modal" data-target="#modal-login"> Log In</a></li>
               {% endif %}
             </ul>
           </div><!-- /.navbar-collapse -->
@@ -142,5 +143,6 @@
       {% endif %}
       {% block scripts %}
       {% endblock %}
+      {% endwith %}
   </body>
 </html>
