@@ -14,26 +14,23 @@
 {% endblock header %}
 
 {% block body %}
-  <div class="row">
+  <div class="row" id="heading">
     <div class="col-sm-2"></div>
     <div class="col-sm-8">
-      <div style="margin: 10px 0" class="well" >
-        <form style="margin-bottom:20px" action="" role="form" method="post">
+      {% bootstrap_messages %}
+      <div class="well-alt" >
+        <form class="login-form" action="" role="form" method="post">
           {% csrf_token %}
           {% bootstrap_form signup_form %}
-          <div style="padding-top: 20px;" class="text-center">
-            <button style="margin: 0"; class="btn btn-lg btn-primary" type="submit">Register</button>
+          <div class="pull-right login-margin">
+				  <button class="btn btn-lr btn-primary" id="regForm" type="submit">Register</button>
           </div>
         </form>
       </div>
-      <div style="margin: 20px 0; text-align: center;">
-        ...or
-          <a href="#" data-toggle="modal" data-target="#modal-login">
-            <strong>Log in</strong>
-          </a>
-        to an existing account.
+      <div class="create-text">
+          ...or <a href="#" data-toggle="modal" data-target="#modal-login">Login</a>
+          to an existing account
       </div>
     </div>
-    <div class="col-sm-2"></div>
   </div>
 {% endblock %}
