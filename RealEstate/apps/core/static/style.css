@@ -1,7 +1,7 @@
 /* common */
 
-html, body { 
-	height: 100%; 
+html{
+	height: 100%;
 }
 ul.list-group {
 	padding-top:30px;
@@ -69,8 +69,8 @@ button.close{
 
 /* categories */
 
-.rating-col { 
-	min-width: 500px; 
+.rating-col {
+	min-width: 500px;
 }
 .summary-col{ 
 	min-width: 150px; 
@@ -91,20 +91,20 @@ button.close{
     color: #cccccc;
     display: none;
 }
-.email:hover { 
+.email:hover {
 	color: #337ab7;
 }
-a.mail { 
-	text-decoration: none; 
+a.mail {
+	text-decoration: none;
 }
 .report-container {
- min-width: 300px; 
+ min-width: 300px;
 }
-.couple-container { 
-	min-width: 400px; 
+.couple-container {
+	min-width: 400px;
 }
-.red-alert { 
-	color: #e74c3c; 
+.red-alert {
+	color: #e74c3c;
 }
 
 /* realtorSignup */

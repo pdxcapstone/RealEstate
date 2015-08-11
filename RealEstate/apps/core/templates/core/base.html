@@ -15,6 +15,7 @@
     <meta name="keywords" content="realestate">
     {% bootstrap_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'login.css' %}"  />
 
     {% block style %}
     {% endblock %}
@@ -75,23 +76,71 @@
                   </ul>
                 </li>
               {% else %}
-                <li><a class="login-color" href="{% url 'auth_login' %}"> Log In</a></li>
+                <li><a class="login-color" href="#" data-target="#modal-login"> Log In</a></li>
               {% endif %}
             </ul>
           </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
       </nav>
-      <div class="container">
-        {% block body %}
+	  <div class="container">
+	    <div class="row">
+        {% block header %}
         {% endblock %}
-      </div>
-      {% bootstrap_javascript jquery=1 %}
-      {% block scripts %}
-      {% endblock %}
+	   </div>
+
+	   {% block messages %}
+	     <div class="row">
+		    <div class="col-sm-2"></div>
+			<div id="messages" class="col-sm-8" style="margin: 8px;">
+				{% bootstrap_messages %}
+			</div>
+			<div class="col-sm-2"></div>
+		</div>
+	  {% endblock %}
+
+	  {% block body %}
+	  {% endblock body %}
+       </div><!-- /.container -->
     {% if user.is_authenticated %}
     {% else %}
       </div>
     {% endif %}
 
+      {% if not authenticated %}
+        <div id="modal-login" class="modal fade" role="dialog">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h2 class="modal-title">Login</h2>
+              </div>
+              <form id="login-form" action="" role="form" method="post">
+                <div id="login-feedback" style="margin: 10px; text-align: center;"></div>
+                <div class="modal-body">
+                  {% bootstrap_form login_form %}
+                  {% csrf_token %}
+                </div>
+                <div class="modal-footer">
+                  <div class="input-group pull-right">
+                    <img id="login-loading" src={% static "core/images/loading.gif" %} />
+                    <span>
+                      <button id="login-button" class="btn btn-primary" type="submit">
+                        Login
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      {% bootstrap_javascript jquery=1 %}
+      {% if not authenticated %}
+        <script src="{% static "core/js/login.js" %}"></script>
+      {% endif %}
+      {% block scripts %}
+      {% endblock %}
   </body>
 </html>

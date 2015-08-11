@@ -1,14 +1,23 @@
 import json
+import time
 
-from django.contrib.auth import authenticate, login as _login
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import login as auth_login
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.db import transaction
+from django.forms.models import modelformset_factory
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
+from django.utils.html import escape
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View
-from django.http import HttpResponse
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
@@ -19,18 +28,87 @@ from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          User)
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
-from RealEstate.apps.pending.forms import InviteHomebuyerForm
+from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
+                                           InviteHomebuyersFormSet)
+
+LOGIN_DELAY = 1.5   # Seconds
 
 
-def login(request, *args, **kwargs):
+@sensitive_post_parameters()
+@csrf_protect
+@never_cache
+def async_login_handler(request, *args, **kwargs):
     """
-    If the user is already logged in and they navigate to the login URL,
-    just redirect them home. Otherwise just delegate to the default
-    Django login view.
+    Login requests are handled asynchronously from the modal login window.
+    These should always be AJAX POST requests.  The login delay is a crude
+    method to reduce login attempt spam.  If the login attempt is successful,
+    the redirect location is returned (currently just the home page).
     """
-    if request.user.is_authenticated():
-        return redirect('home')
-    return auth_login(request, *args, **kwargs)
+    if not (request.is_ajax() and request.method == 'POST'):
+        raise PermissionDenied
+
+    time.sleep(LOGIN_DELAY)
+    response = {'success': False}
+    form = AuthenticationForm(data=request.POST)
+    if form.is_valid():
+        login(request, form.get_user())
+        response = {
+            'location': reverse(settings.LOGIN_REDIRECT_URL),
+            'success': True,
+        }
+    return HttpResponse(json.dumps(response), content_type="application/json")
+
+
+class LoginView(View):
+    """
+    This form is the landing page used to sign up realtors.
+    """
+    template_name = 'registration/login.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Redirect to home page if already logged in.
+        """
+        if request.user.is_authenticated():
+            return redirect('home')
+        return super(LoginView, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Renders the signup form for registering a realtor.
+        """
+        context = {
+            'signup_form': RealtorSignupForm()
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles the creation of User/Realtor instances when signing up a new
+        realtor. If the form is not valid, re-render it with errors
+        so the user can correct them. If valid, create the User/Realtor.
+        """
+        signup_form = RealtorSignupForm(request.POST)
+        if signup_form.is_valid():
+            cleaned_data = signup_form.cleaned_data
+            email = cleaned_data['email']
+            password = cleaned_data['password']
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    email=email,
+                    password=password,
+                    first_name=cleaned_data['first_name'],
+                    last_name=cleaned_data['last_name'],
+                    phone=cleaned_data['phone'])
+                Realtor.objects.create(user=user)
+            user = authenticate(email=email, password=password)
+            login(request, user)
+            messages.success(request, "Welcome!")
+            return redirect('home')
+        context = {
+            'signup_form': signup_form
+        }
+        return render(request, self.template_name, context)
 
 
 class BaseView(View):
@@ -66,16 +144,12 @@ class HomeView(BaseView):
     homebuyer_template_name = 'core/homebuyerHome.html'
     realtor_template_name = 'core/realtorHome.html'
 
-    def _invite_homebuyer(self, request, pending_couple, email):
-        """
-        Create the PendingHomebuyer instance and attach it to the
-        PendingCouple.  Then send out the email invite and flash a message
-        to the user that the invite has been sent.
-        """
-        homebuyer = PendingHomebuyer.objects.create(
-            email=email,
-            pending_couple=pending_couple)
-        homebuyer.send_email_invite(request)
+    def _build_invite_formset(self):
+        return modelformset_factory(PendingHomebuyer,
+                                    form=InviteHomebuyerForm,
+                                    formset=InviteHomebuyersFormSet,
+                                    extra=2,
+                                    max_num=2)
 
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
@@ -100,32 +174,58 @@ class HomeView(BaseView):
         return render(request, self.homebuyer_template_name, context)
 
     def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
+        def _house_exists(couple, nickname):
+            exists = House.objects.filter(
+                couple=couple, nickname=nickname).exists()
+            if exists:
+                error = ("House with nickname '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            return exists
+
         # Deletes a home
         if request.is_ajax():
             id = request.POST['id']
             home = House.objects.get(id=id)
+            name = home.nickname
             home.delete()
-            return HttpResponse(json.dumps({"id": id}),
+            return HttpResponse(json.dumps({"id": id, "name": name}),
                                 content_type="application/json")
 
         nickname = request.POST["nickname"]
         address = request.POST["address"]
+        couple = homebuyer.couple
+
         # Updates a home
         if "id" in request.POST:
-            home = get_object_or_404(House.objects.filter
-                                     (id=request.POST["id"]))
-            home.nickname = nickname
-            home.address = address
-            home.save()
+            id_home = get_object_or_404(House, id=request.POST["id"])
+            nickname_home = House.objects.filter(
+                couple=couple, nickname=nickname).first()
+            if (id_home and nickname_home and
+                    id_home.id != nickname_home.id):
+                error = (u"House '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            else:
+                home = id_home
+                home.nickname = nickname
+                home.address = address
+                home.save()
+                messages.success(
+                    request,
+                    "House '{nickname}' updated".format(nickname=nickname))
 
         # Creates new home
+        elif House.objects.filter(couple=couple, nickname=nickname).exists():
+            error = (u"House '{nickname}' already exists"
+                     .format(nickname=nickname))
+            messages.error(request, error)
         else:
-            couple = homebuyer.couple
-            home, created = House.objects.update_or_create(
-                couple=couple, nickname=nickname,
-                defaults={'address': address})
+            House.objects.create(
+                couple=couple, nickname=nickname, address=address)
+            messages.success(
+                request, "House '{nickname}' added".format(nickname=nickname))
 
-        couple = homebuyer.couple
         house = House.objects.filter(couple=couple)
         context = {
             'couple': couple,
@@ -151,27 +251,40 @@ class HomeView(BaseView):
             pendingHomebuyer = PendingHomebuyer.objects.filter(
                 pending_couple=pendingCouple)
             coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+
+        invite_formset = self._build_invite_formset()(
+            queryset=PendingHomebuyer.objects.none())
         context = {
             'couples': coupleData,
             'realtor': realtor,
-            'form': InviteHomebuyerForm(),
-            'hasPending': hasPending
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        form = InviteHomebuyerForm(request.POST)
-        if form.is_valid():
-            first_email = form.cleaned_data.get('first_email')
-            second_email = form.cleaned_data.get('second_email')
+        invite_formset = self._build_invite_formset()(request.POST)
+        if invite_formset.is_valid():
+            pending_homebuyers = [
+                form.instance for form in invite_formset.forms]
             with transaction.atomic():
                 pending_couple = PendingCouple.objects.create(
                     realtor=request.user.realtor)
-                self._invite_homebuyer(request, pending_couple, first_email)
-                self._invite_homebuyer(request, pending_couple, second_email)
+                for pending_homebuyer in pending_homebuyers:
+                    pending_homebuyer.pending_couple = pending_couple
+                    pending_homebuyer.save()
 
+            first_homebuyer, second_homebuyer = pending_homebuyers
+            first_homebuyer.send_email_invite(request)
+            second_homebuyer.send_email_invite(request)
+            success_msg = ("Email invitations sent to '{first}' and '{second}'"
+                           .format(first=escape(unicode(first_homebuyer)),
+                                   second=escape(unicode(second_homebuyer))))
+            messages.success(request, success_msg)
+            return redirect('home')
+
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
         coupleData = []
         isPending = True
         hasPending = pendingCouples.exists()
@@ -185,8 +298,8 @@ class HomeView(BaseView):
         context = {
             'couples': coupleData,
             'realtor': realtor,
-            'form': InviteHomebuyerForm(),
-            'hasPending': hasPending
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
         }
         return render(request, self.realtor_template_name, context)
 
@@ -296,53 +409,15 @@ class EvalView(BaseView):
                             content_type="application/json")
 
 
-class RealtorSignupView(View):
+class PasswordChangeDoneView(BaseView):
     """
-    This form is used to register realtors.
+    This is needed to provide a message to the user that their password change
+    was successful.
     """
-    template_name = 'core/realtorSignup.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
-            return redirect('home')
-        return super(
-            RealtorSignupView, self).dispatch(request, *args, **kwargs)
-
     def get(self, request, *args, **kwargs):
-        """
-        Renders the signup form for registering a realtor.
-        """
-        context = {
-            'signup_form': RealtorSignupForm()
-        }
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        """
-        Handles the creation of User/Realtor instances when signing up a new
-        realtor. If the form is not valid, re-render it with errors
-        so the user can correct them. If valid, create the User/Realtor.
-        """
-        signup_form = RealtorSignupForm(request.POST)
-        if signup_form.is_valid():
-            cleaned_data = signup_form.cleaned_data
-            email = cleaned_data['email']
-            password = cleaned_data['password']
-            with transaction.atomic():
-                user = User.objects.create_user(
-                    email=email,
-                    password=password,
-                    first_name=cleaned_data['first_name'],
-                    last_name=cleaned_data['last_name'],
-                    phone=cleaned_data['phone'])
-                Realtor.objects.create(user=user)
-            user = authenticate(email=email, password=password)
-            _login(request, user)
-            return redirect('home')
-        context = {
-            'signup_form': signup_form
-        }
-        return render(request, self.template_name, context)
+        messages.success(request,
+                         "You have successfully changed your password")
+        return redirect('home')
 
 
 class ReportView(BaseView):
@@ -435,6 +510,9 @@ class CategoryView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
+        homebuyer = request.user.role_object
+        couple = homebuyer.couple
+
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
             id = request.POST['id']
@@ -442,9 +520,8 @@ class CategoryView(BaseView):
 
             # Weight a category
             if request.POST['type'] == 'update':
-                homebuyer = request.user.role_object
                 weight = request.POST['value']
-                grade, created = CategoryWeight.objects.update_or_create(
+                CategoryWeight.objects.update_or_create(
                     homebuyer=homebuyer, category=category,
                     defaults={'weight': int(weight)})
                 return HttpResponse(json.dumps({"id": id}),
@@ -452,30 +529,49 @@ class CategoryView(BaseView):
 
             # Delete a category
             elif request.POST['type'] == 'delete':
+                name = category.summary
                 category.delete()
-                return HttpResponse(json.dumps({"id": id}),
+                return HttpResponse(json.dumps({"id": id, "name": name}),
                                     content_type="application/json")
 
         # Creates or updates a category
         else:
-            homebuyer = request.user.role_object
-            couple = homebuyer.couple
             summary = request.POST["summary"]
             description = request.POST["description"]
 
             # Updates a category
             if "id" in request.POST:
-                category = get_object_or_404(Category,
-                                             id=request.POST['id'])
-                category.summary = summary
-                category.description = description
-                category.save()
+                id_category = get_object_or_404(
+                    Category, id=request.POST['id'])
+                summary_category = Category.objects.filter(
+                    couple=couple, summary=summary).first()
+                if (id_category and summary_category and
+                        id_category.id != summary_category.id):
+                    error = (u"Category '{summary}' already exists"
+                             .format(summary=summary))
+                    messages.error(request, error)
+                else:
+                    category = id_category
+                    category.summary = summary
+                    category.description = description
+                    category.save()
+                    messages.success(
+                        request,
+                        "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
+            elif Category.objects.filter(
+                    couple=couple, summary=summary).exists():
+                error = (u"Category '{summary}' already exists"
+                         .format(summary=summary))
+                messages.error(request, error)
             else:
-                grade, created = Category.objects.update_or_create(
-                    couple=couple, summary=summary,
-                    defaults={'description': str(description)})
+                Category.objects.create(couple=couple,
+                                        summary=summary,
+                                        description=description)
+                messages.success(
+                    request,
+                    u"Category '{summary}' added".format(summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)

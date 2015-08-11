@@ -160,8 +160,8 @@ class Person(BaseModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
-        name = self.full_name
-        return name if name else self.email
+        name = self.full_name or '?'
+        return u"{name} <{email}>".format(name=name, email=self.email)
 
     def can_view_report_for_couple(self, couple_id):
         """
@@ -291,6 +291,14 @@ class Couple(BaseModel):
             homebuyers = (homebuyers.first(), None)
         return homebuyers
 
+    @property
+    def report_data(self):
+        """
+        Report data for all homebuyers for this Couple, keyed by email.
+        """
+        return {homebuyer.email: homebuyer.report_data
+                for homebuyer in self.homebuyer_set.all()}
+
     def report_url(self):
         if not self.id:
             return None
@@ -367,6 +375,15 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         """
         return self.couple_id == couple_id
 
+    @property
+    def category_weight_total(self):
+        """
+        Sums up all the weight properties for each CategoryWeight object on the
+        Homebuyer.
+        """
+        total = self.categoryweight_set.aggregate(models.Sum('weight'))
+        return total.get('weight__sum') or 0
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
@@ -405,6 +422,30 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                  "should be resolved immediately. "
                                  "(Couple ID: {id})".format(id=self.couple_id))
         return related_homebuyers.first()
+
+    @property
+    def report_data(self):
+        """
+        Dumps out the homebuyer statistics into a dictionary.  The top level is
+        keyed by Category summaries, meaning an empty dict would be returned
+        for a Homebuyer with no related Category instances.  For each Category,
+        a weight property is given, along with a nested dict of Houses with
+        corresponding grades for that Category/House.
+        """
+        category_weights = self.categoryweight_set.select_related('category')
+        grades = self.grade_set.select_related('category', 'house')
+        data = {
+            category_weight.category.summary: {
+                'weight': category_weight.weight,
+                'houses': {}
+            }
+            for category_weight in category_weights
+        }
+        for grade in grades:
+            summary = grade.category.summary
+            house_nickname = grade.house.nickname
+            data[summary]['houses'][house_nickname] = grade.score
+        return data
 
     def report_url(self):
         return self.couple.report_url()
@@ -511,6 +552,19 @@ class Realtor(Person):
                                   "have a Realtor relation."
                                   .format(user=self.user))
         return super(Realtor, self).clean()
+
+    def get_couples_and_pending_couples(self):
+        """
+        Returns a 2-tuple where the first item is a queryset of Couple
+        instances, and the second item is a queryset of PendingCouple instances
+        for the realtor.  The Couple query is filtered to exclude those where
+        only one of the homebuyers has registered.
+        """
+        pending_couples = self.pendingcouple_set.all()
+        emails = pending_couples.values_list(
+            'pendinghomebuyer__email', flat=True)
+        couples = self.couple_set.exclude(homebuyer__user__email__in=emails)
+        return (couples, pending_couples)
 
     @property
     def role_type(self):

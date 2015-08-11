@@ -3,83 +3,87 @@
 {% load staticfiles %}
 
 {% block style %}
-<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
 
-{% block body %}
-    <div id="heading">
-        <h2><strong>Realtor Dashboard</strong> </h2>
-    </div>
+{% block header %}
+  <div id="heading">
+    <h2><strong>Realtor Dashboard</strong></h2>
+  </div>
+{% endblock header %}
 
-    <ul class="list-group">
-        {% for couple, homebuyers, isPending in couples %}
-			{% if isPending %}
-				<li id="row_p{{couple.id}}" class="list-group-item couple_row">
-			{% else %}
-				<li id="row_{{couple.id}}" class="list-group-item couple_row">
-			{% endif %}
-			
-					<div class="row" id="row_{{couple.id}}">
-                        <div class="row-con">
-        					<div class="col-sm-6">
-        						{% for homebuyer in homebuyers %}
-        							<h4>
-        								{% if isPending %}
-        									{{homebuyer.email}}
-        									{% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
-        									<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
-        								{% else %}
-        									{{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
-        								{% endif %}
-        							</h4>
-        						{% endfor %}
-        					</div>
-                            <div class="hbdash-center">
-        						<center>
-        							<a class="report" href="{{couple.report_url}}">Report</a>
-        						</center>
-                            </div>        					
-                        </div>
-					</div>
-					
-				</li>
-				
-		{% endfor %}
-    </ul>
-    {% if hasPending %}
-        <div class="red-alert">* Pending homebuyers</div>
-    {% endif %}
-    <center>
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple">Invite Couple</button>
-    </center>
-    
-    <!-- Invite Couple Modal -->
-    <div id="inviteCouple" class="modal fade modalHeight" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h2 class="modal-title">Invite a couple</h2>
+{% block body %}
+  <ul class="list-group">
+    {% for couple, homebuyers, isPending in couples %}
+      <li id="row_{% if isPending %}p{% endif %}{{couple.id}}" class="list-group-item couple_row">
+        <div class="row" id="row_{{couple.id}}">
+          <div class="row-con">
+            <div class="col-sm-6">
+              {% for homebuyer in homebuyers %}
+                <h4>
+                  {% if isPending %}
+                    {{homebuyer.email}}
+                    {% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
+                    <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
+                  {% else %}
+                    {{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
+                  {% endif %}
+                </h4>
+              {% endfor %}
             </div>
-            <div class="modal-body">
-            <form action="" role="form" method="post">
-            	{% bootstrap_form form %}
-            	{% csrf_token %}
-        		<center>
-        			{% buttons submit='Invite' %}{% endbuttons %}
-        			{% bootstrap_messages %}
-        		</center>
-            </form>
+            <div class="hbdash-center">
+              <center>
+                <a class="report" href="{{couple.report_url}}">Report</a>
+              </center>
             </div>
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% if hasPending %}
+    <div class="red-alert">* Pending homebuyers</div>
+  {% endif %}
+  <center>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple">Invite Couple</button>
+  </center>
+
+  <!-- Invite Couple Modal -->
+  <div id="inviteCouple" class="modal fade modalHeight" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Invite a couple</h2>
+        </div>
+        <div class="modal-body">
+          <form action="" role="form" method="post">
+            {% bootstrap_formset invite_formset %}
+            {% csrf_token %}
+            <center>
+              {% buttons submit='Invite' %}{% endbuttons %}
+            </center>
+          </form>
         </div>
       </div>
     </div>
+  </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static "base.js" %}"></script>
+  <script src="{% static "base.js" %}"></script>
+  <script>
+      $( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
 
-<script>
-$( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
-</script>
+      $(document).ready(function() {
+          var $errorMessages = $('#inviteCouple .alert.alert-danger');
+          var $helpBlocks = $('#inviteCouple span.help-block');
+
+          // If errors on invite submit...
+          if ($errorMessages.length || $helpBlocks.length) {
+              $('#inviteCouple').modal();
+          }
+      });
+  </script>
 {% endblock %}

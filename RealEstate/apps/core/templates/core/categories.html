@@ -3,50 +3,53 @@
 {% load staticfiles %}
 
 {% block style %}
-<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
+  <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
-       
+
+{% block header %}
+  <div id="heading">
+    <h2><strong>Categories</strong></h2>
+    <h4>How important are the categories below when choosing a home?</h4>
+  </div>
+{% endblock header %}
+
 {% block body %}
 {% csrf_token %}
-<div id="heading">
-	<h2><strong>Categories</strong> </h2>
-	<h4>How important are the categories below when choosing a home?</h4>
-</div>
 <p id="save-status" class="pull-right"></p>
 
 <!-- Category List -->
 <ul class="list-group">
-	{% for category, weight in weights %}
-	    {{weight.category}}
-		<li class="list-group-item" id="li_{{category.id}}">
-			<div id="row_{{category.id}}" class="row category_row ">
+  {% for category, weight in weights %}
+      {{weight.category}}
+    <li class="list-group-item" id="li_{{category.id}}">
+      <div id="row_{{category.id}}" class="row category_row ">
 
-			    <!-- Category Summary -->
-				<div class="col-md-4 vcenter summary-col">
-					<h4>{{category.summary}}
-					    <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-					    <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
-					</h4>
-					{% if category.description %}
-						<p>{{ category.description }}</p>
-					{% endif %}
-				</div>
+          <!-- Category Summary -->
+        <div class="col-md-4 vcenter summary-col">
+          <h4>{{category.summary}}
+              <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+              <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+            <span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
+          </h4>
+          {% if category.description %}
+            <p>{{ category.description }}</p>
+          {% endif %}
+        </div>
 
-				<!-- Category Weighting -->
-				<div class="col-md-7 vcenter rating rating-col">
-					<div class="inner-rating" id="catRating-out" >
-						<center>
-							<span class="help-text" id="helptext-L">{{min_choice}}</span>
-							<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_weight}} data-slider-max={{max_weight}} data-slider-step="1" data-slider-value="{% if not weight %}{{default_weight}}{% else %}{{ weight }}{% endif %}"/>
-							<span class="help-text" id="helptext-R">{{max_choice}}</span>
-						</center>
-					</div>
-				</div>
+        <!-- Category Weighting -->
+        <div class="col-md-7 vcenter rating rating-col">
+          <div class="inner-rating" id="catRating-out" >
+            <center>
+              <span class="help-text" id="helptext-L">{{min_choice}}</span>
+              <input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_weight}} data-slider-max={{max_weight}} data-slider-step="1" data-slider-value="{% if not weight %}{{default_weight}}{% else %}{{ weight }}{% endif %}"/>
+              <span class="help-text" id="helptext-R">{{max_choice}}</span>
+            </center>
+          </div>
+        </div>
 
-			</div>
-		</li>
-	{% endfor %}
+      </div>
+    </li>
+  {% endfor %}
 </ul>
 <center>
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
@@ -56,20 +59,19 @@
 <div id="addCategory" class="modal fade modalHeight" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h2 class="modal-title">Add a category!</h2>
-        </div>
-        <div class="modal-body">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h2 class="modal-title">Add a category!</h2>
+      </div>
+      <div class="modal-body">
         <form action="" role="form" method="post">
-        	{% bootstrap_form form%}
-        	{% csrf_token %}
-    		<center>
-    			{% buttons submit='Save Category' %}{% endbuttons %}
-    			{% bootstrap_messages %}
-    		</center>
+          {% bootstrap_form form %}
+          {% csrf_token %}
+          <center>
+            {% buttons submit='Save Category' %}{% endbuttons %}
+          </center>
         </form>
-        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -78,42 +80,41 @@
 <div id="edit-modal" class="modal fade modalHeight" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h2 class="modal-title">Edit your category!</h2>
-        </div>
-        <div class="modal-body">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h2 class="modal-title">Edit your category!</h2>
+      </div>
+      <div class="modal-body">
         <form action="" role="form" method="post">
-        	{% bootstrap_form editForm%}
-        	{% csrf_token %}
-        	<div id="saveButtonMargin">
-        		<center>
-        			{% buttons submit='Save Category'%}{% endbuttons %}
-        			{% bootstrap_messages %}
-        		</center>
-        	</div>
+          {% bootstrap_form editForm %}
+          {% csrf_token %}
+          <div id="saveButtonMargin">
+            <center>
+              {% buttons submit='Save Category'%}{% endbuttons %}
+            </center>
+          </div>
         </form>
-        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Delete Category Modal -->
 <div id="confirmDelete" class="modal fade">
-    <div class="modal-dialog">
+  <div class="modal-dialog">
     <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h2 class="modal-title">Are you sure about this?</h4>
-        </div>
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h2 class="modal-title">Are you sure about this?</h4>
+      </div>
       <div class="modal-body">
         <p>You're about to delete this category and all associated house rankings.</p>
         <center>
-            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
         </center>
       </div>
-      </div>
     </div>
+  </div>
 </div>
 
 {% endblock %}
@@ -127,9 +128,9 @@
 var jsWeights = {{js_weight|safe}}
 var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
 $(".slide").slider({
-	formatter: function(value) {
+  formatter: function(value) {
           return jsWeights[value] || "";
-	}
+  }
 });
 
 // Provides user interaction when saving through ajax.
@@ -140,22 +141,22 @@ $( ".category_row" ).bind( "mouseenter", hoverActions("category_row", "delete", 
 
 // Handles sizing of columns and breaks columns at appropriate times.
 $(window).on("resize", function () {
-	var divWidth = $(".row").width();
-	if(divWidth < 570){
-		$(".rating").css("width", "90%");
-		$(".help-text").hide();
-		$(".rating-col").css("min-width", "0");
-	}
-	else if(divWidth < 750){
-		$(".help-text").show();
-		$(".rating").css("width", "90%");
-		$(".rating-col").css("min-width", "500px");
-	}
-	else{
-		$(".help-text").show();
-		$(".rating").css("width", "60%").css("margin", "0 auto");
-		$(".rating-col").css("min-width", "500px");
-	}
+  var divWidth = $(".row").width();
+  if(divWidth < 570){
+    $(".rating").css("width", "90%");
+    $(".help-text").hide();
+    $(".rating-col").css("min-width", "0");
+  }
+  else if(divWidth < 750){
+    $(".help-text").show();
+    $(".rating").css("width", "90%");
+    $(".rating-col").css("min-width", "500px");
+  }
+  else{
+    $(".help-text").show();
+    $(".rating").css("width", "60%").css("margin", "0 auto");
+    $(".rating-col").css("min-width", "500px");
+  }
 }).resize();
 </script>
 {% endblock %}

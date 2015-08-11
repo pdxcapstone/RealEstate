@@ -1,26 +1,36 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 
+{% block title %}
+  Login
+{% endblock %}
+
+{% block header %}
+  <div class="col-sm-2"></div>
+  <div class="col-sm-8">
+    <h2><strong>Sign up as a Realtor</strong></h2>
+  </div>
+  <div class="col-sm-2"></div>
+{% endblock header %}
+
 {% block body %}
   <div class="row" id="heading">
-    <div class="col-sm-3"></div>
-    <div class="col-sm-6">
-      <h2 class="login-text">Login</h2>
+    <div class="col-sm-2"></div>
+    <div class="col-sm-8">
       {% bootstrap_messages %}
       <div class="well-alt" >
-        <form class="login-form" action="{% url 'auth_login' %}" role="form" method="post">
+        <form class="login-form" action="" role="form" method="post">
           {% csrf_token %}
-          {% bootstrap_form form %}
+          {% bootstrap_form signup_form %}
           <div class="pull-right login-margin">
-            {% buttons submit='Log in' %}{% endbuttons %}
+				  <button class="btn btn-lr btn-primary" id="regForm" type="submit">Register</button>
           </div>
         </form>
       </div>
       <div class="create-text">
-          ...or <a href="{% url 'realtor-signup' %}">Create an account</a>
-          as a Realtor.
+          ...or <a href="#" data-toggle="modal" data-target="#modal-login">Login</a>
+          to an existing account
       </div>
     </div>
-    <div class="col-sm-3"></div>
   </div>
 {% endblock %}

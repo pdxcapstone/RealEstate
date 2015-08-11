@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import (APIUserSerializer, APIHouseSerializer, APIHouseParamSerializer,
-                          APIHouseFullParamSerializer, APICategoryWeightSerializer, APIGradeSerializer)
+                          APIHouseFullParamSerializer, APICategoryWeightSerializer,
+                          APICategoryParamSerializer, APIGradeSerializer)
 from .utils import jwt_payload_handler
 
 from RealEstate.apps.core.models import House, Category, Couple, Grade, CategoryWeight, Homebuyer
@@ -25,7 +26,7 @@ class APIUserInfoView(APIView):
             response_data = jwt_payload_handler(user)
 
             return Response(response_data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': serializer.errors['non_field_errors'][0]}, status=status.HTTP_400_BAD_REQUEST)
 
 class APIHouseView(APIView):
     """
@@ -40,13 +41,18 @@ class APIHouseView(APIView):
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():
-            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if hid is None:
-            houses = []
 
             house = House.objects.filter(couple=couple)
 
+            if house.count() < 1:
+                return Response({'code': 202, 'message': 'No house under current user.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            houses = []
             for h in house:
                 content = {
                     'id': h.pk,
@@ -59,17 +65,19 @@ class APIHouseView(APIView):
                 'house': houses
             }
         else:
-            paramser = APIHouseParamSerializer(data={'id': int(hid)},
+            paramser = APIHouseParamSerializer(data={'id': hid},
                                                context={'request': self.request})
             if paramser.is_valid():
                 d = paramser.val()
                 if d is not None:
-                    return Response(d)
+                    return Response(d, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({'code': 300, 'message': 'Format error'})
+                return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
+
+            category = Category.objects.filter(couple=couple)
 
             h = House.objects.filter(pk=hid)
-            category = Category.objects.filter(couple=couple)
+
             categories = []
             for c in category:
                 grade = Grade.objects.filter(category=c, house=h, homebuyer__user=user)
@@ -80,11 +88,14 @@ class APIHouseView(APIView):
                         'score': grade[0].score
                     }
                     categories.append(content)
+
+            if len(categories) < 1:
+                return Response({'code': 204, 'message': 'No category under the house.'},
+                                status=status.HTTP_400_BAD_REQUEST)
             query = {
                 'category': categories
             }
         return Response(query)
-
 
     '''
     Grade a house
@@ -98,21 +109,21 @@ class APIHouseView(APIView):
         score = self.request.query_params.get('score', None)
 
         if hid is None or cat is None or score is None:
-            return Response({'code': 300, 'message': 'Format error'})
-
-        paramser = APIHouseFullParamSerializer(data={'id': int(hid), 'category': int(cat),
-                                        'score': int(score)},context={'request': self.request})
-        if paramser.is_valid():
-            d = paramser.val()
-            if d is not None:
-                return Response(d)
-        else:
-            return Response({'code': 300, 'message': 'Format error'})
+            return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():
             return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+
+        paramser = APIHouseFullParamSerializer(data={'id': hid, 'category': cat, 'score': score},
+                                               context={'request': self.request})
+        if paramser.is_valid():
+            d = paramser.val()
+            if d is not None:
+                return Response(d, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
 
         house = House.objects.filter(pk=hid)
         category = Category.objects.filter(pk=cat)
@@ -128,12 +139,12 @@ class APIHouseView(APIView):
 
         ser = APIGradeSerializer(instance=grade[0], data=data)
 
-        if ser.is_valid(raise_exception=True):
+        if ser.is_valid():
             c = ser.save()
             return Response({'code': 101, 'message': 'OK', 'score': c.score})
-
-        # Override this error
-        return Response('Error')
+        else:
+            return Response({'code': 205, 'message': ser.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     '''
     Add a house
@@ -144,11 +155,16 @@ class APIHouseView(APIView):
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():
-            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         couple = Couple.objects.filter(homebuyer__user=request.user)
 
         data = request.data
+
+        if 'nickname' not in data or 'address' not in data:
+            return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
+
         data['couple'] = couple[0].pk
 
         ser = APIHouseSerializer(data=data)
@@ -157,13 +173,17 @@ class APIHouseView(APIView):
             ser.save()
             ret = ser.validated_data
             content = {
-                'nickname': ret['nickname'],
-                'address': ret['address']
+                'code': 101,
+                'message': 'OK',
+                'house': {
+                    'nickname': ret['nickname'],
+                    'address': ret['address']
+                }
             }
             return Response(content)
         else:
-            # Will be replaced by serializer error
-            return Response({'error': 'Format error'})
+            return Response({'code': 202, 'message': ser.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 class APICategoryView(APIView):
     """
@@ -173,15 +193,20 @@ class APICategoryView(APIView):
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():
-            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         couple = Couple.objects.filter(homebuyer__user=request.user)
         category = Category.objects.filter(couple=couple)
 
+        if category.count() < 1:
+                return Response({'code': 202, 'message': 'No category under the user.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
         categories = []
         for c in category:
             cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=category)
-            w = None
+
             if cweight.count() < 1:
                 w = 'NAN'
             else:
@@ -203,13 +228,24 @@ class APICategoryView(APIView):
         serializer = APIUserSerializer(data=request.data, context={'request': self.request})
 
         if not serializer.is_valid():
-            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]})
+            return Response({'code': 201, 'message': serializer.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         cid = self.request.query_params.get('id', None)
         w = self.request.query_params.get('weight', None)
 
+        paramser = APICategoryParamSerializer(data={'category': cid, 'weight': w},
+                                              context={'request': self.request})
+        if paramser.is_valid():
+            d = paramser.val()
+            if d is not None:
+                return Response(d, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'code': 300, 'message': 'Format error'}, status=status.HTTP_400_BAD_REQUEST)
+
         cg = Category.objects.filter(pk=cid)
         cgw = CategoryWeight.objects.filter(category=cg, homebuyer__user=request.user)
+
         hb = Homebuyer.objects.filter(user=request.user)
 
         data = {
@@ -223,6 +259,6 @@ class APICategoryView(APIView):
         if ser.is_valid(raise_exception=True):
             c = ser.save()
             return Response({'code': 101, 'message': 'OK', 'weight': c.weight})
-
-        # Override this error
-        return Response('Error')
+        else:
+            return Response({'code': 203, 'message': ser.errors['non_field_errors'][0]},
+                            status=status.HTTP_400_BAD_REQUEST)
