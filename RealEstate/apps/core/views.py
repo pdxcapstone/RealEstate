@@ -379,6 +379,7 @@ class EvalView(BaseView):
             'couple': couple,
             'house': house,
             'grades': graded,
+            'form': AddCategoryForm()
         }
         context.update(self._score_context())
         return render(request, self.template_name, context)
@@ -390,24 +391,68 @@ class EvalView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
-        if not request.is_ajax():
-            raise PermissionDenied
-
         homebuyer = request.user.role_object
-        house = get_object_or_404(House, id=kwargs["house_id"])
-        id = request.POST['id']
-        score = request.POST['value']
-        category = Category.objects.get(id=id)
-        grade, created = Grade.objects.update_or_create(
-            homebuyer=homebuyer, category=category, house=house,
-            defaults={'score': int(score)})
-        response_data = {
-            'id': str(id),
-            'score': str(score)
-        }
-        return HttpResponse(json.dumps(response_data),
-                            content_type="application/json")
+        
+        if request.is_ajax():
+            house = get_object_or_404(House, id=kwargs["house_id"])
+            id = request.POST['id']
+            score = request.POST['value']
+            category = Category.objects.get(id=id)
+            grade, created = Grade.objects.update_or_create(
+                homebuyer=homebuyer, category=category, house=house,
+                defaults={'score': int(score)})
+            response_data = {
+                'id': str(id),
+                'score': str(score)
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
 
+        else:
+            summary = request.POST["summary"]
+            description = request.POST["description"]
+            couple = homebuyer.couple
+            
+            # Creates a category
+            if Category.objects.filter(
+                    couple=couple, summary=summary).exists():
+                error = (u"Category '{summary}' already exists"
+                         .format(summary=summary))
+                messages.error(request, error)
+            else:
+                Category.objects.create(couple=couple,
+                                        summary=summary,
+                                        description=description)
+                messages.success(
+                    request,
+                    u"Category '{summary}' added".format(summary=summary))
+            
+            
+            categories = Category.objects.filter(couple=couple)
+            print categories
+            house = get_object_or_404(House, id=kwargs["house_id"])
+            grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
+            print grades
+            graded = []
+            for category in categories:
+                missing = True
+                for grade in grades:
+                    if grade.category.id is category.id:
+                        graded.append((category, grade.score))
+                        missing = False
+                        break
+                if missing:
+                    graded.append((category, None))
+    
+            context = {
+                'couple': couple,
+                'house': house,
+                'grades': graded,
+                'form': AddCategoryForm()
+            }
+            context.update(self._score_context())
+            return render(request, self.template_name, context)
+            
 
 class PasswordChangeDoneView(BaseView):
     """

@@ -43,7 +43,34 @@
 		</li>
 	{% endfor %}
 </ul>
+
+<center>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
+</center>
+
+<!-- Add Category Modal -->
+<div id="addCategory" class="modal fade modalHeight" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h2 class="modal-title">Add a category!</h2>
+      </div>
+      <div class="modal-body">
+        <form action="" role="form" method="post">
+          {% bootstrap_form form %}
+          {% csrf_token %}
+          <center>
+            {% buttons submit='Save Category' %}{% endbuttons %}
+          </center>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+
+
 
 {% block scripts %}
 <script src="{% static "slide.min.js" %}"></script>
