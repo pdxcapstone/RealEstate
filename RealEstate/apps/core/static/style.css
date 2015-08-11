@@ -1,5 +1,8 @@
 /* common */
 
+html, body { 
+	height: 100%; 
+}
 ul.list-group {
 	padding-top:30px;
 }
@@ -168,4 +171,5 @@ a.mail {
   -o-background-size: cover;
   background-size: cover;
   width:inherit;
+  height:100%;
 }

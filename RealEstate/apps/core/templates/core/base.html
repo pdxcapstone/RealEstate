@@ -21,7 +21,7 @@
   </head>
 
   <body>
-    {% if user.is_active %}
+    {% if user.is_authenicated %}
       <nav class="navbar navbar-default">
     {% else %}
       <div id="bg-img" class="img-responsive">
@@ -88,7 +88,7 @@
       {% bootstrap_javascript jquery=1 %}
       {% block scripts %}
       {% endblock %}
-    {% if user.is_active %}
+    {% if user.is_authenticated %}
     {% else %}
       </div>
     {% endif %}
