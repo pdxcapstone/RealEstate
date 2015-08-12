@@ -354,7 +354,7 @@ class EvalView(BaseView):
             'default_score': score_field.default,
             'js_scores': json.dumps(score_choices),
         }
-    
+
     def _weight_context(self):
         weight_field = CategoryWeight._meta.get_field('weight')
         weight_choices = dict(weight_field.choices)
@@ -370,7 +370,7 @@ class EvalView(BaseView):
             'default_weight': weight_field.default,
             'js_weight': json.dumps(weight_choices),
         }
-    
+
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
         couple = homebuyer.couple
@@ -409,7 +409,7 @@ class EvalView(BaseView):
         posts a success message.
         """
         homebuyer = request.user.role_object
-        
+
         if request.is_ajax():
             house = get_object_or_404(House, id=kwargs["house_id"])
             id = request.POST['id']
@@ -429,7 +429,7 @@ class EvalView(BaseView):
             summary = request.POST["summary"]
             description = request.POST["description"]
             couple = homebuyer.couple
-            
+
             # Creates a category
             if Category.objects.filter(
                     couple=couple, summary=summary).exists():
@@ -437,13 +437,13 @@ class EvalView(BaseView):
                          .format(summary=summary))
                 messages.error(request, error)
             else:
-                category = Category.objects.create(couple=couple,
-                                        summary=summary,
-                                        description=description)
+                category = Category.objects.create(
+                    couple=couple, summary=summary,
+                    description=description)
                 CategoryWeight.objects.update_or_create(
                     homebuyer=homebuyer, category=category,
                     defaults={'weight': int(request.POST["weight"])})
-                
+
                 messages.success(
                     request,
                     u"Category '{summary}' added".format(summary=summary))
@@ -461,7 +461,7 @@ class EvalView(BaseView):
                         break
                 if missing:
                     graded.append((category, None))
-    
+
             context = {
                 'couple': couple,
                 'house': house,
