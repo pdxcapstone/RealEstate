@@ -21,14 +21,10 @@
     {% endblock %}
   </head>
 
+        <!--div id="bg-img" class="img-responsive"-->
   <body>
     {% with authenticated=user.is_authenticated %}
-    {% if user.is_authenticated %}
-      <nav class="navbar navbar-default">
-    {% else %}
-      <div id="bg-img" class="img-responsive">
-      <nav class="navbar-alt">
-    {% endif %}
+      <nav class="{% if authenticated %}navbar navbar-default{% else %}navbar-alt{% endif %}">
         <div class="container-fluid">
           <!-- Brand and toggle get grouped for better mobile display -->
           <div class="navbar-header">
@@ -83,29 +79,26 @@
           </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
       </nav>
-	  <div class="container">
-	    <div class="row">
-        {% block header %}
+
+      <div class="container">
+        <div class="row">
+          {% block header %}
+          {% endblock %}
+        </div>
+
+        {% block messages %}
+          <div class="row">
+            <div class="col-sm-2"></div>
+             <div id="messages" class="col-sm-8" style="margin: 8px;">
+               {% bootstrap_messages %}
+             </div>
+             <div class="col-sm-2"></div>
+          </div>
         {% endblock %}
-	   </div>
 
-	   {% block messages %}
-	     <div class="row">
-		    <div class="col-sm-2"></div>
-			<div id="messages" class="col-sm-8" style="margin: 8px;">
-				{% bootstrap_messages %}
-			</div>
-			<div class="col-sm-2"></div>
-		</div>
-	  {% endblock %}
-
-	  {% block body %}
-	  {% endblock body %}
-       </div><!-- /.container -->
-    {% if user.is_authenticated %}
-    {% else %}
-      </div>
-    {% endif %}
+        {% block body %}
+        {% endblock body %}
+      </div><!-- /.container -->
 
       {% if not authenticated %}
         <div id="modal-login" class="modal fade" role="dialog">
@@ -143,6 +136,6 @@
       {% endif %}
       {% block scripts %}
       {% endblock %}
-      {% endwith %}
+    {% endwith %}
   </body>
 </html>
