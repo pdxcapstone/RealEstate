@@ -23,6 +23,16 @@ DATABASES = {
     }
 }
 
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_COMPLEXITY = {
+    'LOWER': 1,
+    'UPPER': 1,
+    'DIGITS': 1,
+}
+PASSWORD_ERROR_MESSAGE = (
+    u"Invalid Password.  Must be at least 8 characters, mixed case, and "
+    "contain at least one digit")
+
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587

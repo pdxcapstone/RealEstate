@@ -74,7 +74,7 @@ class PendingHomebuyer(BaseModel):
     _HOMEBUYER_INVITE_MESSAGE = """
         Hello {name},
 
-        You have been invited to the Real Estate app.
+        You have been invited to {app_name}.
         Register at the following link:
             {signup_link}
 
@@ -159,12 +159,14 @@ class PendingHomebuyer(BaseModel):
         if self.registered:
             return None
 
+        app_name = settings.APP_NAME
+        subject = u"{app_name} Invitation".format(app_name=app_name)
         message = self._HOMEBUYER_INVITE_MESSAGE.format(
             name=self.first_name,
+            app_name=app_name,
             signup_link=self._signup_link(request.get_host()))
-        return send_mail('Real Estate Invite', message,
-                         settings.EMAIL_HOST_USER, [self.email],
-                         fail_silently=False)
+        return send_mail(subject, message, settings.EMAIL_HOST_USER,
+                         [self.email], fail_silently=False)
 
     class Meta:
         ordering = ['email']
