@@ -1,5 +1,8 @@
 /* common */
 
+html{
+	height: 100%;
+}
 ul.list-group {
 	padding-top:30px;
 }
@@ -60,17 +63,23 @@ button.close{
     text-align:center;
     width:50%;
 }
+.signUpHeader{
+	margin-top:50px;
+}
 
 /* categories */
 
 .rating-col {
 	min-width: 500px;
 }
-.summary-col{
-	min-width: 150px;
+.summary-col{ 
+	min-width: 150px; 
 }
-.tooltip-main.top.in {
-	z-index:1 !important;
+.tooltip-main.top.in { 
+	z-index:1 !important; 
+}
+.close { 
+	z-index: 3000 !important; 
 }
 #catRating-out{
 	padding-left:10%
@@ -103,6 +112,67 @@ a.mail {
 #regForm {
 	margin: 10px 0;
 }
-.signUpHeader{
-	margin-top:50px;
+
+/* login */
+
+.well-alt {
+	min-height: 20px;
+    padding: 19px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    margin: 10px 0;
+    color:#e4e4e4;
+}
+.login-text{
+	margin-top:50px; 
+	margin-left:15px;
+	font-style: bold;
+	color:#e4e4e4;
+}
+.login-form{
+	margin-bottom:20px;
+}
+.create-text{
+	margin-top:100px; 
+	text-align: center;
+	color:#e4e4e4;
+}
+.create-text a{
+	color:#66CCFF;
+}
+.login-margin {
+	margin-top: 30px;
+}
+.login-margin button{
+	background-color:#e4e4e4;
+	color:#696969;
+	border:1px solid #e4e4e4;
+}
+
+/* base */
+.navbar-alt {
+	position: relative;
+    min-height: 50px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid black;
+    padding-top:20px;
+    padding-bottom:20px;
+}
+.navbar-alt a{
+	color:#696969;
+	font-size:150%;
+}
+.nav a:hover{
+		background-color:transparent !important;
+}
+.nav a{
+		background-color:transparent !important;
+}
+#bg-img {
+  background: url(images/homepage_house.jpg) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width:inherit;
+  height:100%;
 }
