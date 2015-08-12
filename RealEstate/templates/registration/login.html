@@ -13,6 +13,12 @@
   <div class="col-sm-2"></div>
 {% endblock header %}
 
+{% block main %}
+  <div id="bg-img" class="img-responsive">
+    {{ block.super }}
+  </div>
+{% endblock main %}
+
 {% block body %}
   <div class="row" id="heading">
     <div class="col-sm-2"></div>

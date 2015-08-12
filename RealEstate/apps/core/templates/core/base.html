@@ -21,84 +21,85 @@
     {% endblock %}
   </head>
 
-        <!--div id="bg-img" class="img-responsive"-->
   <body>
     {% with authenticated=user.is_authenticated %}
-      <nav class="{% if authenticated %}navbar navbar-default{% else %}navbar-alt{% endif %}">
-        <div class="container-fluid">
-          <!-- Brand and toggle get grouped for better mobile display -->
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{% url 'home' %}">
-              <span class="glyphicon glyphicon-home" aria-hidden="true"></span> Real Estate App
-            </a>
-          </div>
+      {% block main %}
+        <nav class="{% if authenticated %}navbar navbar-default{% else %}navbar-alt{% endif %}">
+          <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                      data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="{% url 'home' %}">
+                <span class="glyphicon glyphicon-home" aria-hidden="true"></span> Real Estate App
+              </a>
+            </div>
 
-          <!-- Collect the nav links, forms, and other content for toggling -->
-          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            {% if user.is_authenticated %}
-              <ul class="nav navbar-nav">
-                <li>
-                  <a href="{% url 'categories' %}">
-                    <span class="glyphicon glyphicon-equalizer"> Categories</span>
-                  </a>
-                </li>
-                {% if user.is_staff %}
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+              {% if user.is_authenticated %}
+                <ul class="nav navbar-nav">
                   <li>
-                    <a href={% url "admin:index" %}>
-                      <span class="glyphicon glyphicon-king"> Admin</span>
+                    <a href="{% url 'categories' %}">
+                      <span class="glyphicon glyphicon-equalizer"> Categories</span>
                     </a>
                   </li>
+                  {% if user.is_staff %}
+                    <li>
+                      <a href={% url "admin:index" %}>
+                        <span class="glyphicon glyphicon-king"> Admin</span>
+                      </a>
+                    </li>
+                  {% endif %}
+                </ul>
+              {% endif %}
+              <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                       role="button" aria-haspopup="true" aria-expanded="false">
+                       {{ user.get_full_name|default:"User"}} ({{user.email}})
+                       <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                      <li><a href="{% url 'password_change' %}"> Change Password</a></li>
+                      <li role="separator" class="divider"></li>
+                      <li><a href="{% url 'auth_logout' %}"> Logout</a></li>
+                    </ul>
+                  </li>
+                {% else %}
+                  <li><a class="login-color" href="#" data-toggle="modal" data-target="#modal-login"> Log In</a></li>
                 {% endif %}
               </ul>
-            {% endif %}
-            <ul class="nav navbar-nav navbar-right">
-              {% if user.is_authenticated %}
-                <li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                     role="button" aria-haspopup="true" aria-expanded="false">
-                     {{ user.get_full_name|default:"User"}} ({{user.email}})
-                     <span class="caret"></span>
-                  </a>
-                  <ul class="dropdown-menu">
-                    <li><a href="{% url 'password_change' %}"> Change Password</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a href="{% url 'auth_logout' %}"> Logout</a></li>
-                  </ul>
-                </li>
-              {% else %}
-                <li><a class="login-color" href="#" data-toggle="modal" data-target="#modal-login"> Log In</a></li>
-              {% endif %}
-            </ul>
-          </div><!-- /.navbar-collapse -->
-        </div><!-- /.container-fluid -->
-      </nav>
+            </div><!-- /.navbar-collapse -->
+          </div><!-- /.container-fluid -->
+        </nav>
 
-      <div class="container">
-        <div class="row">
-          {% block header %}
-          {% endblock %}
-        </div>
-
-        {% block messages %}
+        <div class="container">
           <div class="row">
-            <div class="col-sm-2"></div>
-             <div id="messages" class="col-sm-8" style="margin: 8px;">
-               {% bootstrap_messages %}
-             </div>
-             <div class="col-sm-2"></div>
+            {% block header %}
+            {% endblock %}
           </div>
-        {% endblock %}
 
-        {% block body %}
-        {% endblock body %}
-      </div><!-- /.container -->
+          {% block messages %}
+            <div class="row">
+              <div class="col-sm-2"></div>
+               <div id="messages" class="col-sm-8" style="margin: 8px;">
+                 {% bootstrap_messages %}
+               </div>
+               <div class="col-sm-2"></div>
+            </div>
+          {% endblock %}
+
+          {% block body %}
+          {% endblock body %}
+        </div><!-- /.container -->
+      {% endblock main %}
 
       {% if not authenticated %}
         <div id="modal-login" class="modal fade" role="dialog">
