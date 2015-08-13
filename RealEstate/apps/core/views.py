@@ -31,7 +31,7 @@ from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
                                            InviteHomebuyersFormSet)
 
-LOGIN_DELAY = 1.5   # Seconds
+LOGIN_DELAY = 1.2   # Seconds
 
 
 @sensitive_post_parameters()
@@ -59,19 +59,20 @@ def async_login_handler(request, *args, **kwargs):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
-class LoginView(View):
+class RealtorSignupView(View):
     """
     This form is the landing page used to sign up realtors.
     """
-    template_name = 'registration/login.html'
+    template_name = 'registration/signup.html'
 
     def dispatch(self, request, *args, **kwargs):
         """
         Redirect to home page if already logged in.
         """
         if request.user.is_authenticated():
-            return redirect('home')
-        return super(LoginView, self).dispatch(request, *args, **kwargs)
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+        return super(
+            RealtorSignupView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         """
@@ -103,8 +104,9 @@ class LoginView(View):
                 Realtor.objects.create(user=user)
             user = authenticate(email=email, password=password)
             login(request, user)
+            user.send_email_confirmation(request)
             messages.success(request, "Welcome!")
-            return redirect('home')
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
         context = {
             'signup_form': signup_form
         }
@@ -136,13 +138,169 @@ class BaseView(View):
         raise PermissionDenied
 
 
-class HomeView(BaseView):
+class CategoryView(BaseView):
+    """
+    View for the Category Ranking Page.
+    """
+    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
+    template_name = 'core/categories.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        return True
+
+    def _weight_context(self):
+        weight_field = CategoryWeight._meta.get_field('weight')
+        weight_choices = dict(weight_field.choices)
+        min_weight = min(weight for weight in weight_choices)
+        max_weight = max(weight for weight in weight_choices)
+        min_choice = weight_choices[min_weight]
+        max_choice = weight_choices[max_weight]
+        return {
+            'min_weight': min_weight,
+            'max_weight': max_weight,
+            'min_choice': min_choice,
+            'max_choice': max_choice,
+            'default_weight': weight_field.default,
+            'js_weight': json.dumps(weight_choices),
+        }
+
+    def get(self, request, *args, **kwargs):
+        # Returns summary and description if given category ID
+        if request.is_ajax():
+            id = request.GET['id']
+            category = Category.objects.get(id=id)
+            response_data = {
+                'summary': category.summary,
+                'description': category.description
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+
+        # Renders standard category page
+        homebuyer = request.user.role_object
+        couple = homebuyer.couple
+        categories = Category.objects.filter(couple=couple)
+        weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
+
+        weighted = []
+        for category in categories:
+            missing = True
+            for weight in weights:
+                if weight.category.id is category.id:
+                    weighted.append((category, weight.weight))
+                    missing = False
+                    break
+            if missing:
+                weighted.append((category, None))
+
+        context = {
+            'weights': weighted,
+            'form': AddCategoryForm(),
+            'editForm': EditCategoryForm()
+        }
+        context.update(self._weight_context())
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Depending on what functionality we want, the post may be more of a
+        redirect back to the home page. In that case, much of this code will
+        leave. In the meantime, it saves new data, recreates the same form and
+        posts a success message.
+        """
+        homebuyer = request.user.role_object
+        couple = homebuyer.couple
+
+        # ajax calls implement weight and delete category commands.
+        if request.is_ajax():
+            id = request.POST['id']
+            category = Category.objects.get(id=id)
+
+            # Weight a category
+            if request.POST['type'] == 'update':
+                weight = request.POST['value']
+                CategoryWeight.objects.update_or_create(
+                    homebuyer=homebuyer, category=category,
+                    defaults={'weight': int(weight)})
+                return HttpResponse(json.dumps({"id": id}),
+                                    content_type="application/json")
+
+            # Delete a category
+            elif request.POST['type'] == 'delete':
+                name = category.summary
+                category.delete()
+                return HttpResponse(json.dumps({"id": id, "name": name}),
+                                    content_type="application/json")
+
+        # Creates or updates a category
+        else:
+            summary = request.POST["summary"]
+            description = request.POST["description"]
+
+            # Updates a category
+            if "id" in request.POST:
+                id_category = get_object_or_404(
+                    Category, id=request.POST['id'])
+                summary_category = Category.objects.filter(
+                    couple=couple, summary=summary).first()
+                if (id_category and summary_category and
+                        id_category.id != summary_category.id):
+                    error = (u"Category '{summary}' already exists"
+                             .format(summary=summary))
+                    messages.error(request, error)
+                else:
+                    category = id_category
+                    category.summary = summary
+                    category.description = description
+                    category.save()
+                    messages.success(
+                        request,
+                        "Category '{summary}' updated".format(summary=summary))
+
+            # Creates a category
+            elif Category.objects.filter(
+                    couple=couple, summary=summary).exists():
+                error = (u"Category '{summary}' already exists"
+                         .format(summary=summary))
+                messages.error(request, error)
+            else:
+                Category.objects.create(couple=couple,
+                                        summary=summary,
+                                        description=description)
+                messages.success(
+                    request,
+                    u"Category '{summary}' added".format(summary=summary))
+
+            weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
+            categories = Category.objects.filter(couple=couple)
+
+            weighted = []
+            for category in categories:
+                missing = True
+                for weight in weights:
+                    if weight.category.id is category.id:
+                        weighted.append((category, weight.weight))
+                        missing = False
+                        break
+                if missing:
+                    weighted.append((category, None))
+
+            context = {
+                'weights': weighted,
+                'form': AddCategoryForm(),
+                'editForm': EditCategoryForm()
+            }
+            context.update(self._weight_context())
+            return render(request, self.template_name, context)
+
+
+class DashboardView(BaseView):
     """
     View for the home page, which should render different templates based
     on whether or not the the logged in User is a Realtor or Homebuyer.
     """
-    homebuyer_template_name = 'core/homebuyerHome.html'
-    realtor_template_name = 'core/realtorHome.html'
+    homebuyer_template_name = 'core/homebuyer_dashboard.html'
+    realtor_template_name = 'core/realtor_dashboard.html'
 
     def _build_invite_formset(self):
         return modelformset_factory(PendingHomebuyer,
@@ -281,7 +439,7 @@ class HomeView(BaseView):
                            .format(first=escape(unicode(first_homebuyer)),
                                    second=escape(unicode(second_homebuyer))))
             messages.success(request, success_msg)
-            return redirect('home')
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
         couples = Couple.objects.filter(realtor=realtor)
         pendingCouples = PendingCouple.objects.filter(realtor=realtor)
@@ -318,6 +476,24 @@ class HomeView(BaseView):
             'Realtor': self._realtor_post,
         }
         return handlers[role.role_type](request, role, *args, **kwargs)
+
+
+class EmailConfirmationView(BaseView):
+    """
+    Used to confirm that a Realtor has signed up with a valid email address.
+    """
+    _USER_TYPES_ALLOWED = User._REALTOR_ONLY
+
+    def get(self, request, *args, **kwargs):
+        email_confirmation_token = kwargs.get('email_confirmation_token', None)
+        user = request.user
+        if (not user.email_confirmed and
+                user.email_confirmation_token == email_confirmation_token):
+            user.email_confirmed = True
+            user.save()
+            messages.success(
+                request, u"Email confirmed ({email})".format(email=user.email))
+        return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
 
 class EvalView(BaseView):
@@ -481,7 +657,7 @@ class PasswordChangeDoneView(BaseView):
     def get(self, request, *args, **kwargs):
         messages.success(request,
                          "You have successfully changed your password")
-        return redirect('home')
+        return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
 
 class ReportView(BaseView):
@@ -502,159 +678,3 @@ class ReportView(BaseView):
 
     def get(self, request, *args, **kwargs):
         return render(request, self.template_name, {})
-
-
-class CategoryView(BaseView):
-    """
-    View for the Category Ranking Page.
-    """
-    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
-    template_name = 'core/categories.html'
-
-    def _permission_check(self, request, role, *args, **kwargs):
-        return True
-
-    def _weight_context(self):
-        weight_field = CategoryWeight._meta.get_field('weight')
-        weight_choices = dict(weight_field.choices)
-        min_weight = min(weight for weight in weight_choices)
-        max_weight = max(weight for weight in weight_choices)
-        min_choice = weight_choices[min_weight]
-        max_choice = weight_choices[max_weight]
-        return {
-            'min_weight': min_weight,
-            'max_weight': max_weight,
-            'min_choice': min_choice,
-            'max_choice': max_choice,
-            'default_weight': weight_field.default,
-            'js_weight': json.dumps(weight_choices),
-        }
-
-    def get(self, request, *args, **kwargs):
-        # Returns summary and description if given category ID
-        if request.is_ajax():
-            id = request.GET['id']
-            category = Category.objects.get(id=id)
-            response_data = {
-                'summary': category.summary,
-                'description': category.description
-            }
-            return HttpResponse(json.dumps(response_data),
-                                content_type="application/json")
-
-        # Renders standard category page
-        homebuyer = request.user.role_object
-        couple = homebuyer.couple
-        categories = Category.objects.filter(couple=couple)
-        weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
-
-        weighted = []
-        for category in categories:
-            missing = True
-            for weight in weights:
-                if weight.category.id is category.id:
-                    weighted.append((category, weight.weight))
-                    missing = False
-                    break
-            if missing:
-                weighted.append((category, None))
-
-        context = {
-            'weights': weighted,
-            'form': AddCategoryForm(),
-            'editForm': EditCategoryForm()
-        }
-        context.update(self._weight_context())
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        """
-        Depending on what functionality we want, the post may be more of a
-        redirect back to the home page. In that case, much of this code will
-        leave. In the meantime, it saves new data, recreates the same form and
-        posts a success message.
-        """
-        homebuyer = request.user.role_object
-        couple = homebuyer.couple
-
-        # ajax calls implement weight and delete category commands.
-        if request.is_ajax():
-            id = request.POST['id']
-            category = Category.objects.get(id=id)
-
-            # Weight a category
-            if request.POST['type'] == 'update':
-                weight = request.POST['value']
-                CategoryWeight.objects.update_or_create(
-                    homebuyer=homebuyer, category=category,
-                    defaults={'weight': int(weight)})
-                return HttpResponse(json.dumps({"id": id}),
-                                    content_type="application/json")
-
-            # Delete a category
-            elif request.POST['type'] == 'delete':
-                name = category.summary
-                category.delete()
-                return HttpResponse(json.dumps({"id": id, "name": name}),
-                                    content_type="application/json")
-
-        # Creates or updates a category
-        else:
-            summary = request.POST["summary"]
-            description = request.POST["description"]
-
-            # Updates a category
-            if "id" in request.POST:
-                id_category = get_object_or_404(
-                    Category, id=request.POST['id'])
-                summary_category = Category.objects.filter(
-                    couple=couple, summary=summary).first()
-                if (id_category and summary_category and
-                        id_category.id != summary_category.id):
-                    error = (u"Category '{summary}' already exists"
-                             .format(summary=summary))
-                    messages.error(request, error)
-                else:
-                    category = id_category
-                    category.summary = summary
-                    category.description = description
-                    category.save()
-                    messages.success(
-                        request,
-                        "Category '{summary}' updated".format(summary=summary))
-
-            # Creates a category
-            elif Category.objects.filter(
-                    couple=couple, summary=summary).exists():
-                error = (u"Category '{summary}' already exists"
-                         .format(summary=summary))
-                messages.error(request, error)
-            else:
-                Category.objects.create(couple=couple,
-                                        summary=summary,
-                                        description=description)
-                messages.success(
-                    request,
-                    u"Category '{summary}' added".format(summary=summary))
-
-            weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
-            categories = Category.objects.filter(couple=couple)
-
-            weighted = []
-            for category in categories:
-                missing = True
-                for weight in weights:
-                    if weight.category.id is category.id:
-                        weighted.append((category, weight.weight))
-                        missing = False
-                        break
-                if missing:
-                    weighted.append((category, None))
-
-            context = {
-                'weights': weighted,
-                'form': AddCategoryForm(),
-                'editForm': EditCategoryForm()
-            }
-            context.update(self._weight_context())
-            return render(request, self.template_name, context)
