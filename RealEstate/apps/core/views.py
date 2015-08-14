@@ -26,7 +26,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
                                          User)
-
+from RealEstate.apps.core import models
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
                                            InviteHomebuyersFormSet)
@@ -258,18 +258,28 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            elif Category.objects.filter(
-                    couple=couple, summary=summary).exists():
-                error = (u"Category '{summary}' already exists"
-                         .format(summary=summary))
-                messages.error(request, error)
-            else:
-                Category.objects.create(couple=couple,
-                                        summary=summary,
-                                        description=description)
-                messages.success(
-                    request,
-                    u"Category '{summary}' added".format(summary=summary))
+            
+            elif len(request.POST.getlist("optional_categories")) > 0:
+                for category in request.POST.getlist("optional_categories"):
+                    if Category.objects.filter(
+                        couple=couple, summary=summary).exists():
+                        continue
+                    else:
+                        Category.objects.create(couple=couple,
+                                                summary=models._CATEGORIES[category]["summary"],
+                                                description=models._CATEGORIES[category]["description"])
+                if Category.objects.filter(
+                        couple=couple, summary=summary).exists():
+                    error = (u"Category '{summary}' already exists"
+                             .format(summary=summary))
+                    messages.error(request, error)
+                else:
+                    Category.objects.create(couple=couple,
+                                            summary=summary,
+                                            description=description)
+                    messages.success(
+                        request,
+                        u"Category '{summary}' added".format(summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
