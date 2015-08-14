@@ -7,12 +7,16 @@ from django.contrib.auth.forms import (PasswordChangeForm, UserChangeForm,
 from django.core.exceptions import ValidationError
 
 from passwords.fields import PasswordField
-
+from RealEstate.apps.core import models
 from RealEstate.apps.core.models import Category, House, User
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
 class AddCategoryForm(forms.ModelForm):
+    optional_categories = forms.MultipleChoiceField(required=False, label='',
+        widget=forms.CheckboxSelectMultiple, choices=models._OPTIONAL_CATEGORIES)
+
+    
     class Meta:
         model = Category
         fields = ('summary', 'description')

@@ -31,7 +31,47 @@ _CATEGORIES = {
         'description': ('Rate the mortgage based on price alone, not relative '
                         'to other rating categories')
     },
-    # ...
+    'category1': {
+        'summary': 'Category1',
+        'description' : 'Description for category 1'
+    },
+    'category2': {
+        'summary': 'Category2',
+        'description' : 'Description for category 2'
+    },
+    'category3': {
+        'summary': 'Category3',
+        'description' : 'Description for category 3'
+    },
+    'category4': {
+        'summary': 'Category4',
+        'description' : 'Description for category 4'
+    },
+    'category5': {
+        'summary': 'Category5',
+        'description' : 'Description for category 5'
+    },
+    'category6': {
+        'summary': 'Category6',
+        'description' : 'Description for category 6'
+    },
+    'category7': {
+        'summary': 'Category7',
+        'description' : 'Description for category 7'
+    },
+    'category8': {
+        'summary': 'Category8',
+        'description' : 'Description for category 8'
+    },
+    'category9': {
+        'summary': 'Category9',
+        'description' : 'Description for category 9'
+    },
+    'category10': {
+        'summary': 'Category10',
+        'description' : 'Description for category 10'
+    }
+    # ....
 }
 
 _DEFAULT_CATEGORIES = [
@@ -39,6 +79,18 @@ _DEFAULT_CATEGORIES = [
     _CATEGORIES['location'],
     _CATEGORIES['mortgage']
 ]
+
+_OPTIONAL_CATEGORIES = (
+    ('category1', 'Category 1'),
+    ('category2', 'Category 2'),
+    ('category3', 'Category 3'),
+    ('category4', 'Category 4'),
+    ('category5', 'Category 5'),
+    ('category6', 'Category 6'),
+    ('category7', 'Category 7'),
+    ('category8', 'Category 8'),
+    ('category9', 'Category 9')
+)
 
 
 @receiver(models.signals.post_save)
