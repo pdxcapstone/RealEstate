@@ -16,7 +16,7 @@
       <p>Please click the 'Invite Couple' button below to invite couples.</p>
     </div>
   {% else %}
-    <h4><strong>Registered Homebuyers</strong></h4>
+    <h3 class="header"><strong>Registered Homebuyers</strong></h3>
     <ul class="list-group">
       {% for couple in couples %}
         <li class="list-group-item couple_row">
@@ -48,7 +48,7 @@
     </ul>
     <br>
 
-    <h4><strong>Invited Homebuyers</strong></h4>
+    <h3 class="header"><strong>Invited Homebuyers</strong></h3>
     <ul class="list-group">
       {% for pending_couple in pending_couples %}
         <li class="list-group-item couple_row">
@@ -97,7 +97,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h2 class="modal-title">Invite a couple</h2>
+          <h3 class="modal-title">Invite a couple</h3>
         </div>
         <div class="modal-body">
           <form action="" role="form" method="post">
