@@ -29,6 +29,10 @@ nav.navbar * {
     color: white !important;
 }
 
+.navbar-default .navbar-toggle span.icon-bar {
+    background-color: white;
+}
+
 #main-content .header, .modal-header {
     text-align:center;
 }
@@ -206,6 +210,7 @@ a.mail {
 .nav a{
 		background-color:transparent !important;
 }
+
 #bg-img {
   background: url(images/homepage_house.jpg) no-repeat center center fixed;
   -webkit-background-size: cover;
