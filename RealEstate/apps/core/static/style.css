@@ -171,7 +171,8 @@ a.mail {
 .legend {
     width: 10em;
     border: 1px solid black;
-    padding:2px;
+    padding: 5px;
+    padding-top:8px;
 }
 
 .legend .title {
