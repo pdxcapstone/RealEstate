@@ -104,7 +104,8 @@ button.close{
 .http-error {
     font-style: bold;
 }
-.soft-error {
+
+.http-error, .soft-error {
     font-style: italic;
     text-align: center;
 }
