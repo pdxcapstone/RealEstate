@@ -143,4 +143,50 @@ a.mail {
     outline: solid;
     outline-color: black;
     outline-width: 1px;
+    min-height:100px;
+}
+.hb-leg{
+	min-height:10px;
+	min-width:20px;
+	margin-top:14px;
+	margin-left:5px;
+}
+#hb-1{
+	background-color:rgba(217, 95, 73, 0.9);
+}
+#hb-2{
+	background-color:rgba(237, 194, 51, 0.9);
+}
+.weight-chart{
+	min-height:400px; 
+	width: 100%;
+}
+#fork {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+}
+
+.legend {
+    width: 10em;
+    border: 1px solid black;
+    padding:2px;
+}
+
+.legend .title {
+    display: block;
+    margin-bottom: 0.5em;
+    line-height: 1.2em;
+    padding: 0 0.3em;
+}
+
+.legend .color-sample {
+    display: block;
+    float: left;
+    width: 1em;
+    height: 1em;
+    border: 2px solid; /* Comment out if you don't want to show the fillColor */
+    border-radius: 0.5em; /* Comment out if you prefer squarish samples */
+    margin-right: 0.5em;
 }
