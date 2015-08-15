@@ -31,3 +31,11 @@
     <div class="col-sm-2"></div>
   </div>
 {% endblock %}
+
+{% block scripts %}
+  <script>
+      setTimeout(function() {
+          window.location = '/';
+      }, 5000);
+  </script>
+{% endblock scripts %}
