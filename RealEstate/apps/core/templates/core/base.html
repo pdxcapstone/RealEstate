@@ -9,7 +9,9 @@
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <meta charset="UTF-8">
-    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    {% block override_title %}
+      <title>{% block title %}{% endblock %} &middot; {{ app_name }}</title>
+    {% endblock %}
     <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
     <meta name="description" content="{{ app_name }}">
     <meta name="keywords" content="realestate">
