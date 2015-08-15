@@ -78,7 +78,7 @@ class PendingHomebuyer(BaseModel):
     _HOMEBUYER_INVITE_MESSAGE = """
         Hello {name},
 
-        You have been invited to {app_name}.
+        You have been invited to {app_name}!
         Register at the following link:
             {signup_link}
 
