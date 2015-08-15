@@ -514,6 +514,9 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
     def __unicode__(self):
         return self.nickname
 
+    def address_lines(self):
+        return map(lambda line: line.strip(), self.address.split('\n'))
+
     def clean(self):
         """
         Ensure that all related categories are for the correct Couple.

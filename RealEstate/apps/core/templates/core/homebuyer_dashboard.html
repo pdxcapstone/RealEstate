@@ -9,35 +9,65 @@
 {% endblock header %}
 
 {% block body %}
-  <!--Home list -->
-  <ul class="list-group">
-    {% for home in house %}
-      <li class="list-group-item" id="li_{{home.id}}">
-        <div class="row home_row" id="row_{{home.id}}">
-          <div class="row-con">
-            <div class="col-sm-6">
-              <h4>
-                {{home}}
-                <span data-toggle="modal" data-target="#edit-modal" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-                <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{home.id}}' class='glyphicon glyphicon-remove icon delete'></span>
-              </h4>
-              <p>{{home.address}}</p>
-            </div>
-            <div class="hbdash-center">
-              <p>
-                <a href="{{home.evaluation_url}}"> Rate House </a>
-              </p>
+  {% if not homebuyer.partner %}
+    <div class="soft-error">
+      <p>Your partner has not yet registered!</p>
+      <p>Please remind them to register for the app.</p>
+    </div>
+    <br>
+  {% endif %}
+
+  {% if not couple.category_set.exists %}
+    <div class="soft-error">
+      <p>You have not selected any Categories.</p>
+      <p><a href={% url 'categories' %}>Click Here</a> to add the categories that are important to you.</p>
+    </div>
+    <br>
+  {% endif %}
+
+  {% if not houses.exists %}
+    <div class="soft-error">
+      <p>You have not yet added any houses.</p>
+      <p>Click the 'Add House' button below to add a house.</p>
+    </div>
+    <br>
+  {% else %}
+    <h4><strong>Houses</strong></h4>
+    <ul class="list-group">
+      {% for house in houses %}
+        <li class="list-group-item" id="li_{{house.id}}">
+          <div class="row home_row" id="row_{{house.id}}">
+            <div class="row-con">
+              <div class="col-sm-6">
+                <h4>
+                  {{house}}
+                  <span data-toggle="modal" data-target="#edit-modal" id='edit_{{house.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                  <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+                </h4>
+                {% for line in house.address_lines %}
+                  <p>{{ line }}</p>
+                {% endfor %}
+              </div>
+              <div class="hbdash-center">
+                <p>
+                  <a href="{{house.evaluation_url}}"> Rate House </a>
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
   <div class="addButton">
     <center>
-      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">
-        Add Home
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHouseModal">
+        Add House
       </button>
+      <a href={{ couple.report_url }}>
+        <button type="button" class="btn btn-primary">Generate Report</button>
+      </a>
     </center>
   </div>
 
@@ -60,12 +90,12 @@
   </div>
 
   <!-- Edit home modal -->
-  <div id="edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Home" aria-hidden="true">
+  <div id="edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit House" aria-hidden="true">
     <div class="modal-dialog">
       <!-- Modal content -->
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">
               &times;
           </button>
           <h4 class="modal-title">Edit your home</h4>
@@ -75,7 +105,7 @@
             {% bootstrap_form editForm %}
             {% csrf_token %}
             <center>
-              {% buttons submit='Update Home' %}{% endbuttons %}
+              {% buttons submit='Update House' %}{% endbuttons %}
             </center>
           </form>
         </div>
@@ -83,20 +113,20 @@
     </div>
   </div>
 
-  <!-- Add Home Modal -->
-  <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+  <!-- Add House Modal -->
+  <div id="AddHouseModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add House" aria-hidden="true">
     <div class="modal-dialog">
       <!-- Modal content -->
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
-          <h4 class="modal-title">Add Home</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
+          <h4 class="modal-title">Add House</h4>
         </div>
         <div class="modal-body">
           <form method="post" action="" role="form" class="uniForm">
             {% bootstrap_form form %}
             {% csrf_token %}
-            <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
+            <center>{% buttons submit='Save House' %}{% endbuttons %}</center>
           </form>
         </div>
       </div>

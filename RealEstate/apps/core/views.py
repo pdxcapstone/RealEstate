@@ -313,19 +313,20 @@ class DashboardView(BaseView):
         # Returns summary and description if given category ID
         if request.is_ajax():
             id = request.GET['id']
-            home = House.objects.get(id=id)
+            house = House.objects.get(id=id)
             response_data = {
-                'nickname': home.nickname,
-                'address': home.address
+                'nickname': house.nickname,
+                'address': house.address
             }
             return HttpResponse(json.dumps(response_data),
                                 content_type="application/json")
 
         couple = homebuyer.couple
-        house = House.objects.filter(couple=couple)
+        houses = couple.house_set.all()
         context = {
             'couple': couple,
-            'house': house,
+            'homebuyer': homebuyer,
+            'houses': houses,
             'form': AddHomeForm(),
             'editForm': EditHomeForm()
         }
@@ -344,9 +345,9 @@ class DashboardView(BaseView):
         # Deletes a home
         if request.is_ajax():
             id = request.POST['id']
-            home = House.objects.get(id=id)
-            name = home.nickname
-            home.delete()
+            house = House.objects.get(id=id)
+            name = house.nickname
+            house.delete()
             return HttpResponse(json.dumps({"id": id, "name": name}),
                                 content_type="application/json")
 
@@ -356,19 +357,19 @@ class DashboardView(BaseView):
 
         # Updates a home
         if "id" in request.POST:
-            id_home = get_object_or_404(House, id=request.POST["id"])
-            nickname_home = House.objects.filter(
+            id_house = get_object_or_404(House, id=request.POST["id"])
+            nickname_house = House.objects.filter(
                 couple=couple, nickname=nickname).first()
-            if (id_home and nickname_home and
-                    id_home.id != nickname_home.id):
+            if (id_house and nickname_house and
+                    id_house.id != nickname_house.id):
                 error = (u"House '{nickname}' already exists"
                          .format(nickname=nickname))
                 messages.error(request, error)
             else:
-                home = id_home
-                home.nickname = nickname
-                home.address = address
-                home.save()
+                house = id_house
+                house.nickname = nickname
+                house.address = address
+                house.save()
                 messages.success(
                     request,
                     "House '{nickname}' updated".format(nickname=nickname))
@@ -384,10 +385,11 @@ class DashboardView(BaseView):
             messages.success(
                 request, "House '{nickname}' added".format(nickname=nickname))
 
-        house = House.objects.filter(couple=couple)
+        houses = couple.house_set.all()
         context = {
             'couple': couple,
-            'house': house,
+            'houses': houses,
+            'homebuyer': homebuyer,
             'form': AddHomeForm(),
             'editForm': EditHomeForm()
         }
