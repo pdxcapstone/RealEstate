@@ -431,7 +431,7 @@ class ReportView(BaseView):
         weights1 = []
         weights2=  []
         index1 = 0
-        index2 = 5
+        index2 = 0
         for category in data1:
             weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
             weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total

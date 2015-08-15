@@ -138,3 +138,9 @@ a.mail {
     font-weight: bold;
     color: #FF0000;
 }
+
+#legend{
+    outline: solid;
+    outline-color: black;
+    outline-width: 1px;
+}
