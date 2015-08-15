@@ -201,7 +201,7 @@ class Category(BaseModel):
     """
     _SUMMARY_MIN_LENGTH = 1
 
-    summary = models.CharField(max_length=128, verbose_name="Summary")
+    summary = models.CharField(max_length=128, verbose_name="Category Name")
     description = models.TextField(blank=True, verbose_name="Description")
 
     couple = models.ForeignKey('core.Couple', verbose_name="Couple")
