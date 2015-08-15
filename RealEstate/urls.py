@@ -17,6 +17,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from RealEstate.apps.core import views as CoreViews
+from RealEstate.apps.core.forms import PasswordChangeForm
 from RealEstate.apps.pending import views as PendingViews
 
 urlpatterns = [
@@ -24,11 +25,11 @@ urlpatterns = [
     url(r'^api/', include('RealEstate.apps.api.urls')),
 
     url(r'^$', CoreViews.RealtorSignupView.as_view(), name='signup'),
-    url(r'^login-handler/$', CoreViews.async_login_handler, name='login_handler'),
-    url(r'^logout/$',
-        'django.contrib.auth.views.logout_then_login', name='auth_logout'),
-    url(r'^change-password/$',
-        'django.contrib.auth.views.password_change', name='password_change'),
+    url(r'^login-handler/$',
+        CoreViews.async_login_handler, name='login_handler'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout', name='auth_logout'),
+    url(r'^change-password/$', 'django.contrib.auth.views.password_change',
+        {"password_change_form": PasswordChangeForm}, name='password_change'),
     url(r'^change-password-done/$',
         CoreViews.PasswordChangeDoneView.as_view(),
         name='password_change_done'),

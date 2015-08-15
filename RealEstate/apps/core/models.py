@@ -201,7 +201,7 @@ class Category(BaseModel):
     """
     _SUMMARY_MIN_LENGTH = 1
 
-    summary = models.CharField(max_length=128, verbose_name="Summary")
+    summary = models.CharField(max_length=128, verbose_name="Category Name")
     description = models.TextField(blank=True, verbose_name="Description")
 
     couple = models.ForeignKey('core.Couple', verbose_name="Couple")
@@ -299,6 +299,9 @@ class Couple(BaseModel):
         elif homebuyers.count() == 1:
             homebuyers = (homebuyers.first(), None)
         return homebuyers
+
+    def emails(self):
+        return ','.join(self.homebuyer_set.values_list('user__email', flat=True))
 
     @property
     def report_data(self):
@@ -510,6 +513,9 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
 
     def __unicode__(self):
         return self.nickname
+
+    def address_lines(self):
+        return map(lambda line: line.strip(), self.address.split('\n'))
 
     def clean(self):
         """

@@ -34,7 +34,7 @@
 					<div class="inner-rating">
 						<center>
 							<span class="help-text" id="helptext-L">{{min_choice}}</span>
-							<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+							<input id="category_{{category.id}}" class='slide score-slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
 							<span class="help-text" id="helptext-R">{{max_choice}}</span>
 						</center>
 					</div>
@@ -43,7 +43,42 @@
 		</li>
 	{% endfor %}
 </ul>
+
+<center>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
+</center>
+
+<!-- Add Category Modal -->
+<div id="addCategory" class="modal fade modalHeight" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h2 class="modal-title">Add another thing you care about</h2>
+      </div>
+      <div class="modal-body">
+        <form action="" role="form" method="post">
+            {% bootstrap_form form %}
+            {% csrf_token %}
+            <div style="margin-bottom: 30px">
+            <label class="control-label" for="id_description">Importance</label>
+            <center>
+                <span class="help-text" id="helptext-L">{{min_weightchoice}}</span>
+                <input id="category" class='slide weight-slide' data-slider-id='slide' type="text" data-slider-min={{min_weight}} data-slider-max={{max_weight}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+                <span class="help-text" id="helptext-R">{{max_weightchoice}}</span>
+            </center>
+            </div>
+            <center>
+                {% buttons submit='Save Category' %}{% endbuttons %}
+            </center>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+
+
 
 {% block scripts %}
 <script src="{% static "slide.min.js" %}"></script>
@@ -52,14 +87,22 @@
 
 <script>
 var jsScores = {{js_scores|safe}}
-$(".slide").slider({
+var jsWeights = {{js_weight|safe}}
+$(".score-slide").slider({
 	formatter: function(value) {
           return jsScores[value] || "";
 	}
 });
+$(".weight-slide").slider({
+	formatter: function(value) {
+          return jsWeights[value] || "";
+	}
+});
 
-$(".slide").change($.debounce( 700, slideChange));
-
+$(".score-slide").change($.debounce( 700, slideChange));
+$(".weight-slide").change( function(evt) {
+    $('input[name="weight"]').val(evt.value.newValue);
+});
 
 $(window).on("resize", function () {
 	var divWidth = $(".row").width();
