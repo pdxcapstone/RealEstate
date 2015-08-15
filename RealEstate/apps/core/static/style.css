@@ -67,6 +67,13 @@ button.close{
 	margin-top:50px;
 }
 
+.http-error {
+    font-style: bold;
+    font-style: italic;
+    text-align: center;
+}
+
+
 /* categories */
 
 .rating-col {
