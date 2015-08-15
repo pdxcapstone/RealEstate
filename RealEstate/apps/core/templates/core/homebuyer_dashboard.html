@@ -3,111 +3,112 @@
 {% load staticfiles %}
 
 {% block header %}
+{% comment %}
   <h2><strong>Dashboard</strong></h2>
+{% endcomment %}
 {% endblock header %}
 
 {% block body %}
-<ul class="list-group">
-<!--Home list -->
+  <!--Home list -->
+  <ul class="list-group">
     {% for home in house %}
-    <li class="list-group-item" id="li_{{home.id}}">
+      <li class="list-group-item" id="li_{{home.id}}">
         <div class="row home_row" id="row_{{home.id}}">
-            <div class="row-con">
-                <div class="col-sm-6">
-                    <h4>
-                        {{home}}
-                        <span data-toggle="modal" data-target="#edit-modal" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-                        <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{home.id}}' class='glyphicon glyphicon-remove icon delete'></span>
-                    </h4>
-                <p>{{home.address}}</p>
-                </div>
-                <div class="hbdash-center">
-                    <p>
-                        <a href="{{home.evaluation_url}}"> Rate House </a>
-                    </p>
-                </div>
+          <div class="row-con">
+            <div class="col-sm-6">
+              <h4>
+                {{home}}
+                <span data-toggle="modal" data-target="#edit-modal" id='edit_{{home.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{home.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+              </h4>
+              <p>{{home.address}}</p>
             </div>
+            <div class="hbdash-center">
+              <p>
+                <a href="{{home.evaluation_url}}"> Rate House </a>
+              </p>
+            </div>
+          </div>
         </div>
-    </li>
+      </li>
     {% endfor %}
-</ul>
-<div class = "addButton">
-    <center><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">Add Home</button></center>
-</div>
+  </ul>
+  <div class="addButton">
+    <center>
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHomeModal">
+        Add Home
+      </button>
+    </center>
+  </div>
 
-<!-- Confirm Delete Modal -->
-<div id="confirmDelete" class="modal fade">
+  <!-- Confirm Delete Modal -->
+  <div id="confirmDelete" class="modal fade">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">
-                    &times;
-                </button>
-                <h2 class="modal-title">Are you sure about this?</h2>
-            </div>
-            <div class="modal-body">
-                <p>You're about to delete this home and all associated evaluations.
-                </p>
-                <center>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
-                </center>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Are you sure about this?</h2>
         </div>
+        <div class="modal-body">
+          <p>You're about to delete this home and all associated evaluations.</p>
+          <center>
+            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
+          </center>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Edit home modal -->
-<div id="edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Home" aria-hidden="true">
+  <!-- Edit home modal -->
+  <div id="edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit Home" aria-hidden="true">
     <div class="modal-dialog">
-
-        <!-- Modal content -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">
-                    &times;
-                </button>
-                <h4 class = "modal-title">Edit your home</h4>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="" role="editForm" class="uniForm">
-                    {% bootstrap_form editForm %}
-                    {% csrf_token %}
-                    <center>
-                        {% buttons submit='Update Home' %}{% endbuttons %}
-                    </center>
-                </form>
-            </div>
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">
+              &times;
+          </button>
+          <h4 class="modal-title">Edit your home</h4>
         </div>
+        <div class="modal-body">
+          <form method="post" action="" role="editForm" class="uniForm">
+            {% bootstrap_form editForm %}
+            {% csrf_token %}
+            <center>
+              {% buttons submit='Update Home' %}{% endbuttons %}
+            </center>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Add Home Modal -->
-<div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+  <!-- Add Home Modal -->
+  <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
     <div class="modal-dialog">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
-                <h4 class = "modal-title">Add Home</h4>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="" role="form" class="uniForm">
-                {% bootstrap_form form %}
-                {% csrf_token %}
-                <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
-                </form>
-            </div>
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
+          <h4 class="modal-title">Add Home</h4>
         </div>
+        <div class="modal-body">
+          <form method="post" action="" role="form" class="uniForm">
+            {% bootstrap_form form %}
+            {% csrf_token %}
+            <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
-
+  </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="{% static "debounce.js" %}"></script>
-<script src="{% static "base.js" %}"></script>
+  <script src="{% static "debounce.js" %}"></script>
+  <script src="{% static "base.js" %}"></script>
 
-<script>
-$( ".home_row" ).bind( "mouseenter", hoverActions("home_row", "delete", "edit"));
-</script>
+  <script>
+      $( ".home_row" ).bind( "mouseenter", hoverActions("home_row", "delete", "edit"));
+  </script>
 {% endblock %}
