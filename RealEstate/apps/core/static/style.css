@@ -6,6 +6,8 @@ html, body, #main-content {
 
 #main-content {
     background-color: lightgray;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #bg-img #main-content {
@@ -16,8 +18,12 @@ nav.navbar * {
     color: white !important;
 }
 
-.bs-blue {
+.bs-blue, #main-content .header {
     color: rgb(40, 96, 144);
+}
+
+#main-content .header {
+    text-align:center;
 }
 
 .bs-blue-background {
