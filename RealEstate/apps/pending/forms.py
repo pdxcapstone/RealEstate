@@ -32,7 +32,7 @@ class InviteHomebuyerForm(forms.ModelForm):
 
     class Meta:
         model = PendingHomebuyer
-        fields = ('email', 'first_name', 'last_name')
+        fields = ('first_name', 'last_name', 'email')
 
 
 class InviteHomebuyersFormSet(BaseModelFormSet):
