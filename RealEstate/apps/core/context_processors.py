@@ -17,8 +17,6 @@ def navbar(request):
     navbar = {}
     user = request.user
     if user.is_authenticated():
-        if user.is_staff:
-            navbar['admin'] = True
         role = user.role_object
         if role and role.role_type == 'Homebuyer':
             navbar['categories'] = True
