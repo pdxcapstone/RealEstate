@@ -32,6 +32,10 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.User'
 
+APP_NAME = 'Real Estate App'
+
+PASSWORD_COMMON_SEQUENCES = []
+
 INSTALLED_APPS = (
     # Default Django apps
     'django.contrib.admin',
@@ -41,6 +45,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'passwords',
 
     # Third party apps
     'django_extensions',
@@ -83,6 +88,9 @@ JWT_AUTH = {
 
 # End REST API settings
 
+LOGIN_URL = 'signup'
+LOGIN_REDIRECT_URL = 'dashboard'
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -96,8 +104,7 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'RealEstate.urls'
 
-TEMPLATES = [
-    {
+TEMPLATES = [ {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'RealEstate', 'templates')],
         'APP_DIRS': True,
@@ -107,6 +114,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'RealEstate.apps.core.context_processors.app_name',
+                'RealEstate.apps.core.context_processors.async_login_form',
+                'RealEstate.apps.core.context_processors.navbar',
             ],
         },
     },
@@ -132,5 +142,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-LOGIN_REDIRECT_URL = 'home'
-LOGIN_URL = 'auth_login'
