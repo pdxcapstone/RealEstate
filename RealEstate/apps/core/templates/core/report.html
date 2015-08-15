@@ -43,9 +43,9 @@
                             <div class="col-lg-2 "> 
                                 <div id="barLegend"></div>
                             </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
                 <hr>
 
@@ -60,7 +60,11 @@
                     </div>
                 {% endfor %}
                 </div>
+
+                <hr>
+
             </div>
+
             <!--NUMBERS TAB!!-->
             <div id="numbers" class="tab-pane fade">
                 <h3>NUMBERS</h3>
@@ -130,17 +134,17 @@
         datasets: [
             {
                 label: "{{ homebuyer1.full_name }}",
-                fillColor: "rgba(217, 95, 73, 0.9)",
-                strokeColor: "rgba(217, 95, 73, 0.8)",
-                highlightFill: "rgba(217, 95, 73, 0.8)",
+                fillColor: "rgba(52, 152, 219,0.9)",
+                strokeColor: "rgba(52, 152, 219,0.8)",
+                highlightFill: "rgba(52, 152, 219,1.0)",
                 highlightStroke: "rgba(217, 95, 73, 1)",
                 data: data1
             },
             {
                 label: "{{ homebuyer2.full_name }}",
-                fillColor: "rgba(237, 194, 51, 0.9)",
-                strokeColor: "rgba(237, 194, 51, 0.8)",
-                highlightFill: "rgba(237, 194, 51, 0.8)",
+                fillColor: "rgba(46, 204, 113,0.9)",
+                strokeColor: "rgba(46, 204, 113,0.8)",
+                highlightFill: "rgba(46, 204, 113,1.0)",
                 highlightStroke: "rgba(237, 194, 51, 1)",
                 data: data2
             }
@@ -211,8 +215,8 @@
         });
 
 {#        {% for color, category, weight in pie1 %}#}
-            {{category}}Chart.datasets[0].bars[0].fillColor = "{{ pie1.0.0 }}"; //bar 1
-            {{category}}Chart.datasets[0].bars[1].fillColor = "{{ pie1.1.0 }}"; //bar 2
+            {{category}}Chart.datasets[0].bars[0].fillColor = "{{ pieAve.0.0 }}"; //bar 1
+            {{category}}Chart.datasets[0].bars[1].fillColor = "{{ pieAve.1.0 }}"; //bar 2
             {{category}}Chart.update();
 {#        {% endfor %}#}
     {% endfor %}
