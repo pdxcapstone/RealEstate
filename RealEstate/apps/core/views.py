@@ -602,13 +602,16 @@ class ReportView(BaseView):
             weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
             categoryImportance.append((category, weight1, weight2))
 
+        weightsAve = []
         weights1 = []
         weights2=  []
         index1 = 0
         index2 = 0
         for category in data1:
+            weightAve = (float(data1[category]["weight"]) + float(data2[category]["weight"])) / (homebuyers[first].category_weight_total + homebuyers[second].category_weight_total)
             weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
             weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            weightsAve.append((colors[index1], category, int(weightAve * 100)))
             weights1.append((colors[index1], category, int(weight1 * 100)))
             index1 = (index1 + 1) % len(colors)
             weights2.append((colors[index2], category, int(weight2 * 100)))
@@ -645,8 +648,7 @@ class ReportView(BaseView):
             'homebuyer1': homebuyers[0],
             'homebuyer2': homebuyers[1],
             'categoryImportance': categoryImportance,
-            'pie1': weights1,
-            'pie2': weights2,
+            'pieAve': weightsAve,
             'categoryData': categoryData,
             'totalScore': totalScore,
             'largestScore': largestScore
