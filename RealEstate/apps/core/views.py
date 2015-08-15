@@ -394,29 +394,14 @@ class DashboardView(BaseView):
         return render(request, self.homebuyer_template_name, context)
 
     def _realtor_get(self, request, realtor, *args, **kwargs):
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        # Couple data is a list of touples [(couple1, homebuyers, isPending),
-        # (couple2, homebuyers, isPending)] There may be a better way to get
-        # homebuyers straight from couples, but I didn't see it in the model.
-        coupleData = []
-        isPending = True
-        hasPending = pendingCouples.exists()
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-
+        couples, pending_couples = realtor.get_couples_and_pending_couples()
         invite_formset = self._build_invite_formset()(
             queryset=PendingHomebuyer.objects.none())
         context = {
-            'couples': coupleData,
-            'realtor': realtor,
-            'hasPending': hasPending,
+            'couples': couples,
+            'pending_couples': pending_couples,
             'invite_formset': invite_formset,
+            'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
 
@@ -441,23 +426,12 @@ class DashboardView(BaseView):
             messages.success(request, success_msg)
             return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        coupleData = []
-        isPending = True
-        hasPending = pendingCouples.exists()
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+        couples, pending_couples = realtor.get_couples_and_pending_couples()
         context = {
-            'couples': coupleData,
-            'realtor': realtor,
-            'hasPending': hasPending,
+            'couples': couples,
+            'pending_couples': pending_couples,
             'invite_formset': invite_formset,
+            'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
 

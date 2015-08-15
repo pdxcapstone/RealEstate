@@ -50,6 +50,10 @@ class PendingCouple(BaseModel):
             return couples.first()
         return None
 
+    def emails(self):
+        return ','.join(
+            self.pendinghomebuyer_set.values_list('email', flat=True))
+
     @property
     def registered(self):
         """
