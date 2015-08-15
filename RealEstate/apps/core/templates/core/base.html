@@ -25,7 +25,7 @@
     {% with authenticated=user.is_authenticated %}
       {% block main %}
         <div id="main-content">
-          <nav class="{% if authenticated %}navbar navbar-default{% else %}navbar-alt{% endif %}">
+          <nav class="bs-blue-background navbar navbar-default">
             <div class="container-fluid">
               <!-- Brand and toggle get grouped for better mobile display -->
               <div class="navbar-header">
@@ -70,7 +70,7 @@
                          {{ user.get_full_name|default:"User"}} ({{user.email}})
                          <span class="caret"></span>
                       </a>
-                      <ul class="dropdown-menu">
+                      <ul class="dropdown-menu bs-blue-background">
                         <li><a href="{% url 'password_change' %}"> Change Password</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="{% url 'auth_logout' %}"> Logout</a></li>

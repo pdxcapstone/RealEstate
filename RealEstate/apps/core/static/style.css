@@ -1,8 +1,29 @@
 /* common */
 
-html{
+html, body, #main-content {
 	height: 100%;
 }
+
+#main-content {
+    background-color: lightgray;
+}
+
+#bg-img #main-content {
+    background-color: inherit;
+}
+
+nav.navbar * {
+    color: white !important;
+}
+
+.bs-blue {
+    color: rgb(40, 96, 144);
+}
+
+.bs-blue-background {
+    background-color: rgb(40, 96, 144);
+}
+
 ul.list-group {
 	padding-top:30px;
 }
