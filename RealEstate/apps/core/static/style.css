@@ -67,24 +67,28 @@ button.close{
 	margin-top:50px;
 }
 
+.http-error {
+    font-style: bold;
+}
 .soft-error {
     font-style: italic;
     text-align: center;
 }
+
 
 /* categories */
 
 .rating-col {
 	min-width: 500px;
 }
-.summary-col{ 
-	min-width: 150px; 
+.summary-col{
+	min-width: 150px;
 }
-.tooltip-main.top.in { 
-	z-index:1 !important; 
+.tooltip-main.top.in {
+	z-index:1 !important;
 }
-.close { 
-	z-index: 3000 !important; 
+.close {
+	z-index: 3000 !important;
 }
 #catRating-out{
 	padding-left:10%
@@ -128,7 +132,7 @@ a.mail {
     color:#e4e4e4;
 }
 .login-text{
-	margin-top:50px; 
+	margin-top:50px;
 	margin-left:15px;
 	font-style: bold;
 	color:#e4e4e4;
@@ -137,7 +141,7 @@ a.mail {
 	margin-bottom:20px;
 }
 .create-text{
-	margin-top:100px; 
+	margin-top:100px;
 	text-align: center;
 	color:#e4e4e4;
 }
@@ -173,7 +177,7 @@ a.mail {
 		background-color:transparent !important;
 }
 #bg-img {
-  background: url(images/homepage_house.jpg) no-repeat center center fixed; 
+  background: url(images/homepage_house.jpg) no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
