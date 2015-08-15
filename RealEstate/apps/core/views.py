@@ -26,8 +26,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor,
-                                         User)
+                                         Grade, House, Realtor, User)
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
@@ -402,7 +401,7 @@ class DashboardView(BaseView):
         invite_formset = self._build_invite_formset()(
             queryset=PendingHomebuyer.objects.none())
         context = {
-             'form': AddRealtorHomeForm(),
+            'form': AddRealtorHomeForm(),
             'couples': couples,
             'pending_couples': pending_couples,
             'invite_formset': invite_formset,
@@ -413,16 +412,18 @@ class DashboardView(BaseView):
     def _realtor_post(self, request, realtor, *args, **kwargs):
         if "id" in request.POST:
             couple = Couple.objects.get(id=int(request.POST["id"]))
-            if House.objects.filter(couple=couple, nickname=request.POST["nickname"]).exists():
+            nickname = request.POST['nickname']
+            if House.objects.filter(
+                    couple=couple, nickname=nickname).exists():
                 error = (u"House '{nickname}' already exists"
-                         .format(nickname=request.POST["nickname"]))
+                         .format(nickname=nickname))
                 messages.error(request, error)
             else:
-                House.objects.create(
-                    couple=couple, nickname=request.POST["nickname"], address=request.POST["address"])
+                House.objects.create(couple=couple, nickname=nickname,
+                                     address=request.POST["address"])
                 messages.success(
-                    request, "House '{nickname}' added".format(nickname=request.POST["nickname"]))
-        
+                    request,
+                    "House '{nickname}' added".format(nickname=nickname))
         else:
             invite_formset = self._build_invite_formset()(request.POST)
             if invite_formset.is_valid():
@@ -438,22 +439,14 @@ class DashboardView(BaseView):
                 first_homebuyer, second_homebuyer = pending_homebuyers
                 first_homebuyer.send_email_invite(request)
                 second_homebuyer.send_email_invite(request)
-                success_msg = ("Email invitations sent to '{first}' and '{second}'"
-                               .format(first=escape(unicode(first_homebuyer)),
-                                       second=escape(unicode(second_homebuyer))))
+                success_msg = (
+                    "Email invitations sent to '{first}' and '{second}'"
+                    .format(first=escape(unicode(first_homebuyer)),
+                            second=escape(unicode(second_homebuyer))))
                 messages.success(request, success_msg)
                 return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
         couples, pending_couples = realtor.get_couples_and_pending_couples()
-        coupleData = []
-        isPending = True
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pending_couples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
         invite_formset = self._build_invite_formset()(
             queryset=PendingHomebuyer.objects.none())
         context = {
