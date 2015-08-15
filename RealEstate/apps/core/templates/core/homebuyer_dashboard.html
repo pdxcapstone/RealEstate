@@ -65,8 +65,7 @@
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHouseModal">
         Add House
       </button>
-      <a href={{ couple.report_url }}>
-        <button type="button" class="btn btn-primary">Generate Report</button>
+      <a href={{ couple.report_url }} role="button" class="btn btn-primary">Generate Report</button>
       </a>
     </center>
   </div>
@@ -77,7 +76,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h2 class="modal-title">Are you sure about this?</h2>
+          <h3 class="modal-title">Are you sure about this?</h3>
         </div>
         <div class="modal-body">
           <p>You're about to delete this home and all associated evaluations.</p>
@@ -120,7 +119,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
-          <h4 class="modal-title">Add House</h4>
+          <h3 class="modal-title">Add House</h3>
         </div>
         <div class="modal-body">
           <form method="post" action="" role="form" class="uniForm">
