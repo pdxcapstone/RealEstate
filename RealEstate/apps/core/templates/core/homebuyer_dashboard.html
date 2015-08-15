@@ -45,7 +45,7 @@
                   <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
                 </h4>
                 {% for line in house.address_lines %}
-                  <p>{{ line }}</p>
+                  <span>{{ line }}</span><br>
                 {% endfor %}
               </div>
               <div class="hbdash-center">
