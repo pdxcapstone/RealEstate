@@ -415,6 +415,7 @@ class ReportView(BaseView):
     def get(self, request, *args, **kwargs):
         first = 0
         second = 1
+        largestScore = 0.1
         couple_id = int(kwargs.get('couple_id', 0))
         couple = Couple.objects.get(id=couple_id)
         homebuyers = couple.homebuyer_set.all()
@@ -451,6 +452,12 @@ class ReportView(BaseView):
                 averageScore = (score1 + score2) / 2
                 scores.append((house, averageScore, colors[index1]))
                 index1 = (index1 + 1) % len(colors)
+
+
+            for houses, score, color in scores:
+                if score > largestScore:
+                    largestScore = score
+
             categoryData.append((category, scores))
 
         totalScore = {}
@@ -468,7 +475,8 @@ class ReportView(BaseView):
             'pie1': weights1,
             'pie2': weights2,
             'categoryData': categoryData,
-            'totalScore': totalScore
+            'totalScore': totalScore,
+            'largestScore': largestScore
         }
         return render(request, self.template_name, context)
 
