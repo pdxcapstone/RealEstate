@@ -47,21 +47,12 @@
                         <h2>Weighting</h2>
                         <div class="row">
                             <div class="col-lg-8"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
-
-                            <div class="col-lg-3" id="legend"> <center>LEGEND</center>
-                                <div class="row col-sm-12">
-                                    <div class="col-sm-2 hb-leg" id="hb-1"></div>
-                                    <h5 class="col-sm-offset-3 col-sm-5"><center>{{ homebuyer1 }}</center></h5>
-                                </div>
-                                <div class="row col-sm-12">
-                                    <div class="col-sm-2 hb-leg" id="hb-2"></div>
-                                    <h5 class="col-sm-offset-3 col-sm-5"><center>{{ homebuyer2 }}</center></h5>
-                                </div>
+                            <div class="col-lg-3"> 
+                                <div id="barLegend"></div>
                             </div>
-                        </div>
                     </div>
                 </div>
-
+            </div>
                 <hr>
 
                 <h2>Homebuyer Pie Chart Data</h2>
@@ -165,6 +156,7 @@
         barValueSpacing : 20,
         showTooltips: false,
     });
+    legend(document.getElementById("barLegend"), myBarChart);
     
     var pie1 = [
     {% for color, category, weight in pie1 %}
