@@ -141,3 +141,11 @@ class UserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email',)
+
+
+class AddRealtorHomeForm(forms.ModelForm):
+    id = forms.IntegerField(widget=forms.HiddenInput())
+
+    class Meta:
+        model = House
+        fields = ('nickname', 'address')
