@@ -11,6 +11,10 @@ TEMPLATE_DEBUG = True
 DATABASE_PATH = os.path.join(BASE_DIR, 'RealEstate', 'db')
 DATABASE_NAME = 'db.sqlite3'
 
+PASSWORD_MIN_LENGTH = 1
+#PASSWORD_COMPLEXITY = {}
+PASSWORD_ERROR_MESSAGE = u"Invalid Password"
+
 # Check for custom database usage.
 PROJECT_CONFIG_FILE = os.path.join(BASE_DIR, 'real-estate.conf')
 parser = RawConfigParser()

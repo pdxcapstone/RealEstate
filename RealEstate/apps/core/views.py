@@ -31,7 +31,7 @@ from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
                                            InviteHomebuyersFormSet)
 
-LOGIN_DELAY = 1.5   # Seconds
+LOGIN_DELAY = 1.2   # Seconds
 
 
 @sensitive_post_parameters()
@@ -59,19 +59,20 @@ def async_login_handler(request, *args, **kwargs):
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
-class LoginView(View):
+class RealtorSignupView(View):
     """
     This form is the landing page used to sign up realtors.
     """
-    template_name = 'registration/login.html'
+    template_name = 'registration/signup.html'
 
     def dispatch(self, request, *args, **kwargs):
         """
         Redirect to home page if already logged in.
         """
         if request.user.is_authenticated():
-            return redirect('home')
-        return super(LoginView, self).dispatch(request, *args, **kwargs)
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+        return super(
+            RealtorSignupView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
         """
@@ -103,8 +104,9 @@ class LoginView(View):
                 Realtor.objects.create(user=user)
             user = authenticate(email=email, password=password)
             login(request, user)
+            user.send_email_confirmation(request)
             messages.success(request, "Welcome!")
-            return redirect('home')
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
         context = {
             'signup_form': signup_form
         }
@@ -134,310 +136,6 @@ class BaseView(View):
             if self._permission_check(request, role, *args, **kwargs):
                 return super(BaseView, self).dispatch(request, *args, **kwargs)
         raise PermissionDenied
-
-
-class HomeView(BaseView):
-    """
-    View for the home page, which should render different templates based
-    on whether or not the the logged in User is a Realtor or Homebuyer.
-    """
-    homebuyer_template_name = 'core/homebuyerHome.html'
-    realtor_template_name = 'core/realtorHome.html'
-
-    def _build_invite_formset(self):
-        return modelformset_factory(PendingHomebuyer,
-                                    form=InviteHomebuyerForm,
-                                    formset=InviteHomebuyersFormSet,
-                                    extra=2,
-                                    max_num=2)
-
-    def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
-        # Returns summary and description if given category ID
-        if request.is_ajax():
-            id = request.GET['id']
-            home = House.objects.get(id=id)
-            response_data = {
-                'nickname': home.nickname,
-                'address': home.address
-            }
-            return HttpResponse(json.dumps(response_data),
-                                content_type="application/json")
-
-        couple = homebuyer.couple
-        house = House.objects.filter(couple=couple)
-        context = {
-            'couple': couple,
-            'house': house,
-            'form': AddHomeForm(),
-            'editForm': EditHomeForm()
-        }
-        return render(request, self.homebuyer_template_name, context)
-
-    def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
-        def _house_exists(couple, nickname):
-            exists = House.objects.filter(
-                couple=couple, nickname=nickname).exists()
-            if exists:
-                error = ("House with nickname '{nickname}' already exists"
-                         .format(nickname=nickname))
-                messages.error(request, error)
-            return exists
-
-        # Deletes a home
-        if request.is_ajax():
-            id = request.POST['id']
-            home = House.objects.get(id=id)
-            name = home.nickname
-            home.delete()
-            return HttpResponse(json.dumps({"id": id, "name": name}),
-                                content_type="application/json")
-
-        nickname = request.POST["nickname"]
-        address = request.POST["address"]
-        couple = homebuyer.couple
-
-        # Updates a home
-        if "id" in request.POST:
-            id_home = get_object_or_404(House, id=request.POST["id"])
-            nickname_home = House.objects.filter(
-                couple=couple, nickname=nickname).first()
-            if (id_home and nickname_home and
-                    id_home.id != nickname_home.id):
-                error = (u"House '{nickname}' already exists"
-                         .format(nickname=nickname))
-                messages.error(request, error)
-            else:
-                home = id_home
-                home.nickname = nickname
-                home.address = address
-                home.save()
-                messages.success(
-                    request,
-                    "House '{nickname}' updated".format(nickname=nickname))
-
-        # Creates new home
-        elif House.objects.filter(couple=couple, nickname=nickname).exists():
-            error = (u"House '{nickname}' already exists"
-                     .format(nickname=nickname))
-            messages.error(request, error)
-        else:
-            House.objects.create(
-                couple=couple, nickname=nickname, address=address)
-            messages.success(
-                request, "House '{nickname}' added".format(nickname=nickname))
-
-        house = House.objects.filter(couple=couple)
-        context = {
-            'couple': couple,
-            'house': house,
-            'form': AddHomeForm(),
-            'editForm': EditHomeForm()
-        }
-        return render(request, self.homebuyer_template_name, context)
-
-    def _realtor_get(self, request, realtor, *args, **kwargs):
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        # Couple data is a list of touples [(couple1, homebuyers, isPending),
-        # (couple2, homebuyers, isPending)] There may be a better way to get
-        # homebuyers straight from couples, but I didn't see it in the model.
-        coupleData = []
-        isPending = True
-        hasPending = pendingCouples.exists()
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-
-        invite_formset = self._build_invite_formset()(
-            queryset=PendingHomebuyer.objects.none())
-        context = {
-            'couples': coupleData,
-            'realtor': realtor,
-            'hasPending': hasPending,
-            'invite_formset': invite_formset,
-        }
-        return render(request, self.realtor_template_name, context)
-
-    def _realtor_post(self, request, realtor, *args, **kwargs):
-        invite_formset = self._build_invite_formset()(request.POST)
-        if invite_formset.is_valid():
-            pending_homebuyers = [
-                form.instance for form in invite_formset.forms]
-            with transaction.atomic():
-                pending_couple = PendingCouple.objects.create(
-                    realtor=request.user.realtor)
-                for pending_homebuyer in pending_homebuyers:
-                    pending_homebuyer.pending_couple = pending_couple
-                    pending_homebuyer.save()
-
-            first_homebuyer, second_homebuyer = pending_homebuyers
-            first_homebuyer.send_email_invite(request)
-            second_homebuyer.send_email_invite(request)
-            success_msg = ("Email invitations sent to '{first}' and '{second}'"
-                           .format(first=escape(unicode(first_homebuyer)),
-                                   second=escape(unicode(second_homebuyer))))
-            messages.success(request, success_msg)
-            return redirect('home')
-
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        coupleData = []
-        isPending = True
-        hasPending = pendingCouples.exists()
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-        context = {
-            'couples': coupleData,
-            'realtor': realtor,
-            'hasPending': hasPending,
-            'invite_formset': invite_formset,
-        }
-        return render(request, self.realtor_template_name, context)
-
-    def get(self, request, *args, **kwargs):
-        role = request.user.role_object
-        handlers = {
-            'Homebuyer': self._homebuyer_get,
-            'Realtor': self._realtor_get,
-        }
-        return handlers[role.role_type](request, role, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        role = request.user.role_object
-        handlers = {
-            'Homebuyer': self._homebuyer_post,
-            'Realtor': self._realtor_post,
-        }
-        return handlers[role.role_type](request, role, *args, **kwargs)
-
-
-class EvalView(BaseView):
-    """
-    View for the Home Evaluation Page. Currently, this page is decoupled
-    from the rest of the app and uses static elements in the database.
-    """
-    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
-    template_name = 'core/houseEval.html'
-
-    def _permission_check(self, request, role, *args, **kwargs):
-        """
-        For a given House instance, only allow the user to view the page if
-        its for a related Homebuyer. This prevents users from grading other
-        peoples houses.
-        """
-        house_id = kwargs.get('house_id', None)
-        if role.couple.house_set.filter(id=house_id).exists():
-            return True
-        return False
-
-    def _score_context(self):
-        score_field = Grade._meta.get_field('score')
-        score_choices = dict(score_field.choices)
-        min_score = min(score for score in score_choices)
-        max_score = max(score for score in score_choices)
-        min_choice = score_choices[min_score]
-        max_choice = score_choices[max_score]
-        return {
-            'min_score': min_score,
-            'max_score': max_score,
-            'min_choice': min_choice,
-            'max_choice': max_choice,
-            'default_score': score_field.default,
-            'js_scores': json.dumps(score_choices),
-        }
-
-    def get(self, request, *args, **kwargs):
-        homebuyer = request.user.role_object
-        couple = homebuyer.couple
-        categories = Category.objects.filter(couple=couple)
-        house = get_object_or_404(House, id=kwargs["house_id"])
-        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
-
-        # Merging grades and categories to provide object with both
-        # information. Data Structure: [(cat1, score1), (cat2, score2), ...]
-        graded = []
-        for category in categories:
-            missing = True
-            for grade in grades:
-                if grade.category.id is category.id:
-                    graded.append((category, grade.score))
-                    missing = False
-                    break
-            if missing:
-                graded.append((category, None))
-
-        context = {
-            'couple': couple,
-            'house': house,
-            'grades': graded,
-        }
-        context.update(self._score_context())
-        return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        """
-        Depending on what functionality we want, the post may be more of a
-        redirect back to the home page. In that case, much of this code will
-        leave. In the meantime, it saves new data, recreates the same form and
-        posts a success message.
-        """
-        if not request.is_ajax():
-            raise PermissionDenied
-
-        homebuyer = request.user.role_object
-        house = get_object_or_404(House, id=kwargs["house_id"])
-        id = request.POST['id']
-        score = request.POST['value']
-        category = Category.objects.get(id=id)
-        grade, created = Grade.objects.update_or_create(
-            homebuyer=homebuyer, category=category, house=house,
-            defaults={'score': int(score)})
-        response_data = {
-            'id': str(id),
-            'score': str(score)
-        }
-        return HttpResponse(json.dumps(response_data),
-                            content_type="application/json")
-
-
-class PasswordChangeDoneView(BaseView):
-    """
-    This is needed to provide a message to the user that their password change
-    was successful.
-    """
-    def get(self, request, *args, **kwargs):
-        messages.success(request,
-                         "You have successfully changed your password")
-        return redirect('home')
-
-
-class ReportView(BaseView):
-    """
-    This view will take into account the category weights and scores for each
-    Homebuyer that is part of the Couple instance, and display the results.
-    """
-    template_name = 'core/report.html'
-
-    def _permission_check(self, request, role, *args, **kwargs):
-        """
-        Homebuyers can only see their own report.  Realtors can see reports
-        for any of their Couples
-        """
-        couple_id = int(kwargs.get('couple_id', 0))
-        get_object_or_404(Couple, id=couple_id)
-        return role.can_view_report_for_couple(couple_id)
-
-    def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {})
 
 
 class CategoryView(BaseView):
@@ -594,3 +292,325 @@ class CategoryView(BaseView):
             }
             context.update(self._weight_context())
             return render(request, self.template_name, context)
+
+
+class DashboardView(BaseView):
+    """
+    View for the home page, which should render different templates based
+    on whether or not the the logged in User is a Realtor or Homebuyer.
+    """
+    homebuyer_template_name = 'core/homebuyer_dashboard.html'
+    realtor_template_name = 'core/realtor_dashboard.html'
+
+    def _build_invite_formset(self):
+        return modelformset_factory(PendingHomebuyer,
+                                    form=InviteHomebuyerForm,
+                                    formset=InviteHomebuyersFormSet,
+                                    extra=2,
+                                    max_num=2)
+
+    def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
+        # Returns summary and description if given category ID
+        if request.is_ajax():
+            id = request.GET['id']
+            home = House.objects.get(id=id)
+            response_data = {
+                'nickname': home.nickname,
+                'address': home.address
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+
+        couple = homebuyer.couple
+        house = House.objects.filter(couple=couple)
+        context = {
+            'couple': couple,
+            'house': house,
+            'form': AddHomeForm(),
+            'editForm': EditHomeForm()
+        }
+        return render(request, self.homebuyer_template_name, context)
+
+    def _homebuyer_post(self, request, homebuyer, *args, **kwargs):
+        def _house_exists(couple, nickname):
+            exists = House.objects.filter(
+                couple=couple, nickname=nickname).exists()
+            if exists:
+                error = ("House with nickname '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            return exists
+
+        # Deletes a home
+        if request.is_ajax():
+            id = request.POST['id']
+            home = House.objects.get(id=id)
+            name = home.nickname
+            home.delete()
+            return HttpResponse(json.dumps({"id": id, "name": name}),
+                                content_type="application/json")
+
+        nickname = request.POST["nickname"]
+        address = request.POST["address"]
+        couple = homebuyer.couple
+
+        # Updates a home
+        if "id" in request.POST:
+            id_home = get_object_or_404(House, id=request.POST["id"])
+            nickname_home = House.objects.filter(
+                couple=couple, nickname=nickname).first()
+            if (id_home and nickname_home and
+                    id_home.id != nickname_home.id):
+                error = (u"House '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            else:
+                home = id_home
+                home.nickname = nickname
+                home.address = address
+                home.save()
+                messages.success(
+                    request,
+                    "House '{nickname}' updated".format(nickname=nickname))
+
+        # Creates new home
+        elif House.objects.filter(couple=couple, nickname=nickname).exists():
+            error = (u"House '{nickname}' already exists"
+                     .format(nickname=nickname))
+            messages.error(request, error)
+        else:
+            House.objects.create(
+                couple=couple, nickname=nickname, address=address)
+            messages.success(
+                request, "House '{nickname}' added".format(nickname=nickname))
+
+        house = House.objects.filter(couple=couple)
+        context = {
+            'couple': couple,
+            'house': house,
+            'form': AddHomeForm(),
+            'editForm': EditHomeForm()
+        }
+        return render(request, self.homebuyer_template_name, context)
+
+    def _realtor_get(self, request, realtor, *args, **kwargs):
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+        # Couple data is a list of touples [(couple1, homebuyers, isPending),
+        # (couple2, homebuyers, isPending)] There may be a better way to get
+        # homebuyers straight from couples, but I didn't see it in the model.
+        coupleData = []
+        isPending = True
+        hasPending = pendingCouples.exists()
+        for couple in couples:
+            homebuyer = Homebuyer.objects.filter(couple=couple)
+            coupleData.append((couple, homebuyer, not isPending))
+        for pendingCouple in pendingCouples:
+            pendingHomebuyer = PendingHomebuyer.objects.filter(
+                pending_couple=pendingCouple)
+            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+
+        invite_formset = self._build_invite_formset()(
+            queryset=PendingHomebuyer.objects.none())
+        context = {
+            'couples': coupleData,
+            'realtor': realtor,
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
+        }
+        return render(request, self.realtor_template_name, context)
+
+    def _realtor_post(self, request, realtor, *args, **kwargs):
+        invite_formset = self._build_invite_formset()(request.POST)
+        if invite_formset.is_valid():
+            pending_homebuyers = [
+                form.instance for form in invite_formset.forms]
+            with transaction.atomic():
+                pending_couple = PendingCouple.objects.create(
+                    realtor=request.user.realtor)
+                for pending_homebuyer in pending_homebuyers:
+                    pending_homebuyer.pending_couple = pending_couple
+                    pending_homebuyer.save()
+
+            first_homebuyer, second_homebuyer = pending_homebuyers
+            first_homebuyer.send_email_invite(request)
+            second_homebuyer.send_email_invite(request)
+            success_msg = ("Email invitations sent to '{first}' and '{second}'"
+                           .format(first=escape(unicode(first_homebuyer)),
+                                   second=escape(unicode(second_homebuyer))))
+            messages.success(request, success_msg)
+            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+
+        couples = Couple.objects.filter(realtor=realtor)
+        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
+        coupleData = []
+        isPending = True
+        hasPending = pendingCouples.exists()
+        for couple in couples:
+            homebuyer = Homebuyer.objects.filter(couple=couple)
+            coupleData.append((couple, homebuyer, not isPending))
+        for pendingCouple in pendingCouples:
+            pendingHomebuyer = PendingHomebuyer.objects.filter(
+                pending_couple=pendingCouple)
+            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+        context = {
+            'couples': coupleData,
+            'realtor': realtor,
+            'hasPending': hasPending,
+            'invite_formset': invite_formset,
+        }
+        return render(request, self.realtor_template_name, context)
+
+    def get(self, request, *args, **kwargs):
+        role = request.user.role_object
+        handlers = {
+            'Homebuyer': self._homebuyer_get,
+            'Realtor': self._realtor_get,
+        }
+        return handlers[role.role_type](request, role, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        role = request.user.role_object
+        handlers = {
+            'Homebuyer': self._homebuyer_post,
+            'Realtor': self._realtor_post,
+        }
+        return handlers[role.role_type](request, role, *args, **kwargs)
+
+
+class EmailConfirmationView(BaseView):
+    """
+    Used to confirm that a Realtor has signed up with a valid email address.
+    """
+    _USER_TYPES_ALLOWED = User._REALTOR_ONLY
+
+    def get(self, request, *args, **kwargs):
+        email_confirmation_token = kwargs.get('email_confirmation_token', None)
+        user = request.user
+        if (not user.email_confirmed and
+                user.email_confirmation_token == email_confirmation_token):
+            user.email_confirmed = True
+            user.save()
+            messages.success(
+                request, u"Email confirmed ({email})".format(email=user.email))
+        return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+
+
+class EvalView(BaseView):
+    """
+    View for the Home Evaluation Page. Currently, this page is decoupled
+    from the rest of the app and uses static elements in the database.
+    """
+    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
+    template_name = 'core/houseEval.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        For a given House instance, only allow the user to view the page if
+        its for a related Homebuyer. This prevents users from grading other
+        peoples houses.
+        """
+        house_id = kwargs.get('house_id', None)
+        if role.couple.house_set.filter(id=house_id).exists():
+            return True
+        return False
+
+    def _score_context(self):
+        score_field = Grade._meta.get_field('score')
+        score_choices = dict(score_field.choices)
+        min_score = min(score for score in score_choices)
+        max_score = max(score for score in score_choices)
+        min_choice = score_choices[min_score]
+        max_choice = score_choices[max_score]
+        return {
+            'min_score': min_score,
+            'max_score': max_score,
+            'min_choice': min_choice,
+            'max_choice': max_choice,
+            'default_score': score_field.default,
+            'js_scores': json.dumps(score_choices),
+        }
+
+    def get(self, request, *args, **kwargs):
+        homebuyer = request.user.role_object
+        couple = homebuyer.couple
+        categories = Category.objects.filter(couple=couple)
+        house = get_object_or_404(House, id=kwargs["house_id"])
+        grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
+
+        # Merging grades and categories to provide object with both
+        # information. Data Structure: [(cat1, score1), (cat2, score2), ...]
+        graded = []
+        for category in categories:
+            missing = True
+            for grade in grades:
+                if grade.category.id is category.id:
+                    graded.append((category, grade.score))
+                    missing = False
+                    break
+            if missing:
+                graded.append((category, None))
+
+        context = {
+            'couple': couple,
+            'house': house,
+            'grades': graded,
+        }
+        context.update(self._score_context())
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Depending on what functionality we want, the post may be more of a
+        redirect back to the home page. In that case, much of this code will
+        leave. In the meantime, it saves new data, recreates the same form and
+        posts a success message.
+        """
+        if not request.is_ajax():
+            raise PermissionDenied
+
+        homebuyer = request.user.role_object
+        house = get_object_or_404(House, id=kwargs["house_id"])
+        id = request.POST['id']
+        score = request.POST['value']
+        category = Category.objects.get(id=id)
+        grade, created = Grade.objects.update_or_create(
+            homebuyer=homebuyer, category=category, house=house,
+            defaults={'score': int(score)})
+        response_data = {
+            'id': str(id),
+            'score': str(score)
+        }
+        return HttpResponse(json.dumps(response_data),
+                            content_type="application/json")
+
+
+class PasswordChangeDoneView(BaseView):
+    """
+    This is needed to provide a message to the user that their password change
+    was successful.
+    """
+    def get(self, request, *args, **kwargs):
+        messages.success(request,
+                         "You have successfully changed your password")
+        return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+
+
+class ReportView(BaseView):
+    """
+    This view will take into account the category weights and scores for each
+    Homebuyer that is part of the Couple instance, and display the results.
+    """
+    template_name = 'core/report.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        Homebuyers can only see their own report.  Realtors can see reports
+        for any of their Couples
+        """
+        couple_id = int(kwargs.get('couple_id', 0))
+        get_object_or_404(Couple, id=couple_id)
+        return role.can_view_report_for_couple(couple_id)
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {})

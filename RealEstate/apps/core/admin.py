@@ -9,7 +9,7 @@ from django.utils.html import format_html
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
                                          User)
-from RealEstate.apps.core.forms import UserCreationForm
+from RealEstate.apps.core.forms import UserChangeForm, UserCreationForm
 
 admin.site.site_header = "Real Estate Admin"
 
@@ -171,6 +171,8 @@ class UserAdmin(UserAdmin, BaseAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('first_name', 'last_name', 'phone')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
+                                    'email_confirmed',
+                                    'email_confirmation_token',
                                     'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),
     )
@@ -180,12 +182,14 @@ class UserAdmin(UserAdmin, BaseAdmin):
             'fields': ('email', 'password1', 'password2'),
         }),
     )
-    readonly_fields = ('last_login',)
+    readonly_fields = ('last_login', 'email_confirmation_token')
     save_on_top = True
 
     add_form = UserCreationForm
+    form = UserChangeForm
     list_display = ('email', 'homebuyer_realtor_link', 'first_name',
-                    'last_name', 'phone', 'is_staff', 'last_login')
+                    'last_name', 'phone', 'email_confirmed', 'is_staff',
+                    'last_login')
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups',
                    'last_login')
     search_fields = ('first_name', 'last_name', 'email')

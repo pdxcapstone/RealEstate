@@ -10,6 +10,7 @@ from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import IntegrityError, models, transaction
 from django.dispatch import receiver
+from django.utils.crypto import get_random_string, hashlib
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
            'Homebuyer', 'House', 'Realtor', 'User']
@@ -93,6 +94,14 @@ def _add_default_weights_and_grades(sender, instance, created, **kwargs):
                 grades = map(_grade_mapper, ungraded_house_categories)
                 Grade.objects.bulk_create(grades)
     return
+
+
+def _generate_email_confirmation_token():
+    while True:
+        token = hashlib.sha256(
+            get_random_string(length=64)).hexdigest()
+        if not User.objects.filter(email_confirmation_token=token).exists():
+            return token
 
 
 class ValidateCategoryCoupleMixin(object):
@@ -605,6 +614,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model which uses email instead of a username for logging in.
     """
+    _EMAIL_CONFIRMATION_MESSAGE = u"""
+        Hello {name},
+
+        Thank you for registering for {app_name}!
+        Please login and then click the link below to complete registration:
+            {email_confirmation_link}
+
+    """
     email = models.EmailField(
         unique=True,
         verbose_name="Email Address",
@@ -634,6 +651,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=("Designates whether this user should be treated as "
                    "active. Unselect this instead of deleting accounts."),
         verbose_name="Active")
+    email_confirmed = models.BooleanField(
+        default=False,
+        help_text=("Designates if this user has confirmed their email "
+                   "address or not."),
+        verbose_name="Email Confirmed")
+    email_confirmation_token = models.CharField(
+        max_length=64,
+        default=_generate_email_confirmation_token,
+        editable=False,
+        unique=True,
+        verbose_name="Email Confirmation Token")
 
     objects = UserManager()
 
@@ -692,3 +720,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         elif has_realtor:
             return self.realtor
         return None
+
+    def send_email_confirmation(self, request):
+        """
+        Sends out the email confirmation link to a new user.  Does nothing if
+        the email is already confirmed.
+        """
+        if self.email_confirmed:
+            return None
+
+        app_name = settings.APP_NAME
+        subject = u"{app_name} Email Confirmation".format(app_name=app_name)
+        email_kwargs = {
+            'email_confirmation_token': self.email_confirmation_token
+        }
+        email_confirmation_link = (
+            request.get_host() + reverse('confirm-email', kwargs=email_kwargs))
+        message = self._EMAIL_CONFIRMATION_MESSAGE.format(
+            name=self.get_short_name(),
+            app_name=app_name,
+            email_confirmation_link=email_confirmation_link)
+        return self.email_user(subject, message,
+                               from_email=settings.EMAIL_HOST_USER)
