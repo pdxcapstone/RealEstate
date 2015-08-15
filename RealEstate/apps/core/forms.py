@@ -48,12 +48,6 @@ class EditHomeForm(forms.ModelForm):
         fields = ('nickname', 'address')
 
 
-class EditHomeForm(forms.ModelForm):
-    id = forms.IntegerField(widget=forms.HiddenInput())
-
-    class Meta:
-        model = House
-        fields = ('nickname', 'address')
 class BaseSignupForm(forms.ModelForm):
     """
     Homebuyers/Realtors will use subclasses of this form to sign up.  The view

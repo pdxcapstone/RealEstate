@@ -411,10 +411,6 @@ class DashboardView(BaseView):
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-
-        print request.POST
-       
-
         if "id" in request.POST:
             couple = Couple.objects.get(id=int(request.POST["id"]))
             if House.objects.filter(couple=couple, nickname=request.POST["nickname"]).exists():
