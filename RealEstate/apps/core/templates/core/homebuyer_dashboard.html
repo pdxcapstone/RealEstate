@@ -32,7 +32,7 @@
     </div>
     <br>
   {% else %}
-    <h4><strong>Houses</strong></h4>
+    <h3 class="header"><strong>Houses</strong></h3>
     <ul class="list-group">
       {% for house in houses %}
         <li class="list-group-item" id="li_{{house.id}}">
@@ -45,7 +45,7 @@
                   <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
                 </h4>
                 {% for line in house.address_lines %}
-                  <p>{{ line }}</p>
+                  <span>{{ line }}</span><br>
                 {% endfor %}
               </div>
               <div class="hbdash-center">
@@ -65,9 +65,8 @@
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHouseModal">
         Add House
       </button>
-      <a href={{ couple.report_url }}>
-        <button type="button" class="btn btn-primary">Generate Report</button>
-      </a>
+      <a href={% url 'categories' %} role="button" class="btn btn-primary">Edit Categories</a>
+      <a href={{ couple.report_url }} role="button" class="btn btn-primary">Generate Report</a>
     </center>
   </div>
 
@@ -77,7 +76,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h2 class="modal-title">Are you sure about this?</h2>
+          <h3 class="modal-title">Are you sure about this?</h3>
         </div>
         <div class="modal-body">
           <p>You're about to delete this home and all associated evaluations.</p>
@@ -120,7 +119,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
-          <h4 class="modal-title">Add House</h4>
+          <h3 class="modal-title">Add House</h3>
         </div>
         <div class="modal-body">
           <form method="post" action="" role="form" class="uniForm">

@@ -1,8 +1,38 @@
 /* common */
 
-html{
+html, body, #main-content {
 	height: 100%;
 }
+
+#main-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#main-content, .modal-content {
+    background-color: #EEE;
+}
+
+#bg-img #main-content {
+    background-color: inherit;
+}
+
+.bs-blue-background {
+    background-color: rgb(40, 96, 144);
+}
+
+.bs-blue, #main-content .header, .modal-content label, .modal-header {
+    color: rgb(40, 96, 144);
+}
+
+nav.navbar * {
+    color: white !important;
+}
+
+#main-content .header, .modal-header {
+    text-align:center;
+}
+
 ul.list-group {
 	padding-top:30px;
 }
@@ -44,8 +74,8 @@ ul.list-group {
 #helptext-R{
 	padding-left: 15px;
 }
-button{
-	margin:30px;
+button.btn, a.btn {
+	margin:20px;
 }
 button.close{
 	margin:auto;
