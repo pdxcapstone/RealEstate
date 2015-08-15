@@ -20,26 +20,22 @@
                 <h3>GRAPHICS</h3>
                 <p>A simplified visual representation of all collected data for a quick breakdowns and decision making.</p>
 
-                <h2>Homebuyer Pie Chart Data</h2>
-                <div class="row">
-                    <div class="col-lg-6">
-                        <div id="lineLegend"></div>
-                    </div>
-                    <div class="col-sm-6"></div>
-                </div>
-
                 <hr>
 
                 <div class="row">
-                    <div class="col-lg-6">
-                        <h4>{{ homebuyer1 }}</h4>
-                        <div><canvas id="PieChart1" style="height:400px; width: 100%"></canvas></div>
-                    </div>
-                    <div class="col-lg-6">
-                        <h4>{{ homebuyer2 }}</h4>
-                        <div><canvas id="PieChart2" style="height:400px; width: 100%"></canvas></div>
+                    <h2>Shared Category Importance</h2>
+                    <h5>See what is most important in a house.</h5>
+                    <div class="col-lg-12 row">
+                        <div class="col-lg-9">
+                            <div><canvas id="PieChart" style="height:400px; width: 100%"></canvas></div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div id="lineLegend"></div>
+                        </div>
                     </div>
                 </div>
+
+                <hr>
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -159,8 +155,8 @@
     });
     legend(document.getElementById("barLegend"), myBarChart);
     
-    var pie1 = [
-    {% for color, category, weight in pie1 %}
+    var pie = [
+    {% for color, category, weight in pieAve %}
         {
             value : {{weight}},
             color : '{{color}}',
@@ -169,30 +165,13 @@
     {% endfor %}
     ]
     
-    var pie2 = [
-    {% for color, category, weight in pie2 %}
-        {
-            value : {{weight}},
-            color : '{{color}}',
-            label : '{{category}}'
-        }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-    ]
-    
-    var ctx1 = document.getElementById("PieChart1").getContext("2d");
-    var pieChart1 = new Chart(ctx1).Pie(pie1,{
+    var ctx = document.getElementById("PieChart").getContext("2d");
+    var pieChart = new Chart(ctx).Pie(pie,{
         barShowStroke: false,
         scaleShowGridLines: false,
         barValueSpacing : 20,
     });
-    legend(document.getElementById("lineLegend"), pie1);
-    
-    var ctx2 = document.getElementById("PieChart2").getContext("2d");
-    var pieChart2 = new Chart(ctx2).Pie(pie2,{
-        barShowStroke: false,
-        scaleShowGridLines: false,
-        barValueSpacing : 20,
-    });
+    legend(document.getElementById("lineLegend"), pie);
     
     var houseLabel = [
     {% for house, score, color in categoryData.0.1 %}
