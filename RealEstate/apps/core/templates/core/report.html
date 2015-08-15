@@ -203,25 +203,23 @@
     
     var houseLabel = [
     {% for house, score, color in categoryData.0.1 %}
-        "{{house}}"{% if not forloop.last %},{% endif %}
+        "{{house}}".substring(0, 10){% if not forloop.last %},{% endif %}
     {% endfor %}
     ]
 
     {% for category, houses in categoryData %}
-{#        var {{category}}Score = [{% for house, score, color in houses %}{{score}}*20{% if not forloop.last %},{% endif %}{% endfor %}];#}
+        var {{category}}Score = [{% for house, score, color in houses %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
         var {{category}}Data = {
         labels: houseLabel,
         datasets: [
-            {% for house, score, color in houses %}
-                {
-                    label: "{{house}}",
-                    fillColor: "rgba(217, 95, 73, 0.8)",
-                    strokeColor: "rgba(217, 95, 73, 0.8)",
-                    highlightFill: "{{color}}",
-                    highlightStroke: "rgba(217, 95, 73, 1)",
-                    data: {{score}}
-                },
-            {% endfor %}
+            {
+                label: "{{ category }}",
+                fillColor: "rgba(217, 95, 73, 0.8)",
+                strokeColor: "rgba(217, 95, 73, 0.8)",
+                highlightFill: "{{houses.0.2}}",
+                highlightStroke: "rgba(217, 95, 73, 1)",
+                data: {{category}}Score
+            }
         ]
     };
     {% endfor %}
@@ -230,7 +228,7 @@
         var {{category}}brx = document.getElementById("{{category}}bar").getContext("2d");
         var {{category}}Chart = new Chart({{category}}brx).Bar({{category}}Data, {
             scaleOverride : true,
-            scaleSteps : 0.1,
+            scaleSteps : 1,
             scaleStepWidth : 10,
             scaleStartValue : 0,
 
@@ -239,6 +237,12 @@
             barValueSpacing : 20,
             showTooltips: false
         });
+
+{#        {% for color, category, weight in pie1 %}#}
+            {{category}}Chart.datasets[0].bars[0].fillColor = "{{ pie1.0.0 }}"; //bar 1
+            {{category}}Chart.datasets[0].bars[1].fillColor = "{{ pie1.1.0 }}"; //bar 2
+            {{category}}Chart.update();
+{#        {% endfor %}#}
     {% endfor %}
     
 </script>
