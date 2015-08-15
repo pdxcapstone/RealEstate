@@ -224,11 +224,8 @@ a.mail {
     outline-width: 1px;
     min-height:100px;
 }
-.hb-leg{
-	min-height:10px;
-	min-width:20px;
-	margin-top:14px;
-	margin-left:5px;
+.row-height{
+	max-height:250px;
 }
 #hb-1{
 	background-color:rgba(217, 95, 73, 0.9);
