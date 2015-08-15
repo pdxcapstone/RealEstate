@@ -21,7 +21,7 @@ from django.views.generic import View
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
-                                        EditHomeForm)
+                                        EditHomeForm, AddCategoryFromEvalForm)
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, Homebuyer, House, Realtor,
@@ -394,29 +394,14 @@ class DashboardView(BaseView):
         return render(request, self.homebuyer_template_name, context)
 
     def _realtor_get(self, request, realtor, *args, **kwargs):
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        # Couple data is a list of touples [(couple1, homebuyers, isPending),
-        # (couple2, homebuyers, isPending)] There may be a better way to get
-        # homebuyers straight from couples, but I didn't see it in the model.
-        coupleData = []
-        isPending = True
-        hasPending = pendingCouples.exists()
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-
+        couples, pending_couples = realtor.get_couples_and_pending_couples()
         invite_formset = self._build_invite_formset()(
             queryset=PendingHomebuyer.objects.none())
         context = {
-            'couples': coupleData,
-            'realtor': realtor,
-            'hasPending': hasPending,
+            'couples': couples,
+            'pending_couples': pending_couples,
             'invite_formset': invite_formset,
+            'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
 
@@ -441,23 +426,12 @@ class DashboardView(BaseView):
             messages.success(request, success_msg)
             return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
-        couples = Couple.objects.filter(realtor=realtor)
-        pendingCouples = PendingCouple.objects.filter(realtor=realtor)
-        coupleData = []
-        isPending = True
-        hasPending = pendingCouples.exists()
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pendingCouples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
+        couples, pending_couples = realtor.get_couples_and_pending_couples()
         context = {
-            'couples': coupleData,
-            'realtor': realtor,
-            'hasPending': hasPending,
+            'couples': couples,
+            'pending_couples': pending_couples,
             'invite_formset': invite_formset,
+            'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
 
@@ -531,6 +505,22 @@ class EvalView(BaseView):
             'js_scores': json.dumps(score_choices),
         }
 
+    def _weight_context(self):
+        weight_field = CategoryWeight._meta.get_field('weight')
+        weight_choices = dict(weight_field.choices)
+        min_weight = min(weight for weight in weight_choices)
+        max_weight = max(weight for weight in weight_choices)
+        min_choice = weight_choices[min_weight]
+        max_choice = weight_choices[max_weight]
+        return {
+            'min_weight': min_weight,
+            'max_weight': max_weight,
+            'min_weightchoice': min_choice,
+            'max_weightchoice': max_choice,
+            'default_weight': weight_field.default,
+            'js_weight': json.dumps(weight_choices),
+        }
+
     def get(self, request, *args, **kwargs):
         homebuyer = request.user.role_object
         couple = homebuyer.couple
@@ -555,7 +545,9 @@ class EvalView(BaseView):
             'couple': couple,
             'house': house,
             'grades': graded,
+            'form': AddCategoryFromEvalForm()
         }
+        context.update(self._weight_context())
         context.update(self._score_context())
         return render(request, self.template_name, context)
 
@@ -566,23 +558,69 @@ class EvalView(BaseView):
         leave. In the meantime, it saves new data, recreates the same form and
         posts a success message.
         """
-        if not request.is_ajax():
-            raise PermissionDenied
-
         homebuyer = request.user.role_object
-        house = get_object_or_404(House, id=kwargs["house_id"])
-        id = request.POST['id']
-        score = request.POST['value']
-        category = Category.objects.get(id=id)
-        grade, created = Grade.objects.update_or_create(
-            homebuyer=homebuyer, category=category, house=house,
-            defaults={'score': int(score)})
-        response_data = {
-            'id': str(id),
-            'score': str(score)
-        }
-        return HttpResponse(json.dumps(response_data),
-                            content_type="application/json")
+
+        if request.is_ajax():
+            house = get_object_or_404(House, id=kwargs["house_id"])
+            id = request.POST['id']
+            score = request.POST['value']
+            category = Category.objects.get(id=id)
+            grade, created = Grade.objects.update_or_create(
+                homebuyer=homebuyer, category=category, house=house,
+                defaults={'score': int(score)})
+            response_data = {
+                'id': str(id),
+                'score': str(score)
+            }
+            return HttpResponse(json.dumps(response_data),
+                                content_type="application/json")
+
+        else:
+            summary = request.POST["summary"]
+            description = request.POST["description"]
+            couple = homebuyer.couple
+
+            # Creates a category
+            if Category.objects.filter(
+                    couple=couple, summary=summary).exists():
+                error = (u"Category '{summary}' already exists"
+                         .format(summary=summary))
+                messages.error(request, error)
+            else:
+                category = Category.objects.create(
+                    couple=couple, summary=summary,
+                    description=description)
+                CategoryWeight.objects.update_or_create(
+                    homebuyer=homebuyer, category=category,
+                    defaults={'weight': int(request.POST["weight"])})
+
+                messages.success(
+                    request,
+                    u"Category '{summary}' added".format(summary=summary))
+
+            categories = Category.objects.filter(couple=couple)
+            house = get_object_or_404(House, id=kwargs["house_id"])
+            grades = Grade.objects.filter(house=house, homebuyer=homebuyer)
+            graded = []
+            for category in categories:
+                missing = True
+                for grade in grades:
+                    if grade.category.id is category.id:
+                        graded.append((category, grade.score))
+                        missing = False
+                        break
+                if missing:
+                    graded.append((category, None))
+
+            context = {
+                'couple': couple,
+                'house': house,
+                'grades': graded,
+                'form': AddCategoryFromEvalForm()
+            }
+            context.update(self._weight_context())
+            context.update(self._score_context())
+            return render(request, self.template_name, context)
 
 
 class PasswordChangeDoneView(BaseView):

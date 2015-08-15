@@ -46,12 +46,14 @@
               <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 {% if authenticated %}
                   <ul class="nav navbar-nav">
-                    <li>
-                      <a href="{% url 'categories' %}">
-                        <span class="glyphicon glyphicon-equalizer"> Categories</span>
-                      </a>
-                    </li>
-                    {% if user.is_staff %}
+                    {% if navbar.categories %}
+                      <li>
+                        <a href="{% url 'categories' %}">
+                          <span class="glyphicon glyphicon-equalizer"> Categories</span>
+                        </a>
+                      </li>
+                    {% endif %}
+                    {% if navbar.admin %}
                       <li>
                         <a href={% url "admin:index" %}>
                           <span class="glyphicon glyphicon-king"> Admin</span>
@@ -91,7 +93,7 @@
             {% block messages %}
               <div class="row">
                 <div class="col-sm-2"></div>
-                 <div id="messages" class="col-sm-8" style="margin: 8px;">
+                 <div id="messages" class="col-sm-8" style="margin: 8px;text-align:center;">
                    {% bootstrap_messages %}
                  </div>
                  <div class="col-sm-2"></div>
