@@ -300,6 +300,9 @@ class Couple(BaseModel):
             homebuyers = (homebuyers.first(), None)
         return homebuyers
 
+    def emails(self):
+        return ','.join(self.homebuyer_set.values_list('user__email', flat=True))
+
     @property
     def report_data(self):
         """

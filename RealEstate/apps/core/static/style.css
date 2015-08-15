@@ -61,10 +61,15 @@ button.close{
     display: table-cell;
     vertical-align: middle;
     text-align:center;
-    width:50%;
+    width: 30%;
 }
 .signUpHeader{
 	margin-top:50px;
+}
+
+.soft-error {
+    font-style: italic;
+    text-align: center;
 }
 
 /* categories */

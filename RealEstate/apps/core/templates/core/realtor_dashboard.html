@@ -7,43 +7,83 @@
 {% endblock %}
 
 {% block header %}
-  <div id="heading">
-    <h2><strong>Realtor Dashboard</strong></h2>
-  </div>
 {% endblock header %}
 
 {% block body %}
-  <ul class="list-group">
-    {% for couple, homebuyers, isPending in couples %}
-      <li id="row_{% if isPending %}p{% endif %}{{couple.id}}" class="list-group-item couple_row">
-        <div class="row" id="row_{{couple.id}}">
-          <div class="row-con">
-            <div class="col-sm-6">
-              {% for homebuyer in homebuyers %}
-                <h4>
-                  {% if isPending %}
-                    {{homebuyer.email}}
-                    {% if not homebuyer.registered %}<span class="red-alert">*</span> {% endif %}
-                    <a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_p{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
-                  {% else %}
-                    {{homebuyer}}<a href="mailto:{{homebuyer.email}}" target="_top" class="mail"><span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter email icon" ></span></a>
-                  {% endif %}
-                </h4>
-              {% endfor %}
-            </div>
-            <div class="hbdash-center">
-              <center>
-                <a class="report" href="{{couple.report_url}}">Report</a>
-              </center>
+  {% if not couples.exists and not pending_couples.exists %}
+    <div class="soft-error">
+      <p>You have not yet invited any couples.</p>
+      <p>Please click the 'Invite Couple' button below to invite couples.</p>
+    </div>
+  {% else %}
+    <h4><strong>Registered Couples</strong></h4>
+    <ul class="list-group">
+      {% for couple in couples %}
+        <li class="list-group-item couple_row">
+          <div class="row" id="row_{{couple.id}}">
+            <div class="row-con">
+              <div class="col-sm-6">
+                {% for homebuyer in couple.homebuyer_set.all %}
+                  <h4>{{homebuyer}}</h4>
+                {% endfor %}
+              </div>
+              <div class="hbdash-center">
+                <center>
+                  <a class="report" href="{{couple.report_url}}">Report</a>
+                  <a href="mailto:{{couple.emails}}" target="_top" class="mail" style="font-size:28px;">
+                    <span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter icon" ></span>
+                  </a>
+                </center>
+              </div>
             </div>
           </div>
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
+        </li>
+      {% empty %}
+        <li class="list-group-item couple_row soft-error">
+          No couples have registered
+        </li>
+      {% endfor %}
+    </ul>
+    <br>
 
-  {% if hasPending %}
-    <div class="red-alert">* Pending homebuyers</div>
+    <h4><strong>Invited Couples</strong></h4>
+    <ul class="list-group">
+      {% for pending_couple in pending_couples %}
+        <li class="list-group-item couple_row">
+          <div class="row" id="row_{{pending_couple.id}}">
+            <div class="row-con">
+              <div class="col-sm-6">
+                {% for pending_homebuyer in pending_couple.pendinghomebuyer_set.all %}
+                  <h4>
+                    {{pending_homebuyer}}
+                    {% if not pending_homebuyer.registered %}
+                      <span style="vertical-align:middle;" class="red-alert">*</span>
+                    {% endif %}
+                  </h4>
+                {% endfor %}
+              </div>
+              <div class="hbdash-center">
+                <center>
+                  <span style="visibility:hidden;">Report</span>
+                  <a href="mailto:{{pending_couple.emails}}" target="_top" class="mail" style="font-size:28px;">
+                    <span id="mail_{{pendingcouple.id}}" class="glyphicon glyphicon-envelope vcenter icon" ></span>
+                  </a>
+                </center>
+              </div>
+            </div>
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item couple_row soft-error">
+          No couples with pending invitations
+        </li>
+      {% endfor %}
+    </ul>
+
+  {% endif %}
+
+  {% if pending_couples.exists %}
+    <div class="red-alert">* Unregistered</div>
   {% endif %}
   <center>
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple">Invite Couple</button>
@@ -74,13 +114,11 @@
 {% block scripts %}
   <script src="{% static "base.js" %}"></script>
   <script>
-      $( ".couple_row" ).bind( "mouseenter", hoverActions("couple_row", "mail"));
-
       $(document).ready(function() {
+          // Show modal on page load if there were invite submission errors
           var $errorMessages = $('#inviteCouple .alert.alert-danger');
           var $helpBlocks = $('#inviteCouple span.help-block');
 
-          // If errors on invite submit...
           if ($errorMessages.length || $helpBlocks.length) {
               $('#inviteCouple').modal();
           }
