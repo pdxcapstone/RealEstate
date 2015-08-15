@@ -116,6 +116,7 @@ TEMPLATES = [ {
                 'django.contrib.messages.context_processors.messages',
                 'RealEstate.apps.core.context_processors.app_name',
                 'RealEstate.apps.core.context_processors.async_login_form',
+                'RealEstate.apps.core.context_processors.navbar',
             ],
         },
     },
