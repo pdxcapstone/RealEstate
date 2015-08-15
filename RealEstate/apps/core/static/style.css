@@ -109,6 +109,9 @@ button.close{
     text-align: center;
 }
 
+.modal-content button {
+    font-size: x-large;
+}
 
 /* categories */
 
