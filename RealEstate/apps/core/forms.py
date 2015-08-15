@@ -18,14 +18,6 @@ class AddCategoryForm(forms.ModelForm):
         fields = ('summary', 'description')
 
 
-class AddCategoryFromEvalForm(forms.ModelForm):
-    weight = forms.CharField(widget=forms.HiddenInput())
-    
-    class Meta:
-        model = Category
-        fields = ('summary', 'description')
-
-
 class EditCategoryForm(forms.ModelForm):
     id = forms.CharField(widget=forms.HiddenInput())
 
