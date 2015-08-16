@@ -1,5 +1,4 @@
 import json
-
 import time
 
 from django.conf import settings
@@ -10,7 +9,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.forms.models import modelformset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
@@ -22,15 +20,15 @@ from django.views.generic import View
 
 from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
                                         RealtorSignupForm, AddHomeForm,
-                                        EditHomeForm, AddCategoryFromEvalForm)
+                                        EditHomeForm, AddCategoryFromEvalForm,
+                                        AddRealtorHomeForm)
+
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor,
-                                         User)
+                                         Grade, House, Realtor, User)
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
-from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
-                                           InviteHomebuyersFormSet)
+from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
 LOGIN_DELAY = 1.2   # Seconds
 
@@ -303,13 +301,6 @@ class DashboardView(BaseView):
     homebuyer_template_name = 'core/homebuyer_dashboard.html'
     realtor_template_name = 'core/realtor_dashboard.html'
 
-    def _build_invite_formset(self):
-        return modelformset_factory(PendingHomebuyer,
-                                    form=InviteHomebuyerForm,
-                                    formset=InviteHomebuyersFormSet,
-                                    extra=2,
-                                    max_num=2)
-
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
         if request.is_ajax():
@@ -398,42 +389,69 @@ class DashboardView(BaseView):
 
     def _realtor_get(self, request, realtor, *args, **kwargs):
         couples, pending_couples = realtor.get_couples_and_pending_couples()
-        invite_formset = self._build_invite_formset()(
-            queryset=PendingHomebuyer.objects.none())
+        invite_form = InviteHomebuyerForm()
         context = {
+            'form': AddRealtorHomeForm(),
             'couples': couples,
             'pending_couples': pending_couples,
-            'invite_formset': invite_formset,
+            'invite_form': invite_form,
             'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
-        invite_formset = self._build_invite_formset()(request.POST)
-        if invite_formset.is_valid():
-            pending_homebuyers = [
-                form.instance for form in invite_formset.forms]
-            with transaction.atomic():
-                pending_couple = PendingCouple.objects.create(
-                    realtor=request.user.realtor)
-                for pending_homebuyer in pending_homebuyers:
-                    pending_homebuyer.pending_couple = pending_couple
-                    pending_homebuyer.save()
+        invite_form = InviteHomebuyerForm()
 
-            first_homebuyer, second_homebuyer = pending_homebuyers
-            first_homebuyer.send_email_invite(request)
-            second_homebuyer.send_email_invite(request)
-            success_msg = ("Email invitations sent to '{first}' and '{second}'"
-                           .format(first=escape(unicode(first_homebuyer)),
-                                   second=escape(unicode(second_homebuyer))))
-            messages.success(request, success_msg)
-            return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+        if "id" in request.POST:
+            couple = Couple.objects.get(id=int(request.POST["id"]))
+            nickname = request.POST['nickname']
+            if House.objects.filter(
+                    couple=couple, nickname=nickname).exists():
+                error = (u"House '{nickname}' already exists"
+                         .format(nickname=nickname))
+                messages.error(request, error)
+            else:
+                House.objects.create(couple=couple, nickname=nickname,
+                                     address=request.POST["address"])
+                messages.success(
+                    request,
+                    "House '{nickname}' added".format(nickname=nickname))
+        else:
+            invite_form = InviteHomebuyerForm(request.POST)
+            if invite_form.is_valid():
+                cleaned_data = invite_form.cleaned_data
+                first_pending_hb = PendingHomebuyer(
+                    first_name=cleaned_data['homebuyer1_first'],
+                    last_name=cleaned_data['homebuyer1_last'],
+                    email=cleaned_data['homebuyer1_email'])
+                second_pending_hb = PendingHomebuyer(
+                    first_name=cleaned_data['homebuyer2_first'],
+                    last_name=cleaned_data['homebuyer2_last'],
+                    email=cleaned_data['homebuyer2_email'])
+                pending_couple = PendingCouple(realtor=request.user.realtor)
+
+                with transaction.atomic():
+                    pending_couple.save()
+                    first_pending_hb.pending_couple = pending_couple
+                    second_pending_hb.pending_couple = pending_couple
+                    first_pending_hb.save()
+                    second_pending_hb.save()
+
+                first_pending_hb.send_email_invite(request)
+                second_pending_hb.send_email_invite(request)
+                success_msg = (
+                    "Email invitations sent to '{first}' and '{second}'"
+                    .format(first=escape(unicode(first_pending_hb)),
+                            second=escape(unicode(second_pending_hb))))
+                messages.success(request, success_msg)
+                return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
         couples, pending_couples = realtor.get_couples_and_pending_couples()
         context = {
             'couples': couples,
             'pending_couples': pending_couples,
-            'invite_formset': invite_formset,
+            'form': AddRealtorHomeForm(),
+            'invite_form': invite_form,
             'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
@@ -563,127 +581,6 @@ class EvalView(BaseView):
         """
         homebuyer = request.user.role_object
 
-        context = {
-            'signup_form': signup_form
-        }
-        return render(request, self.template_name, context)
-
-
-class ReportView(BaseView):
-    """
-    This view will take into account the category weights and scores for each
-    Homebuyer that is part of the Couple instance, and display the results.
-    """
-    template_name = 'core/report.html'
-
-    def _permission_check(self, request, role, *args, **kwargs):
-        """
-        Homebuyers can only see their own report.  Realtors can see reports
-        for any of their Couples
-        """
-        couple_id = int(kwargs.get('couple_id', 0))
-        get_object_or_404(Couple, id=couple_id)
-        return role.can_view_report_for_couple(couple_id)
-
-    def get(self, request, *args, **kwargs):
-        first = 0
-        second = 1
-        largestScore = 0.1
-        couple_id = int(kwargs.get('couple_id', 0))
-        couple = Couple.objects.get(id=couple_id)
-        homebuyers = couple.homebuyer_set.all()
-        data1 = homebuyers[first].report_data
-        data2 = homebuyers[second].report_data
-        colors = ["#3498db", "#2ecc71", "#9b59b6", "#34495e", "#16a085", "#f1c40f", "#c0392b"]
-        
-        categoryImportance = []
-        for category in data1:
-            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
-            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
-            categoryImportance.append((category, weight1, weight2))
-
-        weightsAve = []
-        weights1 = []
-        weights2=  []
-        index1 = 0
-        index2 = 0
-        for category in data1:
-            weightAve = (float(data1[category]["weight"]) + float(data2[category]["weight"])) / (homebuyers[first].category_weight_total + homebuyers[second].category_weight_total)
-            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
-            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
-            weightsAve.append((colors[index1], category, int(weightAve * 100)))
-            weights1.append((colors[index1], category, int(weight1 * 100)))
-            index1 = (index1 + 1) % len(colors)
-            weights2.append((colors[index2], category, int(weight2 * 100)))
-            index2 = (index2 + 1) % len(colors)
-
-        categoryData = []
-        for category in data1:
-            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
-            weight2 = float(data1[category]["weight"]) / homebuyers[second].category_weight_total
-            scores = []
-            for house in data1[category]["houses"]:
-                score1 = data1[category]["houses"][house] * weight1
-                score2 = data2[category]["houses"][house] * weight2
-                averageScore = (score1 + score2) / 2
-                scores.append((house, averageScore, colors[index1]))
-                index1 = (index1 + 1) % len(colors)
-
-
-            for houses, score, color in scores:
-                if score > largestScore:
-                    largestScore = score
-
-            categoryData.append((category, scores))
-
-        totalScore = {}
-        for category, homes in categoryData:
-            for home, score, color in homes:
-                if(home in totalScore.keys()):
-                    totalScore[home] += score
-                else:
-                    totalScore[home] = score
-
-        context = {
-            'homebuyer1': homebuyers[0],
-            'homebuyer2': homebuyers[1],
-            'categoryImportance': categoryImportance,
-            'pieAve': weightsAve,
-            'categoryData': categoryData,
-            'totalScore': totalScore,
-            'largestScore': largestScore
-        }
-        return render(request, self.template_name, context)
-
-
-class CategoryView(BaseView):
-    """
-    View for the Category Ranking Page.
-    """
-    _USER_TYPES_ALLOWED = User._HOMEBUYER_ONLY
-    template_name = 'core/categories.html'
-
-    def _permission_check(self, request, role, *args, **kwargs):
-        return True
-
-    def _weight_context(self):
-        weight_field = CategoryWeight._meta.get_field('weight')
-        weight_choices = dict(weight_field.choices)
-        min_weight = min(weight for weight in weight_choices)
-        max_weight = max(weight for weight in weight_choices)
-        min_choice = weight_choices[min_weight]
-        max_choice = weight_choices[max_weight]
-        return {
-            'min_weight': min_weight,
-            'max_weight': max_weight,
-            'min_choice': min_choice,
-            'max_choice': max_choice,
-            'default_weight': weight_field.default,
-            'js_weight': json.dumps(weight_choices),
-        }
-
-    def get(self, request, *args, **kwargs):
-        # Returns summary and description if given category ID
         if request.is_ajax():
             house = get_object_or_404(House, id=kwargs["house_id"])
             id = request.POST['id']
@@ -756,3 +653,90 @@ class PasswordChangeDoneView(BaseView):
         messages.success(request,
                          "You have successfully changed your password")
         return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+
+
+class ReportView(BaseView):
+    """
+    This view will take into account the category weights and scores for each
+    Homebuyer that is part of the Couple instance, and display the results.
+    """
+    template_name = 'core/report.html'
+
+    def _permission_check(self, request, role, *args, **kwargs):
+        """
+        Homebuyers can only see their own report.  Realtors can see reports
+        for any of their Couples
+        """
+        couple_id = int(kwargs.get('couple_id', 0))
+        get_object_or_404(Couple, id=couple_id)
+        return role.can_view_report_for_couple(couple_id)
+
+    def get(self, request, *args, **kwargs):
+        first = 0
+        second = 1
+        largestScore = 0.1
+        couple_id = int(kwargs.get('couple_id', 0))
+        couple = Couple.objects.get(id=couple_id)
+        homebuyers = couple.homebuyer_set.all()
+        data1 = homebuyers[first].report_data
+        data2 = homebuyers[second].report_data
+        colors = ["#800080", "#339999", "#666600", "#99cc33", "#ffcc00", "#ff3300", "#c00000"]
+        
+        categoryImportance = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            categoryImportance.append((category, weight1, weight2))
+
+        weightsAve = []
+        weights1 = []
+        weights2=  []
+        index1 = 0
+        index2 = 0
+        for category in data1:
+            weightAve = (float(data1[category]["weight"]) + float(data2[category]["weight"])) / (homebuyers[first].category_weight_total + homebuyers[second].category_weight_total)
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            weightsAve.append((colors[index1], category, int(weightAve * 100)))
+            weights1.append((colors[index1], category, int(weight1 * 100)))
+            index1 = (index1 + 1) % len(colors)
+            weights2.append((colors[index2], category, int(weight2 * 100)))
+            index2 = (index2 + 1) % len(colors)
+
+        categoryData = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data1[category]["weight"]) / homebuyers[second].category_weight_total
+            scores = []
+            for house in data1[category]["houses"]:
+                score1 = data1[category]["houses"][house] * weight1
+                score2 = data2[category]["houses"][house] * weight2
+                averageScore = (score1 + score2) / 2
+                scores.append((house, averageScore, colors[index1]))
+                index1 = (index1 + 1) % len(colors)
+
+
+            for houses, score, color in scores:
+                if score > largestScore:
+                    largestScore = score
+
+            categoryData.append((category, scores))
+
+        totalScore = {}
+        for category, homes in categoryData:
+            for home, score, color in homes:
+                if(home in totalScore.keys()):
+                    totalScore[home] += score
+                else:
+                    totalScore[home] = score
+
+        context = {
+            'homebuyer1': homebuyers[0],
+            'homebuyer2': homebuyers[1],
+            'categoryImportance': categoryImportance,
+            'pieAve': weightsAve,
+            'categoryData': categoryData,
+            'totalScore': totalScore,
+            'largestScore': largestScore
+        }
+        return render(request, self.template_name, context)

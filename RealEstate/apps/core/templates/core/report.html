@@ -2,24 +2,27 @@
 {% load staticfiles %}
 
 {% block header %}
-   <h2><strong>REPORT</strong></h2>
+   <h2><strong>Report for {{ homebuyer1.full_name }} and {{ homebuyer2.full_name }}</strong></h2>
 {% endblock header %}
 
 {% block body %}
 
     <div class="container">
-        <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#graphics">Graphics</a></li>
-            <li><a data-toggle="tab" href="#numbers">Numbers</a></li>
-        </ul>
+        <div class="tabs">
+{#            <ul class="tab-links">#}
+{#                <li class="active"><a href="#catImport">Category Importance</a></li>#}
+{#                <li><a href="#weighting">Weighting</a></li>#}
+{#                <li><a href="#categoriesPerHouse">Categories Per House</a></li>#}
+{#                <li><a href="#housesPerCat">Houses Per Category</a></li>#}
+{#                <li><a href="#finalGrade">Final Grade</a></li>#}
+{#              <li><a data-toggle="tab6" href="#numbers">Numbers</a></li>#}
+{#            </ul>#}
+        </div>
 
         <div class="tab-content">
 
-            <!--GRAPHICS TAB!!-->
-            <div id="graphics" class="tab-pane fade in active">
-                <h3>GRAPHICS</h3>
-                <p>A simplified visual representation of all collected data for a quick breakdowns and decision making.</p>
-                                <hr>
+            <!--CATEGORY IMPORTANCE!!-->
+            <div id="catImport" class="tab active">
                 <div class="row">
                     <h2>Shared Category Importance</h2>
                     <h5>See what is most important in a house.</h5>
@@ -32,23 +35,31 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <hr>
-
+            <!--WEIGHTING!!-->
+            <div id="weighting" class="tab">
                 <div class="row">
-                    <div class="col-lg-12">
-                        <h2>Weighting</h2>
-                        <div class="row">
-                            <div class="col-lg-10"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
-                            <div class="col-lg-2 "> 
-                                <div id="barLegend"></div>
-                            </div>
+                    <h2>Weighting</h2>
+                    <div class="row">
+                        <div class="col-lg-10"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
+                        <div class="col-lg-2 ">
+                            <div id="barLegend"></div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <hr>
+            <!--CATEGORIES PER HOUSE!!-->
+            <div id="categoriesPerHouse" class="tab">
+                <h2>House Data</h2>
+                <div class="row">
 
+                </div>
+            </div>
+
+            <!--HOUSES PER CATEGORY!!-->
+            <div id="housesPerCat" class="tab">
                 <h2>Category Data</h2>
                 <div class="row">
                 {% for category, houses in categoryData %}
@@ -60,64 +71,52 @@
                     </div>
                 {% endfor %}
                 </div>
+            </div>
 
-                <hr>
-
+            <!--FINAL GRADE!!-->
+            <div id="finalGrade" class="tab">
+                <h2>Category Data</h2>
+                <div class="row">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <h2>Final Grade</h2>
+                            <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!--NUMBERS TAB!!-->
-            <div id="numbers" class="tab-pane fade">
-                <h3>NUMBERS</h3>
-                <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
-
-                <h2>Weighting</h2>
-                {% for category, weight1, weight2 in categoryImportance %}
-                    <h4>{{category}}</h4>
-                    <h5>{{weight1}} | {{weight2}}</h5>
-                {% endfor %}
-
-                <h2>Homebuyer Pie Chart Data</h2>
-                {% for homebuyer, weights in homebuyerPies %}
-                    <h4>{{homebuyer}}</h4>
-                    <h5>{{weights}}</h5>
-                {% endfor %}
-
-                <h2>Category Data</h2>
-                {% for category, homes in categoryData %}
-                    <h4>{{category}}</h4>
-                    {% for home, score in homes %}
-                    <h5>{{home}} --> {{score}}</h5>
-                    {%  endfor %}
-                {% endfor %}
-
-                <h2>Total Score</h2>
-                {% for key, value in totalScore.items %}
-                    <h4>{{key}}</h4>
-                    {{value}}
-                {% endfor %}
-            </div>
-            <br>
-            <div class="row">
-                <div class="col-lg-4">
-                    <h2>Final Grade</h2>
-                    {% for key, value in totalScore.items %}
-                        <h5>{{key}}</h5>
-                        {% if value >= 3.5 %}
-                            <h3 id="finalGrade-Ap">A+</h3>
-                        {% elif value >= 3.0 %}
-                            <h3 id="finalGrade-A">A</h3>
-                        {% elif value >= 2.5 %}
-                            <h3 id="finalGrade-B">B</h3>
-                        {% elif value >= 2.2 %}
-                            <h3 id="finalGrade-C">C</h3>
-                        {% elif value >= 1.9 %}
-                            <h3 id="finalGrade-D">D</h3>
-                        {% else %}
-                            <h3 id="finalGrade-F">F</h3>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
+{#            <div id="numbers" class="tab-content">#}
+{#                <h3>NUMBERS</h3>#}
+{#                <p>For the nerd within. Read though all the data in its raw, numeric format.</p>#}
+{##}
+{#                <h2>Weighting</h2>#}
+{#                {% for category, weight1, weight2 in categoryImportance %}#}
+{#                    <h4>{{category}}</h4>#}
+{#                    <h5>{{weight1}} | {{weight2}}</h5>#}
+{#                {% endfor %}#}
+{##}
+{#                <h2>Homebuyer Pie Chart Data</h2>#}
+{#                {% for homebuyer, weights in homebuyerPies %}#}
+{#                    <h4>{{homebuyer}}</h4>#}
+{#                    <h5>{{weights}}</h5>#}
+{#                {% endfor %}#}
+{##}
+{#                <h2>Category Data</h2>#}
+{#                {% for category, homes in categoryData %}#}
+{#                    <h4>{{category}}</h4>#}
+{#                    {% for home, score in homes %}#}
+{#                    <h5>{{home}} --> {{score}}</h5>#}
+{#                    {%  endfor %}#}
+{#                {% endfor %}#}
+{##}
+{#                <h2>Total Score</h2>#}
+{#                {% for key, value in totalScore.items %}#}
+{#                    <h4>{{key}}</h4>#}
+{#                    {{value}}#}
+{#                {% endfor %}#}
+{#            </div>#}
         </div>
     </div>
 {% endblock body %}
@@ -162,7 +161,7 @@
     var pie = [
     {% for color, category, weight in pieAve %}
         {
-            value : {{weight}},
+            value : '{{weight}}',
             color : '{{color}}',
             label : '{{category}}'
         }{% if not forloop.last %},{% endif %}
@@ -220,6 +219,22 @@
             {{category}}Chart.update();
 {#        {% endfor %}#}
     {% endfor %}
+
+    var gradeFinal = [
+        {% for home in totalScore %}
+            {
+                score : '{{ totalScore[home] }}'
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+
+    var ctx = document.getElementById("finalGradeChart").getContext("2d");
+    var finalGrade = new Chart(ctx).Bar(gradeFinal, {
+        barShowStroke: false,
+        scaleShowGridLines: false,
+        barValueSpacing : 20,
+        showTooltips: false,
+    });
     
 </script>
 {% endblock %}
