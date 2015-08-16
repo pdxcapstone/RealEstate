@@ -269,16 +269,29 @@ class CategoryView(BaseView):
 
             # Creates a category
             else:
-                if len(request.POST.getlist("optional_categories")) > 0:
+                optNum = len(request.POST.getlist("optional_categories"))
+                if optNum > 0:
                     for c in request.POST.getlist("optional_categories"):
                         if Category.objects.filter(
                                 couple=couple, summary=summary).exists():
                             continue
                         else:
+                            optSum=models._CATEGORIES[c]["summary"]
                             Category.objects.create(
                                 couple=couple,
-                                summary=models._CATEGORIES[c]["summary"],
+                                summary=optSum,
                                 description=models._CATEGORIES[c]["description"])
+                            if optNum == 1:
+                                messages.success(
+                                    request,
+                                    u"Category '{summary}' added".format(
+                                        summary=optSum))
+                    if optNum > 1:
+                        messages.success(
+                            request,
+                            u"{optNum} predefined categories added.".format(
+                                optNum=optNum))
+
                 if summary != "":
                     if Category.objects.filter(
                             couple=couple, summary=summary).exists():
