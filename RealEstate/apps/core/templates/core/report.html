@@ -27,7 +27,7 @@
                     <h2>Shared Category Importance</h2>
                     <h5>See what is most important in a house.</h5>
                     <div class="row">
-                        <div class="col-lg-9">
+                        <div class="col-lg-6">
                             <div><canvas id="PieChart" style="height:400px; width: 100%"></canvas></div>
                         </div>
                         <div class="col-lg-3">
@@ -76,6 +76,7 @@
             <!--FINAL GRADE!!-->
             <div id="finalGrade" class="tab">
                 <h2>Category Data</h2>
+<<<<<<< HEAD
                 <div class="row">
                     <div class="row">
                         <div class="col-lg-4">
@@ -117,6 +118,27 @@
 {#                    {{value}}#}
 {#                {% endfor %}#}
 {#            </div>#}
+=======
+                {% for category, homes in categoryData %}
+                    <h4>{{category}}</h4>
+                    {% for home, score in homes %}
+                    <h5>{{home}} --> {{score}}</h5>
+                    {%  endfor %}
+                {% endfor %}
+
+                <h2>Total Score</h2>
+                {% for key, value in totalScore.items %}
+                    <h4>{{key}}</h4>
+                    {{value}}
+                {% endfor %}
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-lg-4">
+                    <h2>Final Grade</h2>
+                    <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>  
+                </div>
+>>>>>>> f542fb8e994de6c804da99ee7853ba797ddc58b5
         </div>
     </div>
 {% endblock body %}
@@ -199,6 +221,8 @@
     };
     {% endfor %}
 
+
+    legend(document.getElementById("barLegend"), myBarChart);
     {% for category, houses in categoryData %}
         var {{category}}brx = document.getElementById("{{category}}bar").getContext("2d");
         var {{category}}Chart = new Chart({{category}}brx).Bar({{category}}Data, {
@@ -235,6 +259,6 @@
         barValueSpacing : 20,
         showTooltips: false,
     });
-    
+
 </script>
 {% endblock %}
