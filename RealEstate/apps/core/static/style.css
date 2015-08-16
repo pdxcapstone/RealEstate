@@ -110,7 +110,7 @@ button.close{
     text-align: center;
 }
 
-.modal-content button {
+.modal-content button, #main-content button, #main-content .dashboard-buttons a {
     font-size: x-large;
 }
 
