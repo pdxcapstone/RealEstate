@@ -16,8 +16,8 @@
 {% block body %}
   {% if not couples.exists and not pending_couples.exists %}
     <div class="soft-error">
-      <p>You have not yet invited any couples.</p>
-      <p>Please click the 'Invite Couple' button below to invite couples.</p>
+      <p>You have not yet invited any homebuyers.</p>
+      <p>Please click the 'Invite Homebuyers' button below to invite homebuyers.</p>
     </div>
   {% else %}
     <h1 class="header"><strong>Registered Homebuyers</strong></h1>
@@ -46,7 +46,7 @@
         </li>
       {% empty %}
         <li class="list-group-item couple_row soft-error">
-          No couples have registered
+          No homebuyers have registered
         </li>
       {% endfor %}
     </ul>
@@ -82,7 +82,7 @@
         </li>
       {% empty %}
         <li class="list-group-item couple_row soft-error">
-          No couples with pending invitations
+          No homebuyers with pending invitations
         </li>
       {% endfor %}
     </ul>
@@ -93,21 +93,33 @@
     <div class="red-alert">* Unregistered</div>
   {% endif %}
   <center>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple">Invite Couple</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteHomebuyers">Invite Homebuyers</button>
   </center>
 
-  <!-- Invite Couple Modal -->
-  <div id="inviteCouple" class="modal fade modalHeight" role="dialog">
+  <!-- Invite Homebuyers Modal -->
+  <div id="inviteHomebuyers" class="modal fade modalHeight" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h1 class="modal-title">Invite a couple</h1>
+          <h1 class="modal-title">Invite Homebuyers</h1>
         </div>
-        <div class="modal-body">
+        <div class="modal-body row">
           <form action="" role="form" method="post">
-            {% bootstrap_formset invite_formset %}
             {% csrf_token %}
+            {% bootstrap_form_errors invite_form %}
+            <div class="col-sm-6">
+              <h4 class="header">First Homebuyer</h4>
+              {% bootstrap_field invite_form.homebuyer1_first %}
+              {% bootstrap_field invite_form.homebuyer1_last %}
+              {% bootstrap_field invite_form.homebuyer1_email %}
+            </div>
+            <div class="col-sm-6">
+              <h4 class="header">Second Homebuyer</h4>
+              {% bootstrap_field invite_form.homebuyer2_first %}
+              {% bootstrap_field invite_form.homebuyer2_last %}
+              {% bootstrap_field invite_form.homebuyer2_email %}
+            </div>
             <center>
               {% buttons submit='Invite' %}{% endbuttons %}
             </center>
@@ -118,25 +130,24 @@
   </div>
 
   <!-- Add Home Modal -->
-<div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+  <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
     <div class="modal-dialog">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
-                <h1 class="modal-title">Add Home</h1>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="" role="form" class="uniForm">
-                {% bootstrap_form form %}
-                {% csrf_token %}
-                <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
-                </form>
-            </div>
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
+          <h1 class="modal-title">Add Home</h1>
         </div>
+        <div class="modal-body">
+          <form method="post" action="" role="form" class="uniForm">
+            {% bootstrap_form form %}
+            {% csrf_token %}
+            <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
-
+  </div>
 {% endblock %}
 
 {% block scripts %}
@@ -144,11 +155,11 @@
   <script>
       $(document).ready(function() {
           // Show modal on page load if there were invite submission errors
-          var $errorMessages = $('#inviteCouple .alert.alert-danger');
-          var $helpBlocks = $('#inviteCouple span.help-block');
+          var $errorMessages = $('#inviteHomebuyers .alert.alert-danger');
+          var $helpBlocks = $('#inviteHomebuyers span.help-block');
 
           if ($errorMessages.length || $helpBlocks.length) {
-              $('#inviteCouple').modal();
+              $('#inviteHomebuyers').modal();
           }
       });
 

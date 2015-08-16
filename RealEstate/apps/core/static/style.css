@@ -37,6 +37,10 @@ nav.navbar * {
     text-align:center;
 }
 
+.modal-body .header {
+    margin-bottom: 24px;
+}
+
 ul.list-group {
 	padding-top:30px;
 }

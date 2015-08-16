@@ -95,7 +95,6 @@ class PasswordChangeForm(PasswordChangeForm):
 
     def clean(self):
         cleaned_data = super(PasswordChangeForm, self).clean()
-        new_password = cleaned_data.get('new_password1')
         if 'new_password1' in self.errors:
             self.errors['new_password1'] = [settings.PASSWORD_ERROR_MESSAGE]
         return cleaned_data
@@ -104,7 +103,6 @@ PasswordChangeForm.base_fields = OrderedDict(
     (k, PasswordChangeForm.base_fields[k])
     for k in ['old_password', 'new_password1', 'new_password2']
 )
-
 
 
 class RealtorSignupForm(BaseSignupForm):
