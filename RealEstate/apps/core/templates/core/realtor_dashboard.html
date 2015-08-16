@@ -35,7 +35,7 @@
                 <center>
                   <a class="report" href="{{couple.report_url}}">Report</a>
                   &nbsp;
-                  <a href="#" id="home_{{couple.id}}" class="add-home" data-toggle="modal" data-target="#AddHomeModal">Add Home</a>
+                  <a href="#" id="home_{{couple.id}}" class="add-home" data-toggle="modal" data-target="#AddHouseModal">Add House</a>
                   <a href="mailto:{{couple.emails}}" target="_blank" class="mail" style="font-size:28px;">
                     <span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter icon" ></span>
                   </a>
@@ -71,7 +71,7 @@
               <div class="hbdash-center">
                 <center>
                   <span style="visibility:hidden;">Report</span>
-                  <span style="visibility:hidden;">Add Home</span>
+                  <span style="visibility:hidden;">Add House</span>
                   <a href="mailto:{{pending_couple.emails}}" target="_top" class="mail" style="font-size:28px;">
                     <span id="mail_{{pendingcouple.id}}" class="glyphicon glyphicon-envelope vcenter icon" ></span>
                   </a>
@@ -129,20 +129,20 @@
     </div>
   </div>
 
-  <!-- Add Home Modal -->
-  <div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+  <!-- Add House Modal -->
+  <div id="AddHouseModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add House" aria-hidden="true">
     <div class="modal-dialog">
       <!-- Modal content -->
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
-          <h1 class="modal-title">Add Home</h1>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
+          <h1 class="modal-title">Add House</h1>
         </div>
         <div class="modal-body">
           <form method="post" action="" role="form" class="uniForm">
             {% bootstrap_form form %}
             {% csrf_token %}
-            <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
+            <center>{% buttons submit='Save House' %}{% endbuttons %}</center>
           </form>
         </div>
       </div>
@@ -165,7 +165,7 @@
 
       $(".add-home").click(function() {
         var id = $(this).attr("id").toString().replace(/home_/i, "");
-        $("#AddHomeModal input[name='id']").val(id);
+        $("#AddHouseModal input[name='id']").val(id);
       });
   </script>
 {% endblock %}

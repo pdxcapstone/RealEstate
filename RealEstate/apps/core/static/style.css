@@ -129,9 +129,6 @@ button.close{
 .tooltip-main.top.in {
 	z-index:1 !important;
 }
-.close {
-	z-index: 3000 !important;
-}
 #catRating-out{
 	padding-left:10%
 }

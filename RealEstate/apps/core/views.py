@@ -400,6 +400,8 @@ class DashboardView(BaseView):
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
+        invite_form = InviteHomebuyerForm()
+
         if "id" in request.POST:
             couple = Couple.objects.get(id=int(request.POST["id"]))
             nickname = request.POST['nickname']
