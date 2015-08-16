@@ -1,8 +1,46 @@
 /* common */
 
-html{
+html, body, #main-content {
 	height: 100%;
 }
+
+#main-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#main-content, .modal-content {
+    background-color: #EEE;
+}
+
+#bg-img #main-content {
+    background-color: inherit;
+}
+
+.bs-blue-background {
+    background-color: rgb(40, 96, 144);
+}
+
+.bs-blue, #main-content .header, .modal-content label, .modal-header {
+    color: rgb(40, 96, 144);
+}
+
+nav.navbar * {
+    color: white !important;
+}
+
+.navbar-default .navbar-toggle span.icon-bar {
+    background-color: white;
+}
+
+#main-content .header, .modal-header {
+    text-align:center;
+}
+
+.modal-body .header {
+    margin-bottom: 24px;
+}
+
 ul.list-group {
 	padding-top:30px;
 }
@@ -44,8 +82,8 @@ ul.list-group {
 #helptext-R{
 	padding-left: 15px;
 }
-button{
-	margin:30px;
+button.btn, a.btn {
+	margin:20px;
 }
 button.close{
 	margin:auto;
@@ -61,10 +99,23 @@ button.close{
     display: table-cell;
     vertical-align: middle;
     text-align:center;
-    width:50%;
+    width: 30%;
 }
 .signUpHeader{
 	margin-top:50px;
+}
+
+.http-error {
+    font-style: bold;
+}
+
+.http-error, .soft-error {
+    font-style: italic;
+    text-align: center;
+}
+
+.modal-content button, #main-content button, #main-content .dashboard-buttons a {
+    font-size: x-large;
 }
 
 /* categories */
@@ -77,9 +128,6 @@ button.close{
 }
 .tooltip-main.top.in {
 	z-index:1 !important;
-}
-.close {
-	z-index: 3000 !important;
 }
 #catRating-out{
 	padding-left:10%
@@ -178,6 +226,7 @@ a.mail {
 .nav a{
 		background-color:transparent !important;
 }
+
 #bg-img {
   background: url(images/homepage_house.jpg) no-repeat center center fixed;
   -webkit-background-size: cover;

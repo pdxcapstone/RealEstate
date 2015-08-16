@@ -9,7 +9,9 @@
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <meta charset="UTF-8">
-    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    {% block override_title %}
+      <title>{% block title %}{% endblock %} &middot; {{ app_name }}</title>
+    {% endblock %}
     <meta name="author" content="Portland State University Capstone Spring 2015 Team G">
     <meta name="description" content="{{ app_name }}">
     <meta name="keywords" content="realestate">
@@ -25,7 +27,7 @@
     {% with authenticated=user.is_authenticated %}
       {% block main %}
         <div id="main-content">
-          <nav class="{% if authenticated %}navbar navbar-default{% else %}navbar-alt{% endif %}">
+          <nav class="bs-blue-background navbar navbar-default">
             <div class="container-fluid">
               <!-- Brand and toggle get grouped for better mobile display -->
               <div class="navbar-header">
@@ -44,31 +46,21 @@
 
               <!-- Collect the nav links, forms, and other content for toggling -->
               <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                {% if authenticated %}
-                  <ul class="nav navbar-nav">
-                    <li>
-                      <a href="{% url 'categories' %}">
-                        <span class="glyphicon glyphicon-equalizer"> Categories</span>
-                      </a>
-                    </li>
-                    {% if user.is_staff %}
-                      <li>
-                        <a href={% url "admin:index" %}>
-                          <span class="glyphicon glyphicon-king"> Admin</span>
-                        </a>
-                      </li>
-                    {% endif %}
-                  </ul>
-                {% endif %}
                 <ul class="nav navbar-nav navbar-right">
                   {% if authenticated %}
+                    {% if not user.email_confirmed %}
+                      <li><a id="unconfirmed-email" href="#">
+                        <span style="color:yellow !important" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true">
+                        </span>
+                      </a></li>
+                    {% endif %}
                     <li class="dropdown">
                       <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                          role="button" aria-haspopup="true" aria-expanded="false">
                          {{ user.get_full_name|default:"User"}} ({{user.email}})
                          <span class="caret"></span>
                       </a>
-                      <ul class="dropdown-menu">
+                      <ul class="dropdown-menu bs-blue-background">
                         <li><a href="{% url 'password_change' %}"> Change Password</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="{% url 'auth_logout' %}"> Logout</a></li>
@@ -82,7 +74,7 @@
             </div><!-- /.container-fluid -->
           </nav>
 
-          <div class="container">
+          <div class="container" style="margin-bottom:30px;">
             <div class="row">
               {% block header %}
               {% endblock %}
@@ -91,7 +83,7 @@
             {% block messages %}
               <div class="row">
                 <div class="col-sm-2"></div>
-                 <div id="messages" class="col-sm-8" style="margin: 8px;">
+                 <div id="messages" class="col-sm-8" style="margin: 8px;text-align:center;">
                    {% bootstrap_messages %}
                  </div>
                  <div class="col-sm-2"></div>
@@ -110,7 +102,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h2 class="modal-title">Login</h2>
+                <h1 class="modal-title">Login</h1>
               </div>
               <form id="login-form" action="" role="form" method="post">
                 <div id="login-feedback" style="margin: 10px; text-align: center;"></div>
@@ -138,6 +130,15 @@
       {% if not authenticated %}
         <script src="{% static "core/js/login.js" %}"></script>
       {% endif %}
+
+      <script>
+          $('#unconfirmed-email').click(function(e) {
+              e.preventDefault();
+              alert("Your email has not been confirmed. Please follow the " +
+                    "instructions sent to your email address to confirm " +
+                    "your email.");
+          });
+      </script>
       {% block scripts %}
       {% endblock %}
     {% endwith %}

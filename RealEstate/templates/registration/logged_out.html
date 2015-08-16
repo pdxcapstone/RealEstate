@@ -15,8 +15,8 @@
 
 {% block header %}
   <div class="col-sm-2"></div>
-  <div class="col-sm-8">
-    <h2><strong>Thank you for using {{ app_name }}</strong></h2>
+  <div class="col-sm-8 header">
+    <h1><strong>Thank you for using {{ app_name }}</strong></h1>
   </div>
   <div class="col-sm-2"></div>
 {% endblock header %}
@@ -24,10 +24,17 @@
 {% block body %}
   <div class="row">
     <div class="col-sm-2"></div>
-    <div class="col-sm-8" >
-      <a href="#" data-toggle="modal" data-target="#modal-login"><strong>Click here</strong></a>
-      to log back into the app.
+    <div class="col-sm-8 header" >
+      Redirecting...
     </div>
     <div class="col-sm-2"></div>
   </div>
 {% endblock %}
+
+{% block scripts %}
+  <script>
+      setTimeout(function() {
+          window.location = '/';
+      }, 3000);
+  </script>
+{% endblock scripts %}

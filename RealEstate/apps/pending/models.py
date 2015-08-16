@@ -50,6 +50,10 @@ class PendingCouple(BaseModel):
             return couples.first()
         return None
 
+    def emails(self):
+        return ','.join(
+            self.pendinghomebuyer_set.values_list('email', flat=True))
+
     @property
     def registered(self):
         """
@@ -74,7 +78,7 @@ class PendingHomebuyer(BaseModel):
     _HOMEBUYER_INVITE_MESSAGE = """
         Hello {name},
 
-        You have been invited to {app_name}.
+        You have been invited to {app_name}!
         Register at the following link:
             {signup_link}
 

@@ -1,14 +1,14 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
 
-{% block title %}
-  Login
+{% block override_title %}
+  <title>{{ app_name }}</title>
 {% endblock %}
 
 {% block header %}
   <div class="col-sm-2"></div>
   <div class="col-sm-8">
-    <h2><strong>Sign up as a Realtor</strong></h2>
+    <h1><strong>Sign up as a Realtor</strong></h1>
   </div>
   <div class="col-sm-2"></div>
 {% endblock header %}
@@ -29,7 +29,7 @@
           {% csrf_token %}
           {% bootstrap_form signup_form %}
           <div class="pull-right login-margin">
-				  <button class="btn btn-lr btn-primary" id="regForm" type="submit">Register</button>
+            <button class="btn btn-lr btn-primary" id="regForm" type="submit">Register</button>
           </div>
         </form>
       </div>

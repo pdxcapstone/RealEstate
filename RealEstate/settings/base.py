@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'core.User'
 
-APP_NAME = 'Real Estate App'
+APP_NAME = 'Homezzo'
 
 PASSWORD_COMMON_SEQUENCES = []
 
