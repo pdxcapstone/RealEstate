@@ -12,15 +12,16 @@ from RealEstate.apps.core.models import Category, House, User
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
-class AddCategoryForm(forms.ModelForm):
+class AddCategoryForm(forms.Form):
+    choices = []
+    for key, value in models._CATEGORIES.items():
+        choices.append((key, value['summary']))
     optional_categories = forms.MultipleChoiceField(required=False, label='',
-        widget=forms.CheckboxSelectMultiple, choices=models._OPTIONAL_CATEGORIES)
-
+        widget=forms.CheckboxSelectMultiple, choices=choices)
+    summary = forms.CharField(max_length=128, required=False, label="Summary")
+    description = forms.CharField(required=False, label="Description",
+                                   widget=forms.Textarea)
     
-    class Meta:
-        model = Category
-        fields = ('summary', 'description')
-
 
 class EditCategoryForm(forms.ModelForm):
     id = forms.CharField(widget=forms.HiddenInput())

@@ -80,17 +80,6 @@ _DEFAULT_CATEGORIES = [
     _CATEGORIES['mortgage']
 ]
 
-_OPTIONAL_CATEGORIES = (
-    ('category1', 'Category 1'),
-    ('category2', 'Category 2'),
-    ('category3', 'Category 3'),
-    ('category4', 'Category 4'),
-    ('category5', 'Category 5'),
-    ('category6', 'Category 6'),
-    ('category7', 'Category 7'),
-    ('category8', 'Category 8'),
-    ('category9', 'Category 9')
-)
 
 
 @receiver(models.signals.post_save)

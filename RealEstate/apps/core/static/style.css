@@ -72,17 +72,28 @@ button.close{
 .rating-col {
 	min-width: 500px;
 }
-.summary-col{ 
-	min-width: 150px; 
+.summary-col{
+	min-width: 150px;
 }
-.tooltip-main.top.in { 
-	z-index:1 !important; 
+.tooltip-main.top.in {
+	z-index:1 !important;
 }
-.close { 
-	z-index: 3000 !important; 
+.close {
+	z-index: 3000 !important;
 }
 #catRating-out{
 	padding-left:10%
+}
+
+.categoryBtn {
+    padding: 10px 30px;
+    margin-left:-5px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.categoryBtn:hover {
+    background-color: #ddd;
 }
 
 /*realtorHome */
@@ -123,7 +134,7 @@ a.mail {
     color:#e4e4e4;
 }
 .login-text{
-	margin-top:50px; 
+	margin-top:50px;
 	margin-left:15px;
 	font-style: bold;
 	color:#e4e4e4;
@@ -132,7 +143,7 @@ a.mail {
 	margin-bottom:20px;
 }
 .create-text{
-	margin-top:100px; 
+	margin-top:100px;
 	text-align: center;
 	color:#e4e4e4;
 }
@@ -168,7 +179,7 @@ a.mail {
 		background-color:transparent !important;
 }
 #bg-img {
-  background: url(images/homepage_house.jpg) no-repeat center center fixed; 
+  background: url(images/homepage_house.jpg) no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;

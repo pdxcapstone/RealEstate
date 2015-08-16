@@ -52,7 +52,7 @@
   {% endfor %}
 </ul>
 <center>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
+    <button type="button" id="addCategoryBtn" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
 </center>
 
 <!-- Add Category Modal -->
@@ -66,7 +66,17 @@
             <div class="col-md-6">
               <h2 style="margin-bottom: 30px;">Select a few categories... </h2>
               <div style="padding-left:20px;">
-              {% bootstrap_field form.optional_categories %}
+                <div class="row">
+                    {% for checkbox in form.optional_categories %}
+                    <div class="col-md-6">
+                        <button type="button" class="btn categoryBtn" onclick="">{{checkbox}}</button>
+
+                        
+                    </div>
+                    {% endfor %}
+                </div>
+            
+              <!--{% bootstrap_field form.optional_categories %}-->
               </div>
             </div>
             <div class="col-md-6" style="padding-left:50px; border-left: 1px solid #ddd;">
@@ -75,7 +85,7 @@
               {% bootstrap_field form.description %}
               {% csrf_token %}
             </div>
-          </div>          
+          </div>
           <center>
             {% buttons submit='Save Category' %}{% endbuttons %}
           </center>
@@ -167,5 +177,23 @@ $(window).on("resize", function () {
     $(".rating-col").css("min-width", "500px");
   }
 }).resize();
+
+$( "#addCategoryBtn" ).click(function(){
+    $.ajax({
+        type: "POST",
+        data: {
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+            type: "category"
+        },
+        success: function(data){
+            for (var i in data['category']) {
+                $("input[value="+data['category'][i]+"]").parent().parent().parent().css("display", "none");
+            }
+        }
+    });
+});
+
+$("input[type=checkbox]").hide()
+
 </script>
 {% endblock %}

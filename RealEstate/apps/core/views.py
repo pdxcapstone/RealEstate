@@ -192,7 +192,11 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
-
+        print categories
+        choices = []
+        for key, value in models._CATEGORIES.items():
+            choices.append((key, value["summary"]))
+        
         context = {
             'weights': weighted,
             'form': AddCategoryForm(),
@@ -213,6 +217,12 @@ class CategoryView(BaseView):
 
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
+            if request.POST['type'] == 'category':
+                categories = Category.objects.filter(couple=couple)
+                return HttpResponse(json.dumps({'category':
+                    [category.summary.encode('UTF-8').lower() for category in categories]}),
+                    content_type="application/json")
+            
             id = request.POST['id']
             category = Category.objects.get(id=id)
 
@@ -232,6 +242,7 @@ class CategoryView(BaseView):
                 return HttpResponse(json.dumps({"id": id, "name": name}),
                                     content_type="application/json")
 
+                    
         # Creates or updates a category
         else:
             summary = request.POST["summary"]
@@ -258,7 +269,6 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            
             elif len(request.POST.getlist("optional_categories")) > 0:
                 for category in request.POST.getlist("optional_categories"):
                     if Category.objects.filter(
@@ -268,18 +278,19 @@ class CategoryView(BaseView):
                         Category.objects.create(couple=couple,
                                                 summary=models._CATEGORIES[category]["summary"],
                                                 description=models._CATEGORIES[category]["description"])
-                if Category.objects.filter(
-                        couple=couple, summary=summary).exists():
-                    error = (u"Category '{summary}' already exists"
-                             .format(summary=summary))
-                    messages.error(request, error)
-                else:
-                    Category.objects.create(couple=couple,
-                                            summary=summary,
-                                            description=description)
-                    messages.success(
-                        request,
-                        u"Category '{summary}' added".format(summary=summary))
+                if summary != "":
+                    if Category.objects.filter(
+                            couple=couple, summary=summary).exists():
+                        error = (u"Category '{summary}' already exists"
+                                 .format(summary=summary))
+                        messages.error(request, error)
+                    else:
+                        Category.objects.create(couple=couple,
+                                                summary=summary,
+                                                description=description)
+                        messages.success(
+                            request,
+                            u"Category '{summary}' added".format(summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
