@@ -25,8 +25,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor,
-                                         User)
+                                         Grade, House, Realtor, User)
 from RealEstate.apps.core import models
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
@@ -193,11 +192,10 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
-        print categories
         choices = []
         for key, value in models._CATEGORIES.items():
             choices.append((key, value["summary"]))
-        
+
         context = {
             'weights': weighted,
             'form': AddCategoryForm(),
@@ -220,10 +218,12 @@ class CategoryView(BaseView):
         if request.is_ajax():
             if request.POST['type'] == 'category':
                 categories = Category.objects.filter(couple=couple)
-                return HttpResponse(json.dumps({'category':
-                    [category.summary.encode('UTF-8').lower() for category in categories]}),
+                return HttpResponse(
+                    json.dumps({'category':
+                               [category.summary.encode('UTF-8').lower()
+                                for category in categories]}),
                     content_type="application/json")
-            
+
             id = request.POST['id']
             category = Category.objects.get(id=id)
 
@@ -243,12 +243,10 @@ class CategoryView(BaseView):
                 return HttpResponse(json.dumps({"id": id, "name": name}),
                                     content_type="application/json")
 
-                    
         # Creates or updates a category
         else:
             summary = request.POST["summary"]
             description = request.POST["description"]
-            print "summary: " + summary
             # Updates a category
             if "id" in request.POST:
                 id_category = get_object_or_404(
@@ -272,18 +270,16 @@ class CategoryView(BaseView):
             # Creates a category
             else:
                 if len(request.POST.getlist("optional_categories")) > 0:
-                    print "1"
-                    for category in request.POST.getlist("optional_categories"):
+                    for c in request.POST.getlist("optional_categories"):
                         if Category.objects.filter(
-                            couple=couple, summary=summary).exists():
+                                couple=couple, summary=summary).exists():
                             continue
                         else:
-                            Category.objects.create(couple=couple,
-                                                    summary=models._CATEGORIES[category]["summary"],
-                                                    description=models._CATEGORIES[category]["description"])
-                    print "2"
+                            Category.objects.create(
+                                couple=couple,
+                                summary=models._CATEGORIES[c]["summary"],
+                                description=models._CATEGORIES[c]["description"])
                 if summary != "":
-                    print "HEY"
                     if Category.objects.filter(
                             couple=couple, summary=summary).exists():
                         error = (u"Category '{summary}' already exists"
@@ -295,7 +291,8 @@ class CategoryView(BaseView):
                                                 description=description)
                         messages.success(
                             request,
-                            u"Category '{summary}' added".format(summary=summary))
+                            u"Category '{summary}' added".format(
+                                summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)

@@ -16,12 +16,14 @@ class AddCategoryForm(forms.Form):
     choices = []
     for key, value in models._CATEGORIES.items():
         choices.append((key, value['summary']))
-    optional_categories = forms.MultipleChoiceField(required=False, label='',
-        widget=forms.CheckboxSelectMultiple, choices=choices)
+    optional_categories = forms.MultipleChoiceField(
+        required=False, label='',
+        widget=forms.CheckboxSelectMultiple,
+        choices=choices)
     summary = forms.CharField(max_length=128, required=False, label="Summary")
     description = forms.CharField(required=False, label="Description",
-                                   widget=forms.Textarea)
-    
+                                  widget=forms.Textarea)
+
 
 class AddCategoryFromEvalForm(forms.ModelForm):
     weight = forms.CharField(widget=forms.HiddenInput(), initial=3)
