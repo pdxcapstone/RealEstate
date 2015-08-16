@@ -48,6 +48,12 @@
               <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
                   {% if authenticated %}
+                    {% if not user.email_confirmed %}
+                      <li><a id="unconfirmed-email" href="#">
+                        <span style="color:yellow !important" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true">
+                        </span>
+                      </a></li>
+                    {% endif %}
                     <li class="dropdown">
                       <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                          role="button" aria-haspopup="true" aria-expanded="false">
@@ -124,6 +130,14 @@
       {% if not authenticated %}
         <script src="{% static "core/js/login.js" %}"></script>
       {% endif %}
+
+      <script>
+          $('#unconfirmed-email').click(function(e) {
+              e.preventDefault();
+              alert("Your email has not been confirmed. Please follow the " +
+                    "confirmation email link sent to your email address.");
+          });
+      </script>
       {% block scripts %}
       {% endblock %}
     {% endwith %}
