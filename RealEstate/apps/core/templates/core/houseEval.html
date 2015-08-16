@@ -2,14 +2,20 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
+{% block title %}
+  House Evaluation
+{% endblock %}
+
 {% block style %}
 <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
 
 {% block header %}
-  <div id="heading">
-    <h2><strong> Evaluation for {{house}}</strong></h2>
-    <h4><em>{{house.address}}</em></h4>
+  <div class="header" id="heading">
+    <h1><strong> Evaluation for {{house}}</strong></h1>
+    {% for line in house.address_lines %}
+      <span>{{ line }}</span><br>
+    {% endfor %}
   </div>
 {% endblock header %}
 
@@ -54,7 +60,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h2 class="modal-title">Add another thing you care about</h2>
+        <h1 class="modal-title">Add another thing you care about</h1>
       </div>
       <div class="modal-body">
         <form action="" role="form" method="post">

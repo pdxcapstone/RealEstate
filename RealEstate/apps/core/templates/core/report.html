@@ -1,6 +1,10 @@
 {% extends "core/base.html" %}
 {% load staticfiles %}
 
+{% block title %}
+  Report
+{% endblock %}
+
 {% block header %}
    <h2><strong>Report for {{ homebuyer1.full_name }} and {{ homebuyer2.full_name }}</strong></h2>
 {% endblock header %}
