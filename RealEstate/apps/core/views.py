@@ -248,7 +248,7 @@ class CategoryView(BaseView):
         else:
             summary = request.POST["summary"]
             description = request.POST["description"]
-
+            print "summary: " + summary
             # Updates a category
             if "id" in request.POST:
                 id_category = get_object_or_404(
@@ -270,16 +270,20 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            elif len(request.POST.getlist("optional_categories")) > 0:
-                for category in request.POST.getlist("optional_categories"):
-                    if Category.objects.filter(
-                        couple=couple, summary=summary).exists():
-                        continue
-                    else:
-                        Category.objects.create(couple=couple,
-                                                summary=models._CATEGORIES[category]["summary"],
-                                                description=models._CATEGORIES[category]["description"])
+            else:
+                if len(request.POST.getlist("optional_categories")) > 0:
+                    print "1"
+                    for category in request.POST.getlist("optional_categories"):
+                        if Category.objects.filter(
+                            couple=couple, summary=summary).exists():
+                            continue
+                        else:
+                            Category.objects.create(couple=couple,
+                                                    summary=models._CATEGORIES[category]["summary"],
+                                                    description=models._CATEGORIES[category]["description"])
+                    print "2"
                 if summary != "":
+                    print "HEY"
                     if Category.objects.filter(
                             couple=couple, summary=summary).exists():
                         error = (u"Category '{summary}' already exists"

@@ -134,14 +134,33 @@ button.close{
 }
 
 .categoryBtn {
-    padding: 10px 30px;
-    margin-left:-5px;
+    padding: 5px;
+    margin:10px 0px !important;
     background-color: #fff;
     border: 1px solid #ddd;
+    width: 100%;
+}
+
+.categoryBtn>label {
+    font-weight: 400;
+    font-size: 65% !important;
+    cursor: pointer;
 }
 
 .categoryBtn:hover {
-    background-color: #ddd;
+    background-color: #337ab7;
+}
+
+.categoryBtn:hover >label {
+    color: #fff;
+}
+
+.inner-category {
+    padding: 0 20px;
+}
+
+.category-header {
+    margin-bottom: 30px;
 }
 
 /*realtorHome */
