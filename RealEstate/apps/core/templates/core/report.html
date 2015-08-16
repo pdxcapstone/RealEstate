@@ -79,50 +79,32 @@
 
             <!--FINAL GRADE!!-->
             <div id="finalGrade" class="tab">
-                <h2>Category Data</h2>
-<<<<<<< HEAD
+                <h2>Total Score</h2>
                 <div class="row">
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <h2>Final Grade</h2>
-                            <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>
-                        </div>
+                    <div class="col-lg-4">
+                        <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>
                     </div>
                 </div>
             </div>
 
             <!--NUMBERS TAB!!-->
-{#            <div id="numbers" class="tab-content">#}
-{#                <h3>NUMBERS</h3>#}
-{#                <p>For the nerd within. Read though all the data in its raw, numeric format.</p>#}
-{##}
-{#                <h2>Weighting</h2>#}
-{#                {% for category, weight1, weight2 in categoryImportance %}#}
-{#                    <h4>{{category}}</h4>#}
-{#                    <h5>{{weight1}} | {{weight2}}</h5>#}
-{#                {% endfor %}#}
-{##}
-{#                <h2>Homebuyer Pie Chart Data</h2>#}
-{#                {% for homebuyer, weights in homebuyerPies %}#}
-{#                    <h4>{{homebuyer}}</h4>#}
-{#                    <h5>{{weights}}</h5>#}
-{#                {% endfor %}#}
-{##}
-{#                <h2>Category Data</h2>#}
-{#                {% for category, homes in categoryData %}#}
-{#                    <h4>{{category}}</h4>#}
-{#                    {% for home, score in homes %}#}
-{#                    <h5>{{home}} --> {{score}}</h5>#}
-{#                    {%  endfor %}#}
-{#                {% endfor %}#}
-{##}
-{#                <h2>Total Score</h2>#}
-{#                {% for key, value in totalScore.items %}#}
-{#                    <h4>{{key}}</h4>#}
-{#                    {{value}}#}
-{#                {% endfor %}#}
-{#            </div>#}
-=======
+            <div id="numbers" class="tab-content">
+                <h3>NUMBERS</h3>
+                <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
+
+                <h2>Weighting</h2>
+                {% for category, weight1, weight2 in categoryImportance %}
+                    <h4>{{category}}</h4>
+                    <h5>{{weight1}} | {{weight2}}</h5>
+                {% endfor %}
+
+                <h2>Homebuyer Pie Chart Data</h2>
+                {% for homebuyer, weights in homebuyerPies %}
+                    <h4>{{homebuyer}}</h4>
+                    <h5>{{weights}}</h5>
+                {% endfor %}
+
+                <h2>Category Data</h2>
                 {% for category, homes in categoryData %}
                     <h4>{{category}}</h4>
                     {% for home, score in homes %}
@@ -136,13 +118,6 @@
                     {{value}}
                 {% endfor %}
             </div>
-            <br>
-            <div class="row">
-                <div class="col-lg-4">
-                    <h2>Final Grade</h2>
-                    <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>  
-                </div>
->>>>>>> f542fb8e994de6c804da99ee7853ba797ddc58b5
         </div>
     </div>
 {% endblock body %}
@@ -225,8 +200,6 @@
     };
     {% endfor %}
 
-
-    legend(document.getElementById("barLegend"), myBarChart);
     {% for category, houses in categoryData %}
         var {{category}}brx = document.getElementById("{{category}}bar").getContext("2d");
         var {{category}}Chart = new Chart({{category}}brx).Bar({{category}}Data, {
@@ -248,20 +221,29 @@
 {#        {% endfor %}#}
     {% endfor %}
 
-    var gradeFinal = [
-        {% for home in totalScore %}
+    var finalLabel = [{% for home, score in totalScore.items %}'{{home}}'{% if not forloop.last %},{% endif %}{% endfor %}];
+    var finalData = [{% for home, score in totalScore.items %}{{score}}{% if not forloop.last %},{% endif %}{% endfor %}];
+    var fData = {
+        labels: finalLabel,
+        datasets: [
             {
-                score : '{{ totalScore[home] }}'
-            }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ]
+                label: "Average",
+                fillColor: "rgba(52, 152, 219,0.9)",
+                strokeColor: "rgba(52, 152, 219,0.8)",
+                highlightFill: "rgba(52, 152, 219,1.0)",
+                highlightStroke: "rgba(217, 95, 73, 1)",
+                data: finalData
+            }
 
-    var ctx = document.getElementById("finalGradeChart").getContext("2d");
-    var finalGrade = new Chart(ctx).Bar(gradeFinal, {
+        ]
+    };
+
+    var finalbrx = document.getElementById("finalGradeChart").getContext("2d");
+    var finalGrade = new Chart(finalbrx).Bar(fData, {
         barShowStroke: false,
         scaleShowGridLines: false,
         barValueSpacing : 20,
-        showTooltips: false,
+        showTooltips: false
     });
 
 </script>
