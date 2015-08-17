@@ -48,19 +48,19 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-	padding-right: 20px;
-	font-size: 100%;
-	color: rgb(40, 96, 144);
+    padding-right: 20px;
+    font-size: 100%;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .icon-leftpad {
     padding-left: 20px;
-	color: rgb(40, 96, 144);
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .ok {
     display: none;
-	color: green;
+    color: green;
 }
 
 .vcenter {

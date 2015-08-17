@@ -41,7 +41,6 @@
       {% for house in houses %}
         <li class="list-group-item" id="li_{{house.id}}">
           <div class="row home_row " id="row_{{house.id}}">
-            <!--<div class="row-con">-->
               <div class="col-sm-6 vcenter">
                 <h4>
                   {{house}}
@@ -60,8 +59,6 @@
                 <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
               </div>
             </div>
-            
-          <!--</div>-->
         </li>
       {% endfor %}
     </ul>
