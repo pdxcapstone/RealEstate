@@ -53,6 +53,11 @@ ul.list-group {
 	color: rgb(40, 96, 144);
     cursor: pointer;
 }
+.icon-leftpad {
+    padding-left: 20px;
+	color: rgb(40, 96, 144);
+    cursor: pointer;
+}
 .ok {
     display: none;
 	color: green;
