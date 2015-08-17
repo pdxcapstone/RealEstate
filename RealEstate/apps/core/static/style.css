@@ -48,21 +48,16 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-	display:none;
-	padding-left: 20px;
-	font-size: 90%;
+	padding-right: 20px;
+	font-size: 100%;
+	color: rgb(40, 96, 144);
+    cursor: pointer;
 }
 .ok {
+    display: none;
 	color: green;
 }
-.delete {
-    color: #A94431;
-    cursor: pointer;
-}
-.edit {
-    color: #31708f;
-    cursor: pointer;
-}
+
 .vcenter {
 	display: inline-block;
 	vertical-align: middle;
@@ -139,6 +134,7 @@ button.close{
     background-color: #fff;
     border: 1px solid #ddd;
     width: 100%;
+    overflow:hidden;
 }
 
 .categoryBtn>label {
