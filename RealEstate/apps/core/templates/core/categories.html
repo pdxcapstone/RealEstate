@@ -29,9 +29,7 @@
         <div id="row_{{category.id}}" class="row category_row ">
           <!-- Category Summary -->
           <div class="col-md-4 vcenter summary-col">
-            <h4>{{category.summary}}
-              <span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
-            </h4>
+            <h4 id='update_{{category.id}}'>{{category.summary}}</h4>
             {% if category.description %}
               <p>{{ category.description }}</p>
             {% endif %}
@@ -144,6 +142,7 @@
 
 {% block scripts %}
 <script src="{% static "slide.min.js" %}"></script>
+<script src="{% static "jquery.color.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
 <script src="{% static "base.js" %}"></script>
 

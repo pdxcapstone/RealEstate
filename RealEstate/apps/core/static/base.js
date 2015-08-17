@@ -69,26 +69,26 @@ function deleteData(deleteID) {
 
 // Post slider data.
 function slideChange (slideEvt) {
-	var timer;
-	clearTimeout(timer);
-	var id = $(this).attr("id").toString().replace(/category_/i, "");
-	$("#save-status").text("saving...").css("color", "#888");
-	$.ajax({
-		type: "POST",
-		data: {
-			csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
-			id: id,
-			value: slideEvt.value.newValue,
-			type: "update"
-		},
-		success: function(data) {
-			timer = setTimeout(function(){
-                $("#update_"+id).stop().show();
-                $("#update_"+id).fadeOut(2000);
+    var timer;
+    clearTimeout(timer);
+    var id = $(this).attr("id").toString().replace(/category_/i, "");
+    $("#save-status").text("saving...").css("color", "#888");
+    $.ajax({
+        type: "POST",
+        data: {
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+            id: id,
+            value: slideEvt.value.newValue,
+            type: "update"
+        },
+        success: function(data) {
+            timer = setTimeout(function(){
+                $("#update_"+id).parent().parent().parent().css("background-color", "rgba(0, 255, 0,0.5)");
                 $("#save-status").text("All changes saved.").show().css("color", "#333");
-			}, 1500);
-		}
-	});
+                $("#update_"+id).parent().parent().parent().animate({backgroundColor: "#fff"}, 3000);
+            }, 1500);
+        }
+    });
 };
 
 
