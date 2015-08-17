@@ -6,21 +6,21 @@
 {% endblock %}
 
 {% block header %}
-   <h2><strong>Report for {{ homebuyer1.full_name }} and {{ homebuyer2.full_name }}</strong></h2>
+   <h1><strong>Report for {{ homebuyer1.full_name }} and {{ homebuyer2.full_name }}</strong></h1>
 {% endblock header %}
 
 {% block body %}
 
     <div class="container">
         <div class="tabs">
-{#            <ul class="tab-links">#}
-{#                <li class="active"><a href="#catImport">Category Importance</a></li>#}
-{#                <li><a href="#weighting">Weighting</a></li>#}
-{#                <li><a href="#categoriesPerHouse">Categories Per House</a></li>#}
-{#                <li><a href="#housesPerCat">Houses Per Category</a></li>#}
-{#                <li><a href="#finalGrade">Final Grade</a></li>#}
-{#              <li><a data-toggle="tab6" href="#numbers">Numbers</a></li>#}
-{#            </ul>#}
+            <!--<ul class="tab-links">-->
+                <!--<li class="active"><a href="#catImport">Category Importance</a></li>-->
+                <!--<li><a href="#weighting">Weighting</a></li>-->
+                <!--<li><a href="#categoriesPerHouse">Categories Per House</a></li>-->
+                <!--<li><a href="#housesPerCat">Houses Per Category</a></li>-->
+                <!--<li><a href="#finalGrade">Final Grade</a></li>-->
+                <!--<li><a data-toggle="tab6" href="#numbers">Numbers</a></li>-->
+            <!--</ul>-->
         </div>
 
         <div class="tab-content">
@@ -57,9 +57,13 @@
             <!--CATEGORIES PER HOUSE!!-->
             <div id="categoriesPerHouse" class="tab">
                 <h2>House Data</h2>
+                {% for house, category in houseData %}
                 <div class="row">
-
+                    <h5>{{ house }}</h5>
+                    <div class="col-lg-10"><canvas id="{{house}}bar" style="height:400px; width: 100%"></canvas></div>
                 </div>
+                {% endfor %}
+
             </div>
 
             <!--HOUSES PER CATEGORY!!-->
@@ -88,10 +92,10 @@
             </div>
 
             <!--NUMBERS TAB!!-->
-            <div id="numbers" class="tab-content">
+            <div id="numbers" class="tab">
                 <h3>NUMBERS</h3>
                 <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
-
+                
                 <h2>Weighting</h2>
                 {% for category, weight1, weight2 in categoryImportance %}
                     <h4>{{category}}</h4>
@@ -123,8 +127,8 @@
 {% endblock body %}
 
 {% block scripts %}
-<script src="{% static "Chart.min.js" %}"></script>
-<script src="{% static "legend.js" %}"></script>
+<script src="{% static 'Chart.min.js' %}"></script>
+<script src="{% static 'legend.js' %}"></script>
 <script>
     var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
     var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
@@ -152,6 +156,11 @@
     };
     var ctx = document.getElementById("myChart").getContext("2d");
     var myBarChart = new Chart(ctx).Bar(data, {
+        scaleOverride : true,
+        scaleSteps : 10,
+        scaleStepWidth : 1,
+        scaleStartValue : 0,
+
         barShowStroke: false,
         scaleShowGridLines: false,
         barValueSpacing : 20,
@@ -210,7 +219,7 @@
 
             barShowStroke: false,
             scaleShowGridLines: false,
-            barValueSpacing : 20,
+            barValueSpacing : 5,
             showTooltips: false
         });
 
@@ -219,6 +228,38 @@
             {{category}}Chart.datasets[0].bars[1].fillColor = "{{ pieAve.1.0 }}"; //bar 2
             {{category}}Chart.update();
 {#        {% endfor %}#}
+    {% endfor %}
+
+    {% for house, categories in houseData %}
+        var {{house}}Score = [{% for category, score, color in categories %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
+        var {{house}}Data = {
+        labels: catLabel,
+        datasets: [
+            {
+                label: "{{ house }}",
+                fillColor: "rgba(217, 95, 73, 0.8)",
+                strokeColor: "rgba(217, 95, 73, 0.8)",
+                highlightFill: "{{categories.0.2}}",
+                highlightStroke: "rgba(217, 95, 73, 1)",
+                data: {{house}}Score
+            }
+        ]
+    };
+    {% endfor %}
+
+    {% for house, categories in houseData %}
+        var {{house}}brx = document.getElementById("{{house}}bar").getContext("2d");
+        var {{house}}Chart = new Chart({{house}}brx).Bar({{house}}Data, {
+            scaleOverride : true,
+            scaleSteps : 10,
+            scaleStepWidth : 1,
+            scaleStartValue : 0,
+
+            barShowStroke: false,
+            scaleShowGridLines: false,
+            barValueSpacing : 20,
+            showTooltips: false
+        });
     {% endfor %}
 
     var finalLabel = [{% for home, score in totalScore.items %}'{{home}}'{% if not forloop.last %},{% endif %}{% endfor %}];

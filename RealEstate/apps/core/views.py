@@ -674,12 +674,14 @@ class ReportView(BaseView):
     def get(self, request, *args, **kwargs):
         first = 0
         second = 1
-        largestScore = 0.1
+        largestScore = 0.01
         couple_id = int(kwargs.get('couple_id', 0))
         couple = Couple.objects.get(id=couple_id)
         homebuyers = couple.homebuyer_set.all()
         data1 = homebuyers[first].report_data
         data2 = homebuyers[second].report_data
+        data3 = homebuyers[first].home_report_data
+        data4 = homebuyers[second].home_report_data
         colors = ["#800080", "#339999", "#666600", "#99cc33", "#ffcc00", "#ff3300", "#c00000"]
         
         categoryImportance = []
@@ -690,7 +692,7 @@ class ReportView(BaseView):
 
         weightsAve = []
         weights1 = []
-        weights2=  []
+        weights2 = []
         index1 = 0
         index2 = 0
         for category in data1:
@@ -715,12 +717,25 @@ class ReportView(BaseView):
                 scores.append((house, averageScore, colors[index1]))
                 index1 = (index1 + 1) % len(colors)
 
-
             for houses, score, color in scores:
                 if score > largestScore:
                     largestScore = score
 
             categoryData.append((category, scores))
+
+        houseData = []
+        for houses in data3:
+            weight3 = float(data3[houses]["weight"]) / homebuyers[first].category_weight_total
+            weight4 = float(data3[houses]["weight"]) / homebuyers[second].category_weight_total
+            scores = []
+            for category in data3[houses]["categories"]:
+                score3 = data3[houses]["categories"][category] * weight3
+                score4 = data4[houses]["categories"][category] * weight4
+                averageScore = (score3 + score4) / 2
+                scores.append((category, averageScore, colors[index1]))
+                index1 = (index1 + 1) % len(colors)
+
+            houseData.append((houses, scores))
 
         totalScore = {}
         for category, homes in categoryData:
@@ -736,6 +751,7 @@ class ReportView(BaseView):
             'categoryImportance': categoryImportance,
             'pieAve': weightsAve,
             'categoryData': categoryData,
+            'houseData': houseData,
             'totalScore': totalScore,
             'largestScore': largestScore
         }

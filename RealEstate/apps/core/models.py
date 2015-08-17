@@ -460,6 +460,35 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
             data[summary]['houses'][house_nickname] = grade.score
         return data
 
+    @property
+    def home_report_data(self):
+        """
+        Dumps out the homebuyer statistics into a dictionary.  The top level is
+        keyed by Category summaries, meaning an empty dict would be returned
+        for a Homebuyer with no related Category instances.  For each Category,
+        a weight property is given, along with a nested dict of Houses with
+        corresponding grades for that Category/House.
+        """
+        category_weights = self.categoryweight_set.select_related('category')
+        grades = self.grade_set.select_related('house', 'category')
+        data = {
+            grade.house.nickname:
+            {
+                'weight': 0,
+                'categories': {}
+            }
+            for grade in grades
+        }
+        for grade in grades:
+            summary = grade.category.summary
+            house_nickname = grade.house.nickname
+            for category_weight in category_weights:
+                if category_weight.category.summary == summary:
+                    data[house_nickname]['weight'] = category_weight.weight
+            data[house_nickname]['categories'][summary] = grade.score
+
+        return data
+
     def report_url(self):
         return self.couple.report_url()
 
