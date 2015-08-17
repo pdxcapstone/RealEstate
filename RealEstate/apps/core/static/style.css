@@ -207,11 +207,26 @@ a.mail {
 		background-color:transparent !important;
 }
 #bg-img {
-  background: url(images/homepage_house.jpg) no-repeat center center fixed;
+  background: url(images/homepage_house.jpg) no-repeat center center;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
   width:inherit;
-  height:100%;
+  height:45em;
+}
+.tagline {
+	color: #fff;
+	text-align: center;
+	font-size: 400%;
+	text-shadow: 1px 1px #444;
+	margin-bottom: 100px;
+}
+
+.registerbutton{
+    padding: 20px 50px;
+    font-size: 150%;
+}
+.firrstheader{
+	margin-top: 200px; 
 }

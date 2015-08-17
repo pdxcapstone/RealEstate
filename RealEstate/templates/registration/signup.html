@@ -6,17 +6,17 @@
 {% endblock %}
 
 {% block header %}
-  <div class="col-sm-2"></div>
-  <div class="col-sm-8">
-    <h2><strong>Sign up as a Realtor</strong></h2>
-  </div>
-  <div class="col-sm-2"></div>
+  
+
 {% endblock header %}
 
 {% block main %}
-  <div id="bg-img" class="img-responsive">vv
+  <div id="bg-img" class="img-responsive">
+
     {{ block.super }}
+
   </div>
+    <h2 class="firrstheader"> Header</h2>
 {% endblock main %}
 
 {% block body %}
@@ -24,21 +24,21 @@
     <div class="col-sm-2"></div>
     <div class="col-sm-8">
       {% bootstrap_messages %}
+      <div class="col-sm-2"></div>
+    <h1 class="tagline">We make finding the right home easy.</h1>
 
-     
-     <center>
-       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#SignupModal">Register</button>
+  <div class="col-sm-2"></div>
+      <center>
+       <button type="button" class="registerbutton btn btn-primary" data-toggle="modal" data-target="#SignupModal">Register</button>
       </center>
-
-      <div class="create-text">
+    <div class="create-text">
           ...or <a href="#" data-toggle="modal" data-target="#modal-login">Login</a>
           to an existing account
       </div>
     </div>
   </div>
 
-
-  <div id="SignupModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Signup" aria-hidden="true">
+<div id="SignupModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Signup" aria-hidden="true">
     <div class="modal-dialog">
         <!-- Modal content -->
         <div class="modal-content">
@@ -47,20 +47,14 @@
                 <h4 class = "modal-title">Welcome</h4>
             </div>
             <div class="modal-body">
-                
-
-              <form class="login-form" action="" role="form" method="post">
-          {% csrf_token %}
-          {% bootstrap_form signup_form %}
-           <center>
-              {% buttons submit='Registar' %}{% endbuttons %}
-            </center>
-        </form>
-
-
-
-
-            </div>
+                <form class="login-form" action="" role="form" method="post">
+              {% csrf_token %}
+              {% bootstrap_form signup_form %}
+               <center>
+                  {% buttons submit='Registar' %}{% endbuttons %}
+                </center>
+            </form>
+          </div>
         </div>
     </div>
     </div>
