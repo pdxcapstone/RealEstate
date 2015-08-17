@@ -26,6 +26,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, House, Realtor, User)
+from RealEstate.apps.core import models
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import InviteHomebuyerForm
@@ -191,6 +192,9 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
+        choices = []
+        for key, value in models._CATEGORIES.items():
+            choices.append((key, value["summary"]))
 
         context = {
             'weights': weighted,
@@ -212,6 +216,14 @@ class CategoryView(BaseView):
 
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
+            if request.POST['type'] == 'category':
+                categories = Category.objects.filter(couple=couple)
+                return HttpResponse(
+                    json.dumps({'category':
+                               [category.summary.encode('UTF-8').lower()
+                                for category in categories]}),
+                    content_type="application/json")
+
             id = request.POST['id']
             category = Category.objects.get(id=id)
 
@@ -235,7 +247,6 @@ class CategoryView(BaseView):
         else:
             summary = request.POST["summary"]
             description = request.POST["description"]
-
             # Updates a category
             if "id" in request.POST:
                 id_category = get_object_or_404(
@@ -257,18 +268,44 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            elif Category.objects.filter(
-                    couple=couple, summary=summary).exists():
-                error = (u"Category '{summary}' already exists"
-                         .format(summary=summary))
-                messages.error(request, error)
             else:
-                Category.objects.create(couple=couple,
-                                        summary=summary,
-                                        description=description)
-                messages.success(
-                    request,
-                    u"Category '{summary}' added".format(summary=summary))
+                optNum = len(request.POST.getlist("optional_categories"))
+                if optNum > 0:
+                    for c in request.POST.getlist("optional_categories"):
+                        if Category.objects.filter(
+                                couple=couple, summary=summary).exists():
+                            continue
+                        else:
+                            optSum=models._CATEGORIES[c]["summary"]
+                            Category.objects.create(
+                                couple=couple,
+                                summary=optSum,
+                                description=models._CATEGORIES[c]["description"])
+                            if optNum == 1:
+                                messages.success(
+                                    request,
+                                    u"Category '{summary}' added".format(
+                                        summary=optSum))
+                    if optNum > 1:
+                        messages.success(
+                            request,
+                            u"{optNum} predefined categories added.".format(
+                                optNum=optNum))
+
+                if summary != "":
+                    if Category.objects.filter(
+                            couple=couple, summary=summary).exists():
+                        error = (u"Category '{summary}' already exists"
+                                 .format(summary=summary))
+                        messages.error(request, error)
+                    else:
+                        Category.objects.create(couple=couple,
+                                                summary=summary,
+                                                description=description)
+                        messages.success(
+                            request,
+                            u"Category '{summary}' added".format(
+                                summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
