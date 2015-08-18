@@ -131,174 +131,177 @@
 {% endblock body %}
 
 {% block scripts %}
-<script src="{% static 'Chart.min.js' %}"></script>
-<script src="{% static 'legend.js' %}"></script>
-<script>
-    var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
-    var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
-    var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
-    var data = {
-        labels: catLabel,
-        datasets: [
-            {
-                label: "{{ homebuyer1.full_name }}",
-                fillColor: "rgba(155, 206, 125, 0.9)",
-                strokeColor: "rgba(155, 206, 125, 0.8)",
-                highlightFill: "rgba(155, 206, 125, 1.0)",
-                highlightStroke: "rgba(217, 95, 73, 1)",
-                data: data1
-            },
-            {
-                label: "{{ homebuyer2.full_name }}",
-                fillColor: "rgba(99, 155, 241, 0.9)",
-                strokeColor: "rgba(99, 155, 241, 0.8)",
-                highlightFill: "rgba(99, 155, 241, 1.0)",
-                highlightStroke: "rgba(237, 194, 51, 1)",
-                data: data2
-            }
-        ]
-    };
-    var ctx = document.getElementById("myChart").getContext("2d");
-    var myBarChart = new Chart(ctx).Bar(data, {
-        scaleOverride : true,
-        scaleSteps : 10,
-        scaleStepWidth : 1,
-        scaleStartValue : 0,
+  <script src="{% static 'Chart.min.js' %}"></script>
+  <script src="{% static 'legend.js' %}"></script>
+  <script>
+      function encode(string) {
+          return btoa(string).replace(/=/g, '_');
+      }
 
-        barShowStroke: false,
-        scaleShowGridLines: false,
-        barValueSpacing : 20,
-        showTooltips: false,
-    });
-    legend(document.getElementById("barLegend"), myBarChart);
-    
-    var pie = [
-    {% for color, category, weight in pieAve %}
-        {
-            value : '{{weight}}',
-            color : '{{color}}',
-            label : '{{category}}'
-        }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-    ]
-    
-    var ctx = document.getElementById("PieChart").getContext("2d");
-    var pieChart = new Chart(ctx).Pie(pie,{
-        barShowStroke: false,
-        scaleShowGridLines: false,
-        barValueSpacing : 20,
-        showLabels: true
-    });
-    legend(document.getElementById("lineLegend"), pie);
-    
-    var houseLabel = [
-    {% for house, score, color in categoryData.0.1 %}
-        "{{house}}".substring(0, 10){% if not forloop.last %},{% endif %}
-    {% endfor %}
-    ]
+      var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data = {
+          labels: catLabel,
+          datasets: [
+              {
+                  label: "{{ homebuyer1.full_name }}",
+                  fillColor: "rgba(155, 206, 125, 0.9)",
+                  strokeColor: "rgba(155, 206, 125, 0.8)",
+                  highlightFill: "rgba(155, 206, 125, 1.0)",
+                  highlightStroke: "rgba(217, 95, 73, 1)",
+                  data: data1
+              },
+              {
+                  label: "{{ homebuyer2.full_name }}",
+                  fillColor: "rgba(99, 155, 241, 0.9)",
+                  strokeColor: "rgba(99, 155, 241, 0.8)",
+                  highlightFill: "rgba(99, 155, 241, 1.0)",
+                  highlightStroke: "rgba(237, 194, 51, 1)",
+                  data: data2
+              }
+          ]
+      };
+      var ctx = document.getElementById("myChart").getContext("2d");
+      var myBarChart = new Chart(ctx).Bar(data, {
+          scaleOverride : true,
+          scaleSteps : 10,
+          scaleStepWidth : 1,
+          scaleStartValue : 0,
 
-    {% for category, houses in categoryData %}
-        var {{category}}Score = [{% for house, score, color in houses %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
-        var {{category}}Data = {
-        labels: houseLabel,
-        datasets: [
-            {
-                label: "{{ category }}",
-                fillColor: "rgba(217, 95, 73, 0.8)",
-                strokeColor: "rgba(217, 95, 73, 0.8)",
-                highlightFill: "{{houses.0.2}}",
-                highlightStroke: "rgba(217, 95, 73, 1)",
-                data: {{category}}Score
-            }
-        ]
-    };
-    {% endfor %}
+          barShowStroke: false,
+          scaleShowGridLines: false,
+          barValueSpacing : 20,
+          showTooltips: false,
+      });
+      legend(document.getElementById("barLegend"), myBarChart);
 
-    {% for category, houses in categoryData %}
-        var {{category}}brx = document.getElementById("{{category}}bar").getContext("2d");
-        var {{category}}Chart = new Chart({{category}}brx).Bar({{category}}Data, {
-            scaleOverride : true,
-            scaleSteps : 1,
-            scaleStepWidth : 10,
-            scaleStartValue : 0,
+      var pie = [
+      {% for color, category, weight in pieAve %}
+          {
+              value : '{{weight}}',
+              color : '{{color}}',
+              label : '{{category}}'
+          }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+      ]
 
-            barShowStroke: false,
-            scaleShowGridLines: false,
-            barValueSpacing : 5,
-            showTooltips: false
-        });
+      var ctx = document.getElementById("PieChart").getContext("2d");
+      var pieChart = new Chart(ctx).Pie(pie,{
+          barShowStroke: false,
+          scaleShowGridLines: false,
+          barValueSpacing : 20,
+          showLabels: true
+      });
+      legend(document.getElementById("lineLegend"), pie);
 
-            {{category}}Chart.datasets[0].bars[0].fillColor = "{{ pieAve.0.0 }}"; //bar 1
-            {{category}}Chart.datasets[0].bars[1].fillColor = "{{ pieAve.1.0 }}"; //bar 2
-            {{category}}Chart.datasets[0].bars[2].fillColor = "{{ pieAve.2.0 }}"; //bar 3
-            {{category}}Chart.datasets[0].bars[3].fillColor = "{{ pieAve.3.0 }}"; //bar 4
-            {{category}}Chart.datasets[0].bars[4].fillColor = "{{ pieAve.4.0 }}"; //bar 5
-            {{category}}Chart.datasets[0].bars[5].fillColor = "{{ pieAve.5.0 }}"; //bar 6
-            {{category}}Chart.update();
+      var houseLabel = [
+      {% for house, score, color in categoryData.0.1 %}
+          "{{house}}".substring(0, 10){% if not forloop.last %},{% endif %}
+      {% endfor %}
+      ]
 
-    {% endfor %}
+      {% for category, houses in categoryData %}
+          var Score{{forloop.counter0}} = [{% for house, score, color in houses %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
+          var Data{{forloop.counter0}} = {
+          labels: houseLabel,
+          datasets: [
+              {
+                  label: "{{ category }}",
+                  fillColor: "rgba(217, 95, 73, 0.8)",
+                  strokeColor: "rgba(217, 95, 73, 0.8)",
+                  highlightFill: "{{houses.0.2}}",
+                  highlightStroke: "rgba(217, 95, 73, 1)",
+                  data: Score{{forloop.counter0}}
+              }
+          ]
+      };
+      {% endfor %}
 
-    {% for house, categories in houseData %}
-        var {{house}}Score = [{% for category, score, color in categories %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
-        var {{house}}Data = {
-        labels: catLabel,
-        datasets: [
-            {
-                label: "{{ house }}",
-                {% for h, s, c in categoryData.0.1 %}
-                    {% if h == house %}
-                        fillColor: "{{c}}",
-                    {% endif %}
-                {% endfor %}
-                strokeColor: "rgba(217, 95, 73, 0.8)",
-                highlightFill: "rgba(217, 95, 73, 1)",
-                highlightStroke: "rgba(217, 95, 73, 1)",
-                data: {{house}}Score
-            }
-        ]
-    };
-    {% endfor %}
+      {% for category, houses in categoryData %}
+          var brx{{forloop.counter0}} = document.getElementById("{{category}}bar").getContext("2d");
+          var Chart{{forloop.counter0}} = new Chart(brx{{forloop.counter0}}).Bar(Data{{forloop.counter0}}, {
+              scaleOverride : true,
+              scaleSteps : 1,
+              scaleStepWidth : 10,
+              scaleStartValue : 0,
 
-    {% for house, categories in houseData %}
-        var {{house}}brx = document.getElementById("{{house}}bar").getContext("2d");
-        var {{house}}Chart = new Chart({{house}}brx).Bar({{house}}Data, {
-            scaleOverride : true,
-            scaleSteps : 10,
-            scaleStepWidth : 1,
-            scaleStartValue : 0,
+              barShowStroke: false,
+              scaleShowGridLines: false,
+              barValueSpacing : 5,
+              showTooltips: false
+          });
 
-            barShowStroke: false,
-            scaleShowGridLines: false,
-            barValueSpacing : 20,
-            showTooltips: false
-        });
+          Chart{{forloop.counter0}}.datasets[0].bars[0].fillColor = "{{ pieAve.0.0 }}"; //bar 1
+          Chart{{forloop.counter0}}.datasets[0].bars[1].fillColor = "{{ pieAve.1.0 }}"; //bar 2
+          Chart{{forloop.counter0}}.datasets[0].bars[2].fillColor = "{{ pieAve.2.0 }}"; //bar 3
+          Chart{{forloop.counter0}}.datasets[0].bars[3].fillColor = "{{ pieAve.3.0 }}"; //bar 4
+          Chart{{forloop.counter0}}.datasets[0].bars[4].fillColor = "{{ pieAve.4.0 }}"; //bar 5
+          Chart{{forloop.counter0}}.datasets[0].bars[5].fillColor = "{{ pieAve.5.0 }}"; //bar 6
+          Chart{{forloop.counter0}}.update();
+      {% endfor %}
 
-    {% endfor %}
+      {% for house, categories in houseData %}
+          var houseScore{{forloop.counter0}} = [{% for category, score, color in categories %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
+          var houseData{{forloop.counter0}} = {
+          labels: catLabel,
+          datasets: [
+              {
+                  label: "{{ house }}",
+                  {% for h, s, c in categoryData.0.1 %}
+                      {% if h == house %}
+                          fillColor: "{{c}}",
+                      {% endif %}
+                  {% endfor %}
+                  strokeColor: "rgba(217, 95, 73, 0.8)",
+                  highlightFill: "rgba(217, 95, 73, 1)",
+                  highlightStroke: "rgba(217, 95, 73, 1)",
+                  data: houseScore{{forloop.counter0}}
+              }
+          ]
+      };
+      {% endfor %}
 
-    var finalLabel = [{% for home, score in totalScore.items %}'{{home}}'{% if not forloop.last %},{% endif %}{% endfor %}];
-    var finalData = [{% for home, score in totalScore.items %}{{score}}{% if not forloop.last %},{% endif %}{% endfor %}];
-    var fData = {
-        labels: finalLabel,
-        datasets: [
-            {
-                label: "Average",
-                fillColor: "rgba(52, 152, 219,0.9)",
-                strokeColor: "rgba(52, 152, 219,0.8)",
-                highlightFill: "rgba(52, 152, 219,1.0)",
-                highlightStroke: "rgba(217, 95, 73, 1)",
-                data: finalData
-            }
+      {% for house, categories in houseData %}
+          var houseBrx{{forloop.counter0}} = document.getElementById("{{house}}bar").getContext("2d");
+          var houseChart{{forloop.counter0}} = new Chart(houseBrx{{forloop.counter0}}).Bar(houseData{{forloop.counter0}}, {
+              scaleOverride : true,
+              scaleSteps : 10,
+              scaleStepWidth : 1,
+              scaleStartValue : 0,
 
-        ]
-    };
+              barShowStroke: false,
+              scaleShowGridLines: false,
+              barValueSpacing : 20,
+              showTooltips: false
+          });
 
-    var finalbrx = document.getElementById("finalGradeChart").getContext("2d");
-    var finalGrade = new Chart(finalbrx).Bar(fData, {
-        barShowStroke: false,
-        scaleShowGridLines: false,
-        barValueSpacing : 20,
-        showTooltips: false
-    });
+      {% endfor %}
 
-</script>
+      var finalLabel = [{% for home, score in totalScore.items %}'{{home}}'{% if not forloop.last %},{% endif %}{% endfor %}];
+      var finalData = [{% for home, score in totalScore.items %}{{score}}{% if not forloop.last %},{% endif %}{% endfor %}];
+      var fData = {
+          labels: finalLabel,
+          datasets: [
+              {
+                  label: "Average",
+                  fillColor: "rgba(52, 152, 219,0.9)",
+                  strokeColor: "rgba(52, 152, 219,0.8)",
+                  highlightFill: "rgba(52, 152, 219,1.0)",
+                  highlightStroke: "rgba(217, 95, 73, 1)",
+                  data: finalData
+              }
+
+          ]
+      };
+
+      var finalbrx = document.getElementById("finalGradeChart").getContext("2d");
+      var finalGrade = new Chart(finalbrx).Bar(fData, {
+          barShowStroke: false,
+          scaleShowGridLines: false,
+          barValueSpacing : 20,
+          showTooltips: false
+      });
+
+  </script>
 {% endblock %}

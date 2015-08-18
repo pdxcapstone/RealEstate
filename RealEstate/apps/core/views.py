@@ -26,6 +26,7 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
                                          Grade, House, Realtor, User)
+from RealEstate.apps.core import models
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
 from RealEstate.apps.pending.forms import InviteHomebuyerForm
@@ -191,6 +192,9 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
+        choices = []
+        for key, value in models._CATEGORIES.items():
+            choices.append((key, value["summary"]))
 
         context = {
             'weights': weighted,
@@ -212,6 +216,14 @@ class CategoryView(BaseView):
 
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
+            if request.POST['type'] == 'category':
+                categories = Category.objects.filter(couple=couple)
+                return HttpResponse(
+                    json.dumps({'category':
+                               [category.summary.encode('UTF-8').lower()
+                                for category in categories]}),
+                    content_type="application/json")
+
             id = request.POST['id']
             category = Category.objects.get(id=id)
 
@@ -235,7 +247,6 @@ class CategoryView(BaseView):
         else:
             summary = request.POST["summary"]
             description = request.POST["description"]
-
             # Updates a category
             if "id" in request.POST:
                 id_category = get_object_or_404(
@@ -257,18 +268,44 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            elif Category.objects.filter(
-                    couple=couple, summary=summary).exists():
-                error = (u"Category '{summary}' already exists"
-                         .format(summary=summary))
-                messages.error(request, error)
             else:
-                Category.objects.create(couple=couple,
-                                        summary=summary,
-                                        description=description)
-                messages.success(
-                    request,
-                    u"Category '{summary}' added".format(summary=summary))
+                optNum = len(request.POST.getlist("optional_categories"))
+                if optNum > 0:
+                    for c in request.POST.getlist("optional_categories"):
+                        if Category.objects.filter(
+                                couple=couple, summary=summary).exists():
+                            continue
+                        else:
+                            optSum=models._CATEGORIES[c]["summary"]
+                            Category.objects.create(
+                                couple=couple,
+                                summary=optSum,
+                                description=models._CATEGORIES[c]["description"])
+                            if optNum == 1:
+                                messages.success(
+                                    request,
+                                    u"Category '{summary}' added".format(
+                                        summary=optSum))
+                    if optNum > 1:
+                        messages.success(
+                            request,
+                            u"{optNum} predefined categories added.".format(
+                                optNum=optNum))
+
+                if summary != "":
+                    if Category.objects.filter(
+                            couple=couple, summary=summary).exists():
+                        error = (u"Category '{summary}' already exists"
+                                 .format(summary=summary))
+                        messages.error(request, error)
+                    else:
+                        Category.objects.create(couple=couple,
+                                                summary=summary,
+                                                description=description)
+                        messages.success(
+                            request,
+                            u"Category '{summary}' added".format(
+                                summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
@@ -661,6 +698,7 @@ class ReportView(BaseView):
     Homebuyer that is part of the Couple instance, and display the results.
     """
     template_name = 'core/report.html'
+    incomplete_template_name = 'core/incomplete_report.html'
 
     def _permission_check(self, request, role, *args, **kwargs):
         """
@@ -672,19 +710,22 @@ class ReportView(BaseView):
         return role.can_view_report_for_couple(couple_id)
 
     def get(self, request, *args, **kwargs):
+        couple_id = int(kwargs.get('couple_id', 0))
+        couple = Couple.objects.get(id=couple_id)
+        if not couple.registered:
+            return render(request, self.incomplete_template_name, {})
+
+        homebuyers = couple.homebuyer_set.all()
         first = 0
         second = 1
         largestScore = 0.01
-        couple_id = int(kwargs.get('couple_id', 0))
-        couple = Couple.objects.get(id=couple_id)
-        homebuyers = couple.homebuyer_set.all()
         data1 = homebuyers[first].report_data
         data2 = homebuyers[second].report_data
         data3 = homebuyers[first].home_report_data
         data4 = homebuyers[second].home_report_data
         colors = ["#286090", "#9BCE7D", "#639BF1", "#3D3C3A", "#98002F", "#B6A754", "#0193B7",
                   "#5F6024", "#856941", "#ED6639", "#AB3334", "#0FB493", "#262C3A", "#57102C"]
-        
+
         categoryImportance = []
         for category in data1:
             weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total

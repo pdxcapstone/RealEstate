@@ -27,9 +27,7 @@
 		<li class="list-group-item">
 			<div class="row">
 				<div class="col-sm-6 vcenter">
-					<h4>{{category.summary}}
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
-					</h4>
+					<h4 id='update_{{category.id}}'>{{category.summary}}</h4>
 					{% if category.description %}
 						<p>
 							{{ category.description }}
@@ -88,6 +86,7 @@
 
 {% block scripts %}
 <script src="{% static "slide.min.js" %}"></script>
+<script src="{% static "jquery.color.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
 <script src="{% static "base.js" %}"></script>
 

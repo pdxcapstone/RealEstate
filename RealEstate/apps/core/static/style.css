@@ -48,19 +48,14 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-	display:none;
-	padding-left: 20px;
-	font-size: 90%;
-}
-.ok {
-	color: green;
-}
-.delete {
-    color: #A94431;
+    padding-right: 20px;
+    font-size: 100%;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
-.edit {
-    color: #31708f;
+.icon-leftpad {
+    padding-left: 20px;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .vcenter {
@@ -131,6 +126,37 @@ button.close{
 }
 #catRating-out{
 	padding-left:10%
+}
+
+.categoryBtn {
+    padding: 5px;
+    margin:10px 0px !important;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    width: 100%;
+    overflow: hidden;
+}
+
+.categoryBtn>label {
+    font-weight: 400;
+    font-size: 65% !important;
+    cursor: pointer;
+}
+
+.categoryBtn:hover {
+    background-color: #337ab7;
+}
+
+.categoryBtn:hover >label {
+    color: #fff;
+}
+
+.inner-category {
+    padding: 0 20px;
+}
+
+.category-header {
+    margin-bottom: 30px;
 }
 
 /*realtorHome */
