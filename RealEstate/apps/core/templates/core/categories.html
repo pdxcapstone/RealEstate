@@ -26,7 +26,11 @@
     {% for category, weight in weights %}
       {{weight.category}}
       <li class="list-group-item" id="li_{{category.id}}">
-        <div id="row_{{category.id}}" class="row category_row ">
+          <div class="pull-right">
+                <span data-toggle="modal" title="Edit this category" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                <span data-toggle="modal" title="Delete this category" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+            </div>
+        <div id="row_{{category.id}}" class="row category_row">
           <!-- Category Summary -->
           <div class="col-md-4 vcenter summary-col">
             <h4>{{category.summary}}
@@ -39,19 +43,13 @@
 
           <!-- Category Weighting -->
           <div class="col-md-7 vcenter rating rating-col">
-            <div class="inner-rating" id="catRating-out" >
-              <center>
+            <div class="inner-rating" >
                 <span class="help-text" id="helptext-L">{{min_choice}}</span>
                 <input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min={{min_weight}} data-slider-max={{max_weight}} data-slider-step="1" data-slider-value="{% if not weight %}{{default_weight}}{% else %}{{ weight }}{% endif %}"/>
                 <span class="help-text" id="helptext-R">{{max_choice}}</span>
-              </center>
             </div>
            
           </div>
-           <div class="pull-right">
-                <span data-toggle="modal" title="Edit this category" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-                <span data-toggle="modal" title="Delete this category" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
-            </div>
         </div>
       </li>
     {% endfor %}
@@ -70,7 +68,7 @@
         </div>
         <form action="" role="form" method="post">
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6 description">
               <div class="inner-category">
                 <h2 class="category-header">Select a few categories... </h2>
                 <div class="row">
@@ -82,8 +80,8 @@
                 </div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="inner-category">
+            <div class="col-md-6 rating">
+              <div class="inner-rating">
                 <h2 class="category-header">... Or make up your own.</h2>
                 {% bootstrap_field form.summary %}
                 {% bootstrap_field form.description %}
@@ -164,22 +162,22 @@ $( ".category_row" ).bind( "mouseenter", hoverActions("category_row", "delete", 
 
 // Handles sizing of columns and breaks columns at appropriate times.
 $(window).on("resize", function () {
-  var divWidth = $(".row").width();
-  if(divWidth < 570){
-    $(".rating").css("width", "90%");
-    $(".help-text").hide();
-    $(".rating-col").css("min-width", "0");
-  }
-  else if(divWidth < 750){
-    $(".help-text").show();
-    $(".rating").css("width", "90%");
-    $(".rating-col").css("min-width", "500px");
-  }
-  else{
-    $(".help-text").show();
-    $(".rating").css("width", "60%").css("margin", "0 auto");
-    $(".rating-col").css("min-width", "500px");
-  }
+	var divWidth = $(".row").width();
+	if(divWidth < 450){
+		$(".help-text").hide();
+		$(".description").css("width", "100%");
+		$(".rating").css("min-width", "100%").css("margin", "0 auto");
+	}
+	else if(divWidth < 999){
+	    $(".help-text").show();
+	    $(".description").css("width", "95%");
+		$(".rating").css("min-width", "100%")
+	}
+	else {
+		$(".help-text").show();
+		$(".description").css("width", "40%");
+		$(".rating").css("min-width", "400px");
+	}
 }).resize();
 
 $( "#addCategoryBtn" ).click(function(){

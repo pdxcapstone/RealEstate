@@ -69,9 +69,17 @@ ul.list-group {
 	float: none;
 	margin-left:-3px;
 }
+.rating{
+    display: inline-block;
+}
 .inner-rating {
-	padding:20px 0;
-	padding-left:10%
+    text-align: center;
+    display: block;
+	/*padding:20px 0;*/
+	/*padding-left:10%*/
+}
+.description{
+    
 }
 .slider-selection {
 	background: #BABABA;
@@ -162,6 +170,10 @@ button.close{
 
 .category-header {
     margin-bottom: 30px;
+}
+
+.category_row {
+    margin: 20px 0;
 }
 
 /*realtorHome */
