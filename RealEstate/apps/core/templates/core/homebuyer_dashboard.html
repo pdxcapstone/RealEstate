@@ -40,25 +40,25 @@
     <ul class="list-group">
       {% for house in houses %}
         <li class="list-group-item" id="li_{{house.id}}">
-          <div class="row home_row" id="row_{{house.id}}">
-            <div class="row-con">
-              <div class="col-sm-6">
+          <div class="row home_row " id="row_{{house.id}}">
+              <div class="col-sm-6 vcenter">
                 <h4>
                   {{house}}
-                  <span data-toggle="modal" data-target="#edit-modal" id='edit_{{house.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-                  <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
                 </h4>
                 {% for line in house.address_lines %}
                   <span>{{ line }}</span><br>
                 {% endfor %}
               </div>
-              <div class="hbdash-center">
-                <p>
+              <div class="col-sm-5 vcenter">
+                <center>
                   <a href="{{house.evaluation_url}}"> Rate House </a>
-                </p>
+                </center>
+              </div>
+              <div class="pull-right">
+                <span data-toggle="modal" title="Edit this house" data-target="#edit-modal" id='edit_{{house.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                <span data-toggle="modal" title="Delete this house" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
               </div>
             </div>
-          </div>
         </li>
       {% endfor %}
     </ul>

@@ -48,19 +48,14 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-	display:none;
-	padding-left: 20px;
-	font-size: 90%;
-}
-.ok {
-	color: green;
-}
-.delete {
-    color: #A94431;
+    padding-right: 20px;
+    font-size: 100%;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
-.edit {
-    color: #31708f;
+.icon-leftpad {
+    padding-left: 20px;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .vcenter {
