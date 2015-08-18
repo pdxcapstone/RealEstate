@@ -682,7 +682,8 @@ class ReportView(BaseView):
         data2 = homebuyers[second].report_data
         data3 = homebuyers[first].home_report_data
         data4 = homebuyers[second].home_report_data
-        colors = ["#800080", "#339999", "#666600", "#99cc33", "#ffcc00", "#ff3300", "#c00000"]
+        colors = ["#286090", "#9BCE7D", "#639BF1", "#3D3C3A", "#98002F", "#B6A754", "#0193B7",
+                  "#5F6024", "#856941", "#ED6639", "#AB3334", "#0FB493", "#262C3A", "#57102C"]
         
         categoryImportance = []
         for category in data1:

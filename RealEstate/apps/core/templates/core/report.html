@@ -44,7 +44,8 @@
             <!--WEIGHTING!!-->
             <div id="weighting" class="tab">
                 <div class="row">
-                    <h2>Weighting</h2>
+                    <h2>Category Weighting</h2>
+                    <h5>Compare the importance of all housing categories for each homebuyer.</h5>
                     <div class="row">
                         <div class="col-lg-10"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
                         <div class="col-lg-2 ">
@@ -56,7 +57,8 @@
 
             <!--CATEGORIES PER HOUSE!!-->
             <div id="categoriesPerHouse" class="tab">
-                <h2>House Data</h2>
+                <h2>Shared House Data</h2>
+                <h5>See which categories scored highest/lowest for each house.</h5>
                 {% for house, category in houseData %}
                 <div class="row">
                     <h5>{{ house }}</h5>
@@ -68,7 +70,8 @@
 
             <!--HOUSES PER CATEGORY!!-->
             <div id="housesPerCat" class="tab">
-                <h2>Category Data</h2>
+                <h2>Shared Category Data</h2>
+                <h5>See which houses scored highest/lowest for each category.</h5>
                 <div class="row">
                 {% for category, houses in categoryData %}
                     <div class="col-lg-3">
@@ -84,6 +87,7 @@
             <!--FINAL GRADE!!-->
             <div id="finalGrade" class="tab">
                 <h2>Total Score</h2>
+                <h5>After processing all available data, see which home scored highest.</h5>
                 <div class="row">
                     <div class="col-lg-4">
                         <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>
@@ -95,7 +99,7 @@
             <div id="numbers" class="tab">
                 <h3>NUMBERS</h3>
                 <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
-                
+
                 <h2>Weighting</h2>
                 {% for category, weight1, weight2 in categoryImportance %}
                     <h4>{{category}}</h4>
@@ -138,17 +142,17 @@
         datasets: [
             {
                 label: "{{ homebuyer1.full_name }}",
-                fillColor: "rgba(52, 152, 219,0.9)",
-                strokeColor: "rgba(52, 152, 219,0.8)",
-                highlightFill: "rgba(52, 152, 219,1.0)",
+                fillColor: "rgba(155, 206, 125, 0.9)",
+                strokeColor: "rgba(155, 206, 125, 0.8)",
+                highlightFill: "rgba(155, 206, 125, 1.0)",
                 highlightStroke: "rgba(217, 95, 73, 1)",
                 data: data1
             },
             {
                 label: "{{ homebuyer2.full_name }}",
-                fillColor: "rgba(46, 204, 113,0.9)",
-                strokeColor: "rgba(46, 204, 113,0.8)",
-                highlightFill: "rgba(46, 204, 113,1.0)",
+                fillColor: "rgba(99, 155, 241, 0.9)",
+                strokeColor: "rgba(99, 155, 241, 0.8)",
+                highlightFill: "rgba(99, 155, 241, 1.0)",
                 highlightStroke: "rgba(237, 194, 51, 1)",
                 data: data2
             }
@@ -183,6 +187,7 @@
         barShowStroke: false,
         scaleShowGridLines: false,
         barValueSpacing : 20,
+        showLabels: true
     });
     legend(document.getElementById("lineLegend"), pie);
     
@@ -223,11 +228,14 @@
             showTooltips: false
         });
 
-{#        {% for color, category, weight in pie1 %}#}
             {{category}}Chart.datasets[0].bars[0].fillColor = "{{ pieAve.0.0 }}"; //bar 1
             {{category}}Chart.datasets[0].bars[1].fillColor = "{{ pieAve.1.0 }}"; //bar 2
+            {{category}}Chart.datasets[0].bars[2].fillColor = "{{ pieAve.2.0 }}"; //bar 3
+            {{category}}Chart.datasets[0].bars[3].fillColor = "{{ pieAve.3.0 }}"; //bar 4
+            {{category}}Chart.datasets[0].bars[4].fillColor = "{{ pieAve.4.0 }}"; //bar 5
+            {{category}}Chart.datasets[0].bars[5].fillColor = "{{ pieAve.5.0 }}"; //bar 6
             {{category}}Chart.update();
-{#        {% endfor %}#}
+
     {% endfor %}
 
     {% for house, categories in houseData %}
@@ -237,9 +245,13 @@
         datasets: [
             {
                 label: "{{ house }}",
-                fillColor: "rgba(217, 95, 73, 0.8)",
+                {% for h, s, c in categoryData.0.1 %}
+                    {% if h == house %}
+                        fillColor: "{{c}}",
+                    {% endif %}
+                {% endfor %}
                 strokeColor: "rgba(217, 95, 73, 0.8)",
-                highlightFill: "{{categories.0.2}}",
+                highlightFill: "rgba(217, 95, 73, 1)",
                 highlightStroke: "rgba(217, 95, 73, 1)",
                 data: {{house}}Score
             }
@@ -260,6 +272,7 @@
             barValueSpacing : 20,
             showTooltips: false
         });
+
     {% endfor %}
 
     var finalLabel = [{% for home, score in totalScore.items %}'{{home}}'{% if not forloop.last %},{% endif %}{% endfor %}];
