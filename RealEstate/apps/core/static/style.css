@@ -253,42 +253,28 @@ a.mail {
 }
 
 /* report */
-#finalGrade-Ap{
+.finalGrade-ref{
     font-weight: bold;
-    font-size: 64px;
+    font-size: 64px;  
+    vertical-align: middle;  
+}
+#finalGrade-Ap{
     color: #00CC00;
-    vertical-align: middle;
 }
 #finalGrade-A{
-    font-weight: bold;
-    font-size: 64px;
     color: #009900;
-    vertical-align: middle;
 }
 #finalGrade-B{
-    font-weight: bold;
-    font-size: 64px;
     color: #CCCC00;
-    vertical-align: middle;
-
 }
 #finalGrade-C{
-    font-weight: bold;
-    font-size: 64px;
     color: #FF9900;
-    vertical-align: middle;
 }
 #finalGrade-D{
-    font-weight: bold;
-    font-size: 64px;
     color: #FF6600;
-    vertical-align: middle;
 }
 #finalGrade-F{
-    font-weight: bold;
-    font-size: 64px;
     color: #FF0000;
-    vertical-align: middle;
 }
 
 #padding-after{
