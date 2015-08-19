@@ -1,5 +1,6 @@
 import json
 import time
+import math
 
 from django.conf import settings
 from django.contrib import messages
@@ -765,17 +766,29 @@ class ReportView(BaseView):
 
             categoryData.append((category, scores))
 
+        index3 = 0
+        index4 = 0
+        weights3 = []
+        weights4 = []
+        for houses in data3:
+            weight3 = float(data3[houses]["weight"]) / homebuyers[first].category_weight_total
+            weight4 = float(data4[houses]["weight"]) / homebuyers[second].category_weight_total
+            weights3.append((colors[index3], category, int(weight3 * 100)))
+            index3 = (index3 + 1) % len(colors)
+            weights4.append((colors[index4], category, int(weight4 * 100)))
+            index4 = (index4 + 1) % len(colors)
+
         houseData = []
         for houses in data3:
             weight3 = float(data3[houses]["weight"]) / homebuyers[first].category_weight_total
-            weight4 = float(data3[houses]["weight"]) / homebuyers[second].category_weight_total
+            weight4 = float(data4[houses]["weight"]) / homebuyers[second].category_weight_total
             scores = []
             for category in data3[houses]["categories"]:
                 score3 = data3[houses]["categories"][category] * weight3
                 score4 = data4[houses]["categories"][category] * weight4
                 averageScore = (score3 + score4) / 2
-                scores.append((category, averageScore, colors[index1]))
-                index1 = (index1 + 1) % len(colors)
+                scores.append((category, averageScore, colors[index3]))
+                index3 = (index3 + 1) % len(colors)
 
             houseData.append((houses, scores))
 
@@ -787,6 +800,11 @@ class ReportView(BaseView):
                 else:
                     totalScore[home] = score
 
+        houseNum = (int(math.ceil(0.7* len(data1.values()[0].values()[0])))
+            if data1 is not None else 0)
+        houseWidth = (len(data1.values()[0].values()[0]) * 65 if data1 is
+            not None else 0 )
+
         context = {
             'homebuyer1': homebuyers[0],
             'homebuyer2': homebuyers[1],
@@ -795,6 +813,10 @@ class ReportView(BaseView):
             'categoryData': categoryData,
             'houseData': houseData,
             'totalScore': totalScore,
-            'largestScore': largestScore
+            'largestScore': largestScore,
+            'categoryNum': int(math.ceil(0.7*len(data1))),
+            'categoryWidth': len(data1) * 65,
+            'houseNum': houseNum,
+            'houseWidth': houseWidth
         }
         return render(request, self.template_name, context)

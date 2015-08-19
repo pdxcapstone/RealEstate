@@ -11,133 +11,171 @@
 
 {% block body %}
 
-    <div class="container">
-        <div class="tabs">
-            <!--<ul class="tab-links">-->
-                <!--<li class="active"><a href="#catImport">Category Importance</a></li>-->
-                <!--<li><a href="#weighting">Weighting</a></li>-->
-                <!--<li><a href="#categoriesPerHouse">Categories Per House</a></li>-->
-                <!--<li><a href="#housesPerCat">Houses Per Category</a></li>-->
-                <!--<li><a href="#finalGrade">Final Grade</a></li>-->
-                <!--<li><a data-toggle="tab6" href="#numbers">Numbers</a></li>-->
-            <!--</ul>-->
-        </div>
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="active" ><a href="#catImport" role="tab" data-toggle="tab">Category Importance</a></li>
+        <li role="presentation"><a href="#weighting" role="tab" data-toggle="tab">Weighting</a></li>
+        <li role="presentation"><a href="#categoriesPerHouse" role="tab" data-toggle="tab">Categories Per House</a></li>
+        <li role="presentation"><a href="#housesPerCat" role="tab" data-toggle="tab">Houses Per Category</a></li>
+        <li role="presentation"><a href="#finalGrade" role="tab" data-toggle="tab">Final Grade</a></li>
+        <li role="presentation"><a role="tab" data-toggle="tab" href="#numbers">Numbers</a></li>
+    </ul>
 
-        <div class="tab-content">
 
-            <!--CATEGORY IMPORTANCE!!-->
-            <div id="catImport" class="tab active">
-                <div class="row">
-                    <h2>Shared Category Importance</h2>
-                    <h5>See what is most important in a house.</h5>
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <div><canvas id="PieChart" style="height:400px; width: 100%"></canvas></div>
-                        </div>
-                        <div class="col-lg-3">
-                            <div id="lineLegend"></div>
-                        </div>
-                    </div>
+
+
+    <!--CATEGORY IMPORTANCE!!-->
+    <div id="catImport" class="tab-pane active" role="tabpanel">
+        <div class="row">
+            <h2>Shared Category Importance</h2>
+            <h5>See what is most important in a house.</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div><canvas id="PieChart" style="height:400px; width: 100%"></canvas></div>
                 </div>
-            </div>
-
-            <!--WEIGHTING!!-->
-            <div id="weighting" class="tab">
-                <div class="row">
-                    <h2>Category Weighting</h2>
-                    <h5>Compare the importance of all housing categories for each homebuyer.</h5>
-                    <div class="row">
-                        <div class="col-lg-10"><canvas id="myChart" style="height:400px; width: 100%"></canvas></div>
-                        <div class="col-lg-2 ">
-                            <div id="barLegend"></div>
-                        </div>
-                    </div>
+                <div class="col-md-3">
+                    <div id="lineLegend"></div>
                 </div>
-            </div>
-
-            <!--CATEGORIES PER HOUSE!!-->
-            <div id="categoriesPerHouse" class="tab">
-                <h2>Shared House Data</h2>
-                <h5>See which categories scored highest/lowest for each house.</h5>
-                {% for house, category in houseData %}
-                <div class="row">
-                    <h5>{{ house }}</h5>
-                    <div class="col-lg-10"><canvas id="{{house}}bar" style="height:400px; width: 100%"></canvas></div>
-                </div>
-                {% endfor %}
-
-            </div>
-
-            <!--HOUSES PER CATEGORY!!-->
-            <div id="housesPerCat" class="tab">
-                <h2>Shared Category Data</h2>
-                <h5>See which houses scored highest/lowest for each category.</h5>
-                <div class="row">
-                {% for category, houses in categoryData %}
-                    <div class="col-lg-3">
-                        <div class="col-lg-10"><center>
-                            <h5>{{ category }}</h5>
-                            <canvas class="row-height" id="{{category}}bar"></canvas>
-                        </center></div>
-                    </div>
-                {% endfor %}
-                </div>
-            </div>
-
-            <!--FINAL GRADE!!-->
-            <div id="finalGrade" class="tab">
-                <h2>Total Score</h2>
-                <h5>After processing all available data, see which home scored highest.</h5>
-                <div class="row">
-                    <div class="col-lg-4">
-                        <canvas id="finalGradeChart" style="height:400px; width: 100%"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!--NUMBERS TAB!!-->
-            <div id="numbers" class="tab">
-                <h3>NUMBERS</h3>
-                <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
-
-                <h2>Weighting</h2>
-                {% for category, weight1, weight2 in categoryImportance %}
-                    <h4>{{category}}</h4>
-                    <h5>{{weight1}} | {{weight2}}</h5>
-                {% endfor %}
-
-                <h2>Homebuyer Pie Chart Data</h2>
-                {% for homebuyer, weights in homebuyerPies %}
-                    <h4>{{homebuyer}}</h4>
-                    <h5>{{weights}}</h5>
-                {% endfor %}
-
-                <h2>Category Data</h2>
-                {% for category, homes in categoryData %}
-                    <h4>{{category}}</h4>
-                    {% for home, score in homes %}
-                    <h5>{{home}} --> {{score}}</h5>
-                    {%  endfor %}
-                {% endfor %}
-
-                <h2>Total Score</h2>
-                {% for key, value in totalScore.items %}
-                    <h4>{{key}}</h4>
-                    {{value}}
-                {% endfor %}
             </div>
         </div>
     </div>
+
+    <!--WEIGHTING!!-->
+    <div id="weighting" class="tab-pane" role="tabpanel">
+        <div class="row">
+            <h2>Category Weighting</h2>
+            <h5>Compare the importance of all housing categories for each homebuyer.</h5>
+            <div class="row">
+                <div class="col-sm-{{categoryNum}}">
+                <canvas id="myChart" style="height:400px; width: {{categoryWidth}}px"></canvas>
+                </div>
+                <div class="col-md-2">
+                    <div id="barLegend"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--CATEGORIES PER HOUSE!!-->
+    <div id="categoriesPerHouse" class="tab-pane" role="tabpanel">
+        <h2>Shared House Data</h2>
+        <h5>See which categories scored highest/lowest for each house.</h5>
+
+        <div class="row">
+        {% for house, category in houseData %}
+        <div class="col-md-{{categoryNum}}">
+            <h5>{{ house }}</h5>
+            <canvas id="{{house}}bar" style="height:400px; width: {{categoryWidth}}px"></canvas></div>
+        {% endfor %}
+        </div>
+    </div>
+
+    <!--HOUSES PER CATEGORY!!-->
+    <div id="housesPerCat" class="tab-pane" role="tabpanel">
+        <h2>Shared Category Data</h2>
+        <h5>See which houses scored highest/lowest for each category.</h5>
+        <div class="row">
+        {% for category, houses in categoryData %}
+            <div class="col-md-{{houseNum}}">
+                <h5>{{ category }}</h5>
+                <canvas style="height:400px; width: {{houseWidth}}px" id="{{category}}bar"></canvas>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+
+    <!--FINAL GRADE!!-->
+    <div id="finalGrade" class="tab-pane" role="tabpanel">
+        <h2>Total Score</h2>
+        <h5>After processing all available data, see which home scored highest.</h5>
+        <div class="row">
+            <div class="col-md-{{houseNum}}">
+                <canvas id="finalGradeChart" style="height:400px; width:{{houseWidth}}px"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!--NUMBERS TAB!!-->
+    <div id="numbers" class="tab-pane" role="tabpanel">
+        <h3>NUMBERS</h3>
+        <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
+
+        {% for category, houses in categoryData %}
+            {% for cat, s, c in houseData.0.1 %}
+                {% if cat == category %}
+                          {{cat}}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        <h2>Weighting</h2>
+        {% for category, weight1, weight2 in categoryImportance %}
+            <h4>{{category}}</h4>
+            <h5>{{weight1}} | {{weight2}}</h5>
+        {% endfor %}
+
+        <h2>Homebuyer Pie Chart Data</h2>
+        {% for homebuyer, weights in homebuyerPies %}
+            <h4>{{homebuyer}}</h4>
+            <h5>{{weights}}</h5>
+        {% endfor %}
+
+        <h2>Category Data</h2>
+        {% for category, homes in categoryData %}
+            <h4>{{category}}</h4>
+            {% for home, score in homes %}
+            <h5>{{home}} --> {{score}}</h5>
+            {%  endfor %}
+        {% endfor %}
+
+        <h2>Total Score</h2>
+        {% for key, value in totalScore.items %}
+            <h4>{{key}}</h4>
+            {{value}}
+        {% endfor %}
+    </div>
+
 {% endblock body %}
 
 {% block scripts %}
   <script src="{% static 'Chart.min.js' %}"></script>
   <script src="{% static 'legend.js' %}"></script>
+
+
+
   <script>
       function encode(string) {
           return btoa(string).replace(/=/g, '_');
       }
 
+      $( document ).ready(function(){$(".tab-pane:not(.active)").hide();})
+
+      $('a[data-toggle="tab"]').click( function (e) {
+          $($("li.active a").attr('href')).hide();
+          $($(this).attr('href')).show();
+      })
+
+      <!--CATEGORY IMPORTANCE!!-->
+      var pie = [
+      {% for color, category, weight in pieAve %}
+          {
+              value : '{{weight}}',
+              color : '{{color}}',
+              label : '{{category}}'
+          }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+      ]
+
+      var ctx = document.getElementById("PieChart").getContext("2d");
+      var pieChart = new Chart(ctx).Pie(pie,{
+          barShowStroke: false,
+          scaleShowGridLines: false,
+          barValueSpacing : 20,
+          showLabels: true
+      });
+      legend(document.getElementById("lineLegend"), pie);
+
+
+      <!--WEIGHTING!!-->
       var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
       var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
       var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
@@ -176,71 +214,8 @@
       });
       legend(document.getElementById("barLegend"), myBarChart);
 
-      var pie = [
-      {% for color, category, weight in pieAve %}
-          {
-              value : '{{weight}}',
-              color : '{{color}}',
-              label : '{{category}}'
-          }{% if not forloop.last %},{% endif %}
-      {% endfor %}
-      ]
 
-      var ctx = document.getElementById("PieChart").getContext("2d");
-      var pieChart = new Chart(ctx).Pie(pie,{
-          barShowStroke: false,
-          scaleShowGridLines: false,
-          barValueSpacing : 20,
-          showLabels: true
-      });
-      legend(document.getElementById("lineLegend"), pie);
-
-      var houseLabel = [
-      {% for house, score, color in categoryData.0.1 %}
-          "{{house}}".substring(0, 10){% if not forloop.last %},{% endif %}
-      {% endfor %}
-      ]
-
-      {% for category, houses in categoryData %}
-          var Score{{forloop.counter0}} = [{% for house, score, color in houses %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
-          var Data{{forloop.counter0}} = {
-          labels: houseLabel,
-          datasets: [
-              {
-                  label: "{{ category }}",
-                  fillColor: "rgba(217, 95, 73, 0.8)",
-                  strokeColor: "rgba(217, 95, 73, 0.8)",
-                  highlightFill: "{{houses.0.2}}",
-                  highlightStroke: "rgba(217, 95, 73, 1)",
-                  data: Score{{forloop.counter0}}
-              }
-          ]
-      };
-      {% endfor %}
-
-      {% for category, houses in categoryData %}
-          var brx{{forloop.counter0}} = document.getElementById("{{category}}bar").getContext("2d");
-          var Chart{{forloop.counter0}} = new Chart(brx{{forloop.counter0}}).Bar(Data{{forloop.counter0}}, {
-              scaleOverride : true,
-              scaleSteps : 1,
-              scaleStepWidth : 10,
-              scaleStartValue : 0,
-
-              barShowStroke: false,
-              scaleShowGridLines: false,
-              barValueSpacing : 5,
-              showTooltips: false
-          });
-
-          Chart{{forloop.counter0}}.datasets[0].bars[0].fillColor = "{{ pieAve.0.0 }}"; //bar 1
-          Chart{{forloop.counter0}}.datasets[0].bars[1].fillColor = "{{ pieAve.1.0 }}"; //bar 2
-          Chart{{forloop.counter0}}.datasets[0].bars[2].fillColor = "{{ pieAve.2.0 }}"; //bar 3
-          Chart{{forloop.counter0}}.datasets[0].bars[3].fillColor = "{{ pieAve.3.0 }}"; //bar 4
-          Chart{{forloop.counter0}}.datasets[0].bars[4].fillColor = "{{ pieAve.4.0 }}"; //bar 5
-          Chart{{forloop.counter0}}.datasets[0].bars[5].fillColor = "{{ pieAve.5.0 }}"; //bar 6
-          Chart{{forloop.counter0}}.update();
-      {% endfor %}
-
+      <!--CATEGORIES PER HOUSE!!-->
       {% for house, categories in houseData %}
           var houseScore{{forloop.counter0}} = [{% for category, score, color in categories %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
           var houseData{{forloop.counter0}} = {
@@ -278,6 +253,52 @@
 
       {% endfor %}
 
+
+      <!--HOUSES PER CATEGORY!!-->
+      var houseLabel = [
+      {% for house, score, color in categoryData.0.1 %}
+          "{{house}}".substring(0, 10){% if not forloop.last %},{% endif %}
+      {% endfor %}
+      ]
+
+      {% for category, houses in categoryData %}
+          var catScore{{forloop.counter0}} = [{% for house, score, color in houses %}({{ score }} / {{ largestScore }}*10){% if not forloop.last %},{% endif %}{% endfor %}];
+          var catData{{forloop.counter0}} = {
+          labels: houseLabel,
+          datasets: [
+              {
+                  label: "{{ category }}",
+                  {% for cat, s, c in houseData.0.1 %}
+                      {% if cat == category %}
+                          fillColor: "{{c}}",
+                      {% endif %}
+                  {% endfor %}
+                  strokeColor: "rgba(217, 95, 73, 0.8)",
+                  highlightFill: "rgba(217, 95, 73, 1)",
+                  highlightStroke: "rgba(217, 95, 73, 1)",
+                  data: catScore{{forloop.counter0}}
+              }
+          ]
+      };
+      {% endfor %}
+
+      {% for category, houses in categoryData %}
+          var catBrx{{forloop.counter0}} = document.getElementById("{{category}}bar").getContext("2d");
+          var catChart{{forloop.counter0}} = new Chart(catBrx{{forloop.counter0}}).Bar(catData{{forloop.counter0}}, {
+              scaleOverride : true,
+              scaleSteps : 1,
+              scaleStepWidth : 10,
+              scaleStartValue : 0,
+
+              barShowStroke: false,
+              scaleShowGridLines: false,
+              barValueSpacing : 5,
+              showTooltips: false
+          });
+      {% endfor %}
+
+
+      <!--FINAL GRADE!!-->
       var finalLabel = [{% for home, score in totalScore.items %}'{{home}}'{% if not forloop.last %},{% endif %}{% endfor %}];
       var finalData = [{% for home, score in totalScore.items %}{{score}}{% if not forloop.last %},{% endif %}{% endfor %}];
       var fData = {

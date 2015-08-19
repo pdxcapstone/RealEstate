@@ -286,7 +286,7 @@ a.mail {
 
 #legend{
     outline: solid;
-    outline-color: black;
+    outline-color: #bbb;
     outline-width: 1px;
     min-height:100px;
 }
