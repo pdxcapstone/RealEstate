@@ -254,34 +254,49 @@ a.mail {
 
 /* report */
 #finalGrade-Ap{
-	font-style: oblique;
     font-weight: bold;
+    font-size: 64px;
     color: #00CC00;
+    vertical-align: middle;
 }
 #finalGrade-A{
-	font-style: oblique;
     font-weight: bold;
+    font-size: 64px;
     color: #009900;
+    vertical-align: middle;
 }
 #finalGrade-B{
-	font-style: oblique;
     font-weight: bold;
+    font-size: 64px;
     color: #CCCC00;
+    vertical-align: middle;
+
 }
 #finalGrade-C{
-	font-style: oblique;
     font-weight: bold;
+    font-size: 64px;
     color: #FF9900;
+    vertical-align: middle;
 }
 #finalGrade-D{
-	font-style: oblique;
     font-weight: bold;
+    font-size: 64px;
     color: #FF6600;
+    vertical-align: middle;
 }
 #finalGrade-F{
-	font-style: oblique;
     font-weight: bold;
+    font-size: 64px;
     color: #FF0000;
+    vertical-align: middle;
+}
+
+#padding-after{
+	padding-bottom: 50px;
+}
+
+#report-title{
+	text-decoration: underline;
 }
 
 #legend{
@@ -303,6 +318,7 @@ a.mail {
 	min-height:400px; 
 	width: 100%;
 }
+
 #fork {
     position: absolute;
     top: 0;
