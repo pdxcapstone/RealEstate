@@ -754,9 +754,9 @@ class ReportView(BaseView):
             weight2 = float(data1[category]["weight"]) / homebuyers[second].category_weight_total
             scores = []
             for house in data1[category]["houses"]:
-                score1 = data1[category]["houses"][house] * weight1
-                score2 = data2[category]["houses"][house] * weight2
-                averageScore = (score1 + score2) / 2
+                score1 = round((data1[category]["houses"][house] * weight1), 2)
+                score2 = round((data2[category]["houses"][house] * weight2), 2)
+                averageScore = round(((score1 + score2) / 2), 2)
                 scores.append((house, averageScore, colors[index1]))
                 index1 = (index1 + 1) % len(colors)
 
@@ -784,14 +784,16 @@ class ReportView(BaseView):
             weight4 = float(data4[houses]["weight"]) / homebuyers[second].category_weight_total
             scores = []
             for category in data3[houses]["categories"]:
-                score3 = data3[houses]["categories"][category] * weight3
-                score4 = data4[houses]["categories"][category] * weight4
-                averageScore = (score3 + score4) / 2
+                score3 = round((data3[houses]["categories"][category] * weight3), 2)
+                score4 = round((data4[houses]["categories"][category] * weight4), 2)
+                averageScore = round(((score3 + score4) / 2), 2)
                 scores.append((category, averageScore, colors[index3]))
                 index3 = (index3 + 1) % len(colors)
 
             houseData.append((houses, scores))
 
+        minVal = 5.0
+        maxVal = 0.0
         totalScore = {}
         for category, homes in categoryData:
             for home, score, color in homes:
@@ -799,6 +801,22 @@ class ReportView(BaseView):
                     totalScore[home] += score
                 else:
                     totalScore[home] = score
+
+        for home in totalScore:
+            if minVal > totalScore[home]:
+                minVal = totalScore[home]
+            if maxVal < totalScore[home]:
+                maxVal = totalScore[home]
+
+
+        minVal = minVal - 1
+        maxVal = maxVal + 0.5
+
+        if minVal < 0:
+            minVal = 0.0
+
+        if maxVal > 5:
+            maxVal = 5.0
 
         houseNum = (int(math.ceil(0.7* len(data1.values()[0].values()[0])))
             if data1 is not None else 0)
@@ -817,6 +835,8 @@ class ReportView(BaseView):
             'categoryNum': int(math.ceil(0.7*len(data1))),
             'categoryWidth': len(data1) * 65,
             'houseNum': houseNum,
-            'houseWidth': houseWidth
+            'houseWidth': houseWidth,
+            'minVal': minVal,
+            'maxVal': maxVal
         }
         return render(request, self.template_name, context)
