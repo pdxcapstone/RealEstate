@@ -713,8 +713,16 @@ class ReportView(BaseView):
     def get(self, request, *args, **kwargs):
         couple_id = int(kwargs.get('couple_id', 0))
         couple = Couple.objects.get(id=couple_id)
-        if not couple.registered:
-            return render(request, self.incomplete_template_name, {})
+        registered = couple.registered
+        categories = couple.category_set.all()
+        houses = couple.house_set.all()
+        if not all([registered, categories.exists(), houses.exists()]):
+            context = {
+                'categories': categories,
+                'houses': houses,
+                'registered': registered,
+            }
+            return render(request, self.incomplete_template_name, context)
 
         homebuyers = couple.homebuyer_set.all()
         first = 0
