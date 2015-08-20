@@ -11,7 +11,7 @@
 
 {% block body %}
 
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs nav-tabs-responsive">
         <li role="presentation" class="active" ><a href="#catImport" role="tab" data-toggle="tab">Category Importance</a></li>
         <li role="presentation"><a href="#weighting" role="tab" data-toggle="tab">Weighting</a></li>
         <li role="presentation"><a href="#categoriesPerHouse" role="tab" data-toggle="tab">Categories Per House</a></li>
@@ -185,15 +185,32 @@
 
 
   <script>
+        
       function encode(string) {
           return btoa(string).replace(/=/g, '_');
       }
 
-      $( document ).ready(function(){$(".tab-pane:not(.active)").hide();})
+      $( document ).ready(function(){
+          $(".tab-pane:not(.active)").hide();
+          $(".nav > li.active > a").attr('style', 'background-color: #FFF !important');
+      })
 
       $('a[data-toggle="tab"]').click( function (e) {
+          $("li.active a").attr('style', 'background-color: #ddd !important');
+           $(" li.active  > a").mouseover(function(){
+               $(this).attr('style', 'background-color: #ccc !important; border-color: #ccc;' );
+           }).mouseout(function(){
+               $(this).attr('style', 'background-color: #ddd !important; border-color: #ddd;' );
+           });
           $($("li.active a").attr('href')).hide();
+          
           $($(this).attr('href')).show();
+          $(this).attr('style', 'background-color: #FFF !important');
+          $(this).mouseover(function(){
+               $(this).attr('style', 'background-color: #fff !important; border-color: #fff;' );
+           }).mouseout(function(){
+               $(this).attr('style', 'background-color: #fff !important; border-color: #fff;' );
+           });
       })
 
       <!--CATEGORY IMPORTANCE!!-->
