@@ -58,11 +58,6 @@ ul.list-group {
     color: rgb(40, 96, 144);
     cursor: pointer;
 }
-.ok {
-    display: none;
-    color: green;
-}
-
 .vcenter {
 	display: inline-block;
 	vertical-align: middle;

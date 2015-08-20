@@ -26,10 +26,8 @@
 	{% for category, score in grades %}
 		<li class="list-group-item">
 			<div class="row" style="margin: 20px 0;">
-				<div class="col-lg-6 vcenter description">
-					<h4>{{category.summary}}
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
-					</h4>
+			    <div class="col-sm-6 vcenter description">
+					<h4 id='update_{{category.id}}'>{{category.summary}}</h4>
 					{% if category.description %}
 						<p>
 							{{ category.description }}
@@ -89,6 +87,7 @@
 
 {% block scripts %}
 <script src="{% static "slide.min.js" %}"></script>
+<script src="{% static "jquery.color.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
 <script src="{% static "base.js" %}"></script>
 
