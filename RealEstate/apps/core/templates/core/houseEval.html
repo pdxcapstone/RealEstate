@@ -34,11 +34,11 @@
 						</p>
 					{% endif %}
 				</div>
-				<div class="col-sm-6 vcenter rating">
+    				<div class="col-sm-6 vcenter rating">
 					<div class="inner-rating">
 						<center>
 							<span class="help-text" id="helptext-L">{{min_choice}}</span>
-							<input id="category_{{category.id}}" class='slide score-slide' data-slider-id='slide' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+							<input id="category_{{category.id}}" class='slide score-slide' data-slider-id='home' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
 							<span class="help-text" id="helptext-R">{{max_choice}}</span>
 						</center>
 					</div>
