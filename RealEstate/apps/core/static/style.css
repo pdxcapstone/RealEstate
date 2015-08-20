@@ -19,6 +19,7 @@ html, body, #main-content {
 
 .bs-blue-background {
     background-color: rgb(40, 96, 144);
+    border-color:#aaa;
 }
 
 .bs-blue, #main-content .header, .modal-content label, .modal-header {
@@ -226,7 +227,4 @@ a.mail {
 .registerbutton{
     padding: 20px 50px;
     font-size: 150%;
-}
-.firrstheader{
-	margin-top: 200px; 
 }

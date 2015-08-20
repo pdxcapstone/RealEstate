@@ -1,5 +1,6 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% load staticfiles %}
 
 {% block title %}
   Login
@@ -12,11 +13,74 @@
 
 {% block main %}
   <div id="bg-img" class="img-responsive">
-
     {{ block.super }}
-
   </div>
-    <h2 class="firrstheader"> Header</h2>
+  <div class="container" style="margin-bottom: 50px;">
+      
+      <div class="row" style="margin: 80px 0;">
+          <div class="col-md-6">
+              <h2 style="margin-bottom: 40px;">Homebuyers decide what's important.</h2>
+              Add a bunch of content here about stuff.... yasdlfkjas dlfkjas ldfkj a
+              asdlfkja sldkfj asldkf
+              asldfkj asldkfj alskdjf laksjd flkajs df
+              asldkfj alsdkjf laskjd flaksjd flkaj sdlfkj asdf
+              asldfkj asldkfj alskjdf asdfasd
+          </div>
+          <div class="col-md-6">
+              <center>
+              <img src="{% static "Categories.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(52, 152, 219,0.9);" width=90%/>
+              </center>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-5">
+              <center>
+              <img src="{% static "mobile.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(127, 140, 141,0.8);" width=65%/>
+              </center>
+              
+          </div>
+          <div class="col-md-7">
+              <h2 style="margin-bottom: 40px;">Take us with you.</h2>
+              Add a bunch of content here about stuff.... yasdlfkjas dlfkjas ldfkj a
+              asdlfkja sldkfj asldkf
+              asldfkj asldkfj alskdjf laksjd flkajs df
+              asldkfj alsdkjf laskjd flaksjd flkaj sdlfkj asdf
+              asldfkj asldkfj alskjdf asdfasd
+          </div>
+      </div>
+      <div class="row" style="margin: 80px 0;">
+          <div class="col-md-6">
+              <h2 style="margin-bottom: 40px;">Keep track of the houses you love.</h2>
+              Add a bunch of content here about stuff.... yasdlfkjas dlfkjas ldfkj a
+              asdlfkja sldkfj asldkf
+              asldfkj asldkfj alskdjf laksjd flkajs df
+              asldkfj alsdkjf laskjd flaksjd flkaj sdlfkj asdf
+              asldfkj asldkfj alskjdf asdfasd
+          </div>
+          <div class="col-md-6">
+              <center>
+              <img src="{% static "Dashboard.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(231, 76, 60,0.6);" width=90%/>
+              </center>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+              <center>
+              <img src="{% static "RateHouse.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(46, 204, 113,0.9);" width=70%/>
+              </center>
+              
+          </div>
+          <div class="col-md-6">
+              <h2 style="margin-bottom: 40px;">Provide structure to your experience.</h2>
+              Add a bunch of content here about stuff.... yasdlfkjas dlfkjas ldfkj a
+              asdlfkja sldkfj asldkf
+              asldfkj asldkfj alskdjf laksjd flkajs df
+              asldkfj alsdkjf laskjd flaksjd flkaj sdlfkj asdf
+              asldfkj asldkfj alskjdf asdfasd
+          </div>
+      </div>
+  </div>
+    
 {% endblock main %}
 
 {% block body %}
@@ -25,9 +89,7 @@
     <div class="col-sm-8">
       {% bootstrap_messages %}
       <div class="col-sm-2"></div>
-    <h1 class="tagline">We make finding the right home easy.</h1>
-
-  <div class="col-sm-2"></div>
+    <h1 class="tagline">Together, we can find the right home.</h1>
       <center>
        <button type="button" class="registerbutton btn btn-primary" data-toggle="modal" data-target="#SignupModal">Register</button>
       </center>
