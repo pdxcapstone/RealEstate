@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+
+{% block title %}
+  Incomplete Report
+{% endblock %}
+
+{% block body %}
+  <h2 class="bs-blue header">Incomplete Report</h2>
+  <br>
+  <p class="soft-error">
+    Not enough data to generate a report!
+  </p>
+  <p class="soft-error">
+    Please fix the following issues:
+  </p>
+  <ul class="list-group">
+    {% if not registered %}
+      <li class="list-group-item">
+        <strong>Both homebuyers must be registered for {{ app_name }}</strong>
+      </li>
+    {% endif %}
+    {% if not categories.exists %}
+      <li class="list-group-item">
+        <strong>Must have at least one Category</strong>
+      </li>
+    {% endif %}
+    {% if not houses.exists %}
+      <li class="list-group-item">
+        <strong>Must have at least one House</strong>
+      </li>
+    {% endif %}
+  </ul>
+{% endblock %}
