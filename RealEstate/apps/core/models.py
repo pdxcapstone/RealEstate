@@ -24,7 +24,7 @@ _CATEGORIES = {
     'location': {
         'summary': 'Location',
         'description': ('Rate the neighborhood, walkability, commute, and '
-                        'nearby attractions'),
+                        'nearby attractions')
     },
     'mortgage': {
         'summary': 'Mortgage',
@@ -35,32 +35,34 @@ _CATEGORIES = {
         'summary': 'Schools',
         'description': 'Quality of school district'
     },
-    'masterSuite': {
-        'summary': 'Master_Suite',
+    'mastersuite': {
+        'summary': 'Master Suite',
         'description': 'Condition of main bedroom and ensuite'
     },
     'kitchen': {
         'summary': 'Kitchen',
         'description': 'How nice the space is where food happens'
     },
-    'naturalLight': {
-        'summary': 'Natural_Light',
+    'naturallight': {
+        'summary': 'Natural Light',
         'description': 'How bright and light it is during the day'
     },
     'gardening': {
         'summary': 'Gardening',
-        'description': 'Potential to grow fruits, plants, vegetables, and flowers'
+        'description': ('Potential to grow fruits, plants, vegetables, '
+                        'and flowers')
     },
-    'greatRoom': {
-        'summary': 'Great_Room',
-        'description': 'Presence and quality of a space to gather and relax socially'
+    'greatroom': {
+        'summary': 'Great Room',
+        'description': ('Presence and quality of a space to gather '
+                        'and relax socially')
     },
     'privacy': {
         'summary': 'Privacy',
         'description': 'Proximity and shielding from neighbors'
     },
-    'outdoorPlayspace': {
-        'summary': 'Outdoor_Playspace',
+    'outdoorplayspace': {
+        'summary': 'Outdoor Playspace',
         'description': 'Ability to relax and play outside'
     },
     'laundry': {
