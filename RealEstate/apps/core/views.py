@@ -226,7 +226,8 @@ class CategoryView(BaseView):
                 categories = Category.objects.filter(couple=couple)
                 return HttpResponse(
                     json.dumps({'category':
-                               [category.summary.encode('UTF-8').lower()
+                               [category.summary.replace(" ", "")
+                                .encode('UTF-8').lower()
                                 for category in categories]}),
                     content_type="application/json")
 
@@ -282,11 +283,12 @@ class CategoryView(BaseView):
                                 couple=couple, summary=summary).exists():
                             continue
                         else:
-                            optSum=models._CATEGORIES[c]["summary"]
+                            optSum = models._CATEGORIES[c]["summary"]
                             Category.objects.create(
                                 couple=couple,
                                 summary=optSum,
-                                description=models._CATEGORIES[c]["description"])
+                                description=models
+                                    ._CATEGORIES[c]["description"])
                             if optNum == 1:
                                 messages.success(
                                     request,

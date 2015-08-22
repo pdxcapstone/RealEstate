@@ -24,52 +24,54 @@ _CATEGORIES = {
     'location': {
         'summary': 'Location',
         'description': ('Rate the neighborhood, walkability, commute, and '
-                        'nearby attractions'),
+                        'nearby attractions')
     },
     'mortgage': {
         'summary': 'Mortgage',
         'description': ('Rate the mortgage based on price alone, not relative '
                         'to other rating categories')
     },
-    'category1': {
-        'summary': 'Category1',
-        'description': 'Description for category 1'
+    'schools': {
+        'summary': 'Schools',
+        'description': 'Quality of school district'
     },
-    'category2': {
-        'summary': 'Category2',
-        'description': 'Description for category 2'
+    'mastersuite': {
+        'summary': 'Master Suite',
+        'description': 'Condition of main bedroom and ensuite'
     },
-    'category3': {
-        'summary': 'Category3',
-        'description': 'Description for category 3'
+    'kitchen': {
+        'summary': 'Kitchen',
+        'description': 'How nice the space is where food happens'
     },
-    'category4': {
-        'summary': 'Category4',
-        'description': 'Description for category 4'
+    'naturallight': {
+        'summary': 'Natural Light',
+        'description': 'How bright and light it is during the day'
     },
-    'category5': {
-        'summary': 'Category5',
-        'description': 'Description for category 5'
+    'gardening': {
+        'summary': 'Gardening',
+        'description': ('Potential to grow fruits, plants, vegetables, '
+                        'and flowers')
     },
-    'category6': {
-        'summary': 'Category6',
-        'description': 'Description for category 6'
+    'greatroom': {
+        'summary': 'Great Room',
+        'description': ('Presence and quality of a space to gather '
+                        'and relax socially')
     },
-    'category7': {
-        'summary': 'Category7',
-        'description': 'Description for category 7'
+    'privacy': {
+        'summary': 'Privacy',
+        'description': 'Proximity and shielding from neighbors'
     },
-    'category8': {
-        'summary': 'Category8',
-        'description': 'Description for category 8'
+    'outdoorplayspace': {
+        'summary': 'Outdoor Playspace',
+        'description': 'Ability to relax and play outside'
     },
-    'category9': {
-        'summary': 'Category9',
-        'description': 'Description for category 9'
+    'laundry': {
+        'summary': 'Laundry',
+        'description': 'Located conveniently, in a sensible space'
     },
-    'category10': {
-        'summary': 'Category10',
-        'description': 'Description for category 10'
+    'noise': {
+        'summary': 'Noise',
+        'description': 'Noise levels throughout the day'
     }
     # ....
 }
