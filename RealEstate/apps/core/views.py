@@ -95,6 +95,7 @@ class RealtorSignupView(View):
             cleaned_data = signup_form.cleaned_data
             email = cleaned_data['email']
             password = cleaned_data['password']
+            user = User(id=0)
             with transaction.atomic():
                 user = User.objects.create_user(
                     email=email,
@@ -103,9 +104,13 @@ class RealtorSignupView(View):
                     last_name=cleaned_data['last_name'],
                     phone=cleaned_data['phone'])
                 Realtor.objects.create(user=user)
+            email_sent = user.send_email_confirmation(request)
+            if not email_sent:
+                user.delete()
+                messages.error(request, "Failed to send email confirmation")
+                return redirect(reverse(settings.LOGIN_URL))
             user = authenticate(email=email, password=password)
             login(request, user)
-            user.send_email_confirmation(request)
             messages.success(request, "Welcome!")
             return redirect(reverse(settings.LOGIN_REDIRECT_URL))
         context = {
@@ -468,6 +473,14 @@ class DashboardView(BaseView):
                     email=cleaned_data['homebuyer2_email'])
                 pending_couple = PendingCouple(realtor=request.user.realtor)
 
+                email_success = all([
+                    first_pending_hb.send_email_invite(request),
+                    second_pending_hb.send_email_invite(request)
+                ])
+                if not email_success:
+                    messages.error(request, "Failed to send email invitations")
+                    return redirect(reverse(settings.LOGIN_REDIRECT_URL))
+
                 with transaction.atomic():
                     pending_couple.save()
                     first_pending_hb.pending_couple = pending_couple
@@ -475,8 +488,6 @@ class DashboardView(BaseView):
                     first_pending_hb.save()
                     second_pending_hb.save()
 
-                first_pending_hb.send_email_invite(request)
-                second_pending_hb.send_email_invite(request)
                 success_msg = (
                     "Email invitations sent to '{first}' and '{second}'"
                     .format(first=escape(unicode(first_pending_hb)),

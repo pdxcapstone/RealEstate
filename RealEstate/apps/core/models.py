@@ -807,7 +807,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         the email is already confirmed.
         """
         if self.email_confirmed:
-            return None
+            return True
 
         app_name = settings.APP_NAME
         subject = u"{app_name} Email Confirmation".format(app_name=app_name)
@@ -820,5 +820,9 @@ class User(AbstractBaseUser, PermissionsMixin):
             name=self.get_short_name(),
             app_name=app_name,
             email_confirmation_link=email_confirmation_link)
-        return self.email_user(subject, message,
-                               from_email=settings.EMAIL_HOST_USER)
+        try:
+            self.email_user(subject, message,
+                            from_email=settings.EMAIL_HOST_USER)
+        except:
+            return False
+        return True
