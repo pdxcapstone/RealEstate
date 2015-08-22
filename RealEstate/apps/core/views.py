@@ -9,7 +9,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.forms.models import modelformset_factory
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
@@ -26,12 +25,11 @@ from RealEstate.apps.core.forms import (AddCategoryForm, EditCategoryForm,
 
 
 from RealEstate.apps.core.models import (Category, CategoryWeight, Couple,
-                                         Grade, Homebuyer, House, Realtor,
-                                         User)
+                                         Grade, House, Realtor, User)
+from RealEstate.apps.core import models
 
 from RealEstate.apps.pending.models import PendingCouple, PendingHomebuyer
-from RealEstate.apps.pending.forms import (InviteHomebuyerForm,
-                                           InviteHomebuyersFormSet)
+from RealEstate.apps.pending.forms import InviteHomebuyerForm
 
 LOGIN_DELAY = 1.2   # Seconds
 
@@ -194,6 +192,9 @@ class CategoryView(BaseView):
                     break
             if missing:
                 weighted.append((category, None))
+        choices = []
+        for key, value in models._CATEGORIES.items():
+            choices.append((key, value["summary"]))
 
         context = {
             'weights': weighted,
@@ -215,6 +216,14 @@ class CategoryView(BaseView):
 
         # ajax calls implement weight and delete category commands.
         if request.is_ajax():
+            if request.POST['type'] == 'category':
+                categories = Category.objects.filter(couple=couple)
+                return HttpResponse(
+                    json.dumps({'category':
+                               [category.summary.encode('UTF-8').lower()
+                                for category in categories]}),
+                    content_type="application/json")
+
             id = request.POST['id']
             category = Category.objects.get(id=id)
 
@@ -238,7 +247,6 @@ class CategoryView(BaseView):
         else:
             summary = request.POST["summary"]
             description = request.POST["description"]
-
             # Updates a category
             if "id" in request.POST:
                 id_category = get_object_or_404(
@@ -260,18 +268,44 @@ class CategoryView(BaseView):
                         "Category '{summary}' updated".format(summary=summary))
 
             # Creates a category
-            elif Category.objects.filter(
-                    couple=couple, summary=summary).exists():
-                error = (u"Category '{summary}' already exists"
-                         .format(summary=summary))
-                messages.error(request, error)
             else:
-                Category.objects.create(couple=couple,
-                                        summary=summary,
-                                        description=description)
-                messages.success(
-                    request,
-                    u"Category '{summary}' added".format(summary=summary))
+                optNum = len(request.POST.getlist("optional_categories"))
+                if optNum > 0:
+                    for c in request.POST.getlist("optional_categories"):
+                        if Category.objects.filter(
+                                couple=couple, summary=summary).exists():
+                            continue
+                        else:
+                            optSum=models._CATEGORIES[c]["summary"]
+                            Category.objects.create(
+                                couple=couple,
+                                summary=optSum,
+                                description=models._CATEGORIES[c]["description"])
+                            if optNum == 1:
+                                messages.success(
+                                    request,
+                                    u"Category '{summary}' added".format(
+                                        summary=optSum))
+                    if optNum > 1:
+                        messages.success(
+                            request,
+                            u"{optNum} predefined categories added.".format(
+                                optNum=optNum))
+
+                if summary != "":
+                    if Category.objects.filter(
+                            couple=couple, summary=summary).exists():
+                        error = (u"Category '{summary}' already exists"
+                                 .format(summary=summary))
+                        messages.error(request, error)
+                    else:
+                        Category.objects.create(couple=couple,
+                                                summary=summary,
+                                                description=description)
+                        messages.success(
+                            request,
+                            u"Category '{summary}' added".format(
+                                summary=summary))
 
             weights = CategoryWeight.objects.filter(homebuyer=homebuyer)
             categories = Category.objects.filter(couple=couple)
@@ -303,13 +337,6 @@ class DashboardView(BaseView):
     """
     homebuyer_template_name = 'core/homebuyer_dashboard.html'
     realtor_template_name = 'core/realtor_dashboard.html'
-
-    def _build_invite_formset(self):
-        return modelformset_factory(PendingHomebuyer,
-                                    form=InviteHomebuyerForm,
-                                    formset=InviteHomebuyersFormSet,
-                                    extra=2,
-                                    max_num=2)
 
     def _homebuyer_get(self, request, homebuyer, *args, **kwargs):
         # Returns summary and description if given category ID
@@ -399,68 +426,69 @@ class DashboardView(BaseView):
 
     def _realtor_get(self, request, realtor, *args, **kwargs):
         couples, pending_couples = realtor.get_couples_and_pending_couples()
-        invite_formset = self._build_invite_formset()(
-            queryset=PendingHomebuyer.objects.none())
+        invite_form = InviteHomebuyerForm()
         context = {
-             'form': AddRealtorHomeForm(),
+            'form': AddRealtorHomeForm(),
             'couples': couples,
             'pending_couples': pending_couples,
-            'invite_formset': invite_formset,
+            'invite_form': invite_form,
             'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)
 
     def _realtor_post(self, request, realtor, *args, **kwargs):
+        invite_form = InviteHomebuyerForm()
+
         if "id" in request.POST:
             couple = Couple.objects.get(id=int(request.POST["id"]))
-            if House.objects.filter(couple=couple, nickname=request.POST["nickname"]).exists():
+            nickname = request.POST['nickname']
+            if House.objects.filter(
+                    couple=couple, nickname=nickname).exists():
                 error = (u"House '{nickname}' already exists"
-                         .format(nickname=request.POST["nickname"]))
+                         .format(nickname=nickname))
                 messages.error(request, error)
             else:
-                House.objects.create(
-                    couple=couple, nickname=request.POST["nickname"], address=request.POST["address"])
+                House.objects.create(couple=couple, nickname=nickname,
+                                     address=request.POST["address"])
                 messages.success(
-                    request, "House '{nickname}' added".format(nickname=request.POST["nickname"]))
-        
+                    request,
+                    "House '{nickname}' added".format(nickname=nickname))
         else:
-            invite_formset = self._build_invite_formset()(request.POST)
-            if invite_formset.is_valid():
-                pending_homebuyers = [
-                    form.instance for form in invite_formset.forms]
-                with transaction.atomic():
-                    pending_couple = PendingCouple.objects.create(
-                        realtor=request.user.realtor)
-                    for pending_homebuyer in pending_homebuyers:
-                        pending_homebuyer.pending_couple = pending_couple
-                        pending_homebuyer.save()
+            invite_form = InviteHomebuyerForm(request.POST)
+            if invite_form.is_valid():
+                cleaned_data = invite_form.cleaned_data
+                first_pending_hb = PendingHomebuyer(
+                    first_name=cleaned_data['homebuyer1_first'],
+                    last_name=cleaned_data['homebuyer1_last'],
+                    email=cleaned_data['homebuyer1_email'])
+                second_pending_hb = PendingHomebuyer(
+                    first_name=cleaned_data['homebuyer2_first'],
+                    last_name=cleaned_data['homebuyer2_last'],
+                    email=cleaned_data['homebuyer2_email'])
+                pending_couple = PendingCouple(realtor=request.user.realtor)
 
-                first_homebuyer, second_homebuyer = pending_homebuyers
-                first_homebuyer.send_email_invite(request)
-                second_homebuyer.send_email_invite(request)
-                success_msg = ("Email invitations sent to '{first}' and '{second}'"
-                               .format(first=escape(unicode(first_homebuyer)),
-                                       second=escape(unicode(second_homebuyer))))
+                with transaction.atomic():
+                    pending_couple.save()
+                    first_pending_hb.pending_couple = pending_couple
+                    second_pending_hb.pending_couple = pending_couple
+                    first_pending_hb.save()
+                    second_pending_hb.save()
+
+                first_pending_hb.send_email_invite(request)
+                second_pending_hb.send_email_invite(request)
+                success_msg = (
+                    "Email invitations sent to '{first}' and '{second}'"
+                    .format(first=escape(unicode(first_pending_hb)),
+                            second=escape(unicode(second_pending_hb))))
                 messages.success(request, success_msg)
                 return redirect(reverse(settings.LOGIN_REDIRECT_URL))
 
         couples, pending_couples = realtor.get_couples_and_pending_couples()
-        coupleData = []
-        isPending = True
-        for couple in couples:
-            homebuyer = Homebuyer.objects.filter(couple=couple)
-            coupleData.append((couple, homebuyer, not isPending))
-        for pendingCouple in pending_couples:
-            pendingHomebuyer = PendingHomebuyer.objects.filter(
-                pending_couple=pendingCouple)
-            coupleData.append((pendingCouple, pendingHomebuyer, isPending))
-        invite_formset = self._build_invite_formset()(
-            queryset=PendingHomebuyer.objects.none())
         context = {
             'couples': couples,
             'pending_couples': pending_couples,
             'form': AddRealtorHomeForm(),
-            'invite_formset': invite_formset,
+            'invite_form': invite_form,
             'realtor': realtor,
         }
         return render(request, self.realtor_template_name, context)

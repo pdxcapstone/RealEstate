@@ -13,34 +13,40 @@ class HomebuyerSignupForm(BaseSignupForm):
                   'password_confirmation')
 
 
-class InviteHomebuyerForm(forms.ModelForm):
-    def clean_email(self):
-        """
-        Ensure the email does not match an existing User or PendingHomebuyer.
-        """
-        email = self.cleaned_data.get('email', None)
+class InviteHomebuyerForm(forms.Form):
+    homebuyer1_first = forms.CharField(max_length=30, label="First Name")
+    homebuyer1_last = forms.CharField(max_length=30, label="Last Name")
+    homebuyer1_email = forms.EmailField(max_length=254, label="Email")
+    homebuyer2_first = forms.CharField(max_length=30, label="First Name")
+    homebuyer2_last = forms.CharField(max_length=30, label="Last Name")
+    homebuyer2_email = forms.EmailField(max_length=254, label="Email")
+
+    def _clean_email(self, field):
+        email = self.cleaned_data.get(field, None)
         if not email:
             return None
 
         for model in (User, PendingHomebuyer):
             if model.objects.filter(email=email).exists():
                 self.add_error(
-                    'email',
+                    field,
                     ValidationError("A user with this email already "
                                     "exists or has been invited."))
         return email
 
-    class Meta:
-        model = PendingHomebuyer
-        fields = ('email', 'first_name', 'last_name')
+    def clean_homebuyer1_email(self):
+        return self._clean_email('homebuyer1_email')
 
+    def clean_homebuyer2_email(self):
+        return self._clean_email('homebuyer2_email')
 
-class InviteHomebuyersFormSet(BaseModelFormSet):
-    def __init__(self, *args, **kwargs):
+    def clean(self):
         """
-        Disallow empty forms.
+        Ensure password matches password_confirmation.
         """
-        super(InviteHomebuyersFormSet, self).__init__(*args, **kwargs)
-        for form in self.forms:
-            form.empty_permitted = False
-        return
+        cleaned_data = super(InviteHomebuyerForm, self).clean()
+        email1 = cleaned_data.get('homebuyer1_email')
+        email2 = cleaned_data.get('homebuyer2_email')
+        if (email1 and email2 and email1 == email2):
+            self.add_error(None, ValidationError("Emails must not match"))
+        return cleaned_data

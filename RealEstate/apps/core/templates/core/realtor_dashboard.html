@@ -2,6 +2,10 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
+{% block title %}
+  Dashboard
+{% endblock %}
+
 {% block style %}
   <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
@@ -12,11 +16,11 @@
 {% block body %}
   {% if not couples.exists and not pending_couples.exists %}
     <div class="soft-error">
-      <p>You have not yet invited any couples.</p>
-      <p>Please click the 'Invite Couple' button below to invite couples.</p>
+      <p>You have not yet invited any homebuyers.</p>
+      <p>Please click the 'Invite Homebuyers' button below to invite homebuyers.</p>
     </div>
   {% else %}
-    <h3 class="header"><strong>Registered Homebuyers</strong></h3>
+    <h1 class="header"><strong>Registered Homebuyers</strong></h1>
     <ul class="list-group">
       {% for couple in couples %}
         <li class="list-group-item couple_row">
@@ -31,9 +35,9 @@
                 <center>
                   <a class="report" href="{{couple.report_url}}">Report</a>
                   &nbsp;
-                  <a href="#" id="home_{{couple.id}}" class="add-home" data-toggle="modal" data-target="#AddHomeModal">Add Home</a>
+                  <a href="#" id="home_{{couple.id}}" class="add-home" data-toggle="modal" data-target="#AddHouseModal">Add House</a>
                   <a href="mailto:{{couple.emails}}" target="_blank" class="mail" style="font-size:28px;">
-                    <span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter icon" ></span>
+                    <span id="mail_{{couple.id}}" class="glyphicon glyphicon-envelope vcenter icon-leftpad" ></span>
                   </a>
                 </center>
               </div>
@@ -42,13 +46,13 @@
         </li>
       {% empty %}
         <li class="list-group-item couple_row soft-error">
-          No couples have registered
+          No homebuyers have registered
         </li>
       {% endfor %}
     </ul>
     <br>
 
-    <h3 class="header"><strong>Invited Homebuyers</strong></h3>
+    <h1 class="header"><strong>Invited Homebuyers</strong></h1>
     <ul class="list-group">
       {% for pending_couple in pending_couples %}
         <li class="list-group-item couple_row">
@@ -66,8 +70,9 @@
               </div>
               <div class="hbdash-center">
                 <center>
-                  <span style="visibility:hidden;">Report</span>
-                  <a href="mailto:{{pending_couple.emails}}" target="_top" class="mail" style="font-size:28px;">
+                  <a class="report" href="#" style="visibility:hidden;">Report</a>&nbsp;
+                  <a class="add-home" href="#" style="visibility:hidden;">Add House</a>
+                  <a href="mailto:{{pending_couple.emails}}" target="_blank" class="mail" style="font-size:28px;">
                     <span id="mail_{{pendingcouple.id}}" class="glyphicon glyphicon-envelope vcenter icon" ></span>
                   </a>
                 </center>
@@ -77,7 +82,7 @@
         </li>
       {% empty %}
         <li class="list-group-item couple_row soft-error">
-          No couples with pending invitations
+          No homebuyers with pending invitations
         </li>
       {% endfor %}
     </ul>
@@ -88,21 +93,33 @@
     <div class="red-alert">* Unregistered</div>
   {% endif %}
   <center>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteCouple">Invite Couple</button>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#inviteHomebuyers">Invite Homebuyers</button>
   </center>
 
-  <!-- Invite Couple Modal -->
-  <div id="inviteCouple" class="modal fade modalHeight" role="dialog">
+  <!-- Invite Homebuyers Modal -->
+  <div id="inviteHomebuyers" class="modal fade modalHeight" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h3 class="modal-title">Invite a couple</h3>
+          <h1 class="modal-title">Invite Homebuyers</h1>
         </div>
-        <div class="modal-body">
+        <div class="modal-body row">
           <form action="" role="form" method="post">
-            {% bootstrap_formset invite_formset %}
             {% csrf_token %}
+            {% bootstrap_form_errors invite_form %}
+            <div class="col-sm-6">
+              <h4 class="header">First Homebuyer</h4>
+              {% bootstrap_field invite_form.homebuyer1_first %}
+              {% bootstrap_field invite_form.homebuyer1_last %}
+              {% bootstrap_field invite_form.homebuyer1_email %}
+            </div>
+            <div class="col-sm-6">
+              <h4 class="header">Second Homebuyer</h4>
+              {% bootstrap_field invite_form.homebuyer2_first %}
+              {% bootstrap_field invite_form.homebuyer2_last %}
+              {% bootstrap_field invite_form.homebuyer2_email %}
+            </div>
             <center>
               {% buttons submit='Invite' %}{% endbuttons %}
             </center>
@@ -112,26 +129,25 @@
     </div>
   </div>
 
-  <!-- Add Home Modal -->
-<div id="AddHomeModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add Home" aria-hidden="true">
+  <!-- Add House Modal -->
+  <div id="AddHouseModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add House" aria-hidden="true">
     <div class="modal-dialog">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Add Home Window" aria-hidden ="true">&times;</button>
-                <h4 class = "modal-title">Add Home</h4>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="" role="form" class="uniForm">
-                {% bootstrap_form form %}
-                {% csrf_token %}
-                <center>{% buttons submit='Save Home' %}{% endbuttons %}</center>
-                </form>
-            </div>
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
+          <h1 class="modal-title">Add House</h1>
         </div>
+        <div class="modal-body">
+          <form method="post" action="" role="form" class="uniForm">
+            {% bootstrap_form form %}
+            {% csrf_token %}
+            <center>{% buttons submit='Save House' %}{% endbuttons %}</center>
+          </form>
+        </div>
+      </div>
     </div>
-</div>
-
+  </div>
 {% endblock %}
 
 {% block scripts %}
@@ -139,17 +155,17 @@
   <script>
       $(document).ready(function() {
           // Show modal on page load if there were invite submission errors
-          var $errorMessages = $('#inviteCouple .alert.alert-danger');
-          var $helpBlocks = $('#inviteCouple span.help-block');
+          var $errorMessages = $('#inviteHomebuyers .alert.alert-danger');
+          var $helpBlocks = $('#inviteHomebuyers span.help-block');
 
           if ($errorMessages.length || $helpBlocks.length) {
-              $('#inviteCouple').modal();
+              $('#inviteHomebuyers').modal();
           }
       });
 
       $(".add-home").click(function() {
         var id = $(this).attr("id").toString().replace(/home_/i, "");
-        $("#AddHomeModal input[name='id']").val(id);
+        $("#AddHouseModal input[name='id']").val(id);
       });
   </script>
 {% endblock %}

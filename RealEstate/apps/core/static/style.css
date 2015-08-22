@@ -30,8 +30,16 @@ nav.navbar * {
     color: white !important;
 }
 
+.navbar-default .navbar-toggle span.icon-bar {
+    background-color: white;
+}
+
 #main-content .header, .modal-header {
     text-align:center;
+}
+
+.modal-body .header {
+    margin-bottom: 24px;
 }
 
 ul.list-group {
@@ -41,19 +49,14 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-	display:none;
-	padding-left: 20px;
-	font-size: 90%;
-}
-.ok {
-	color: green;
-}
-.delete {
-    color: #A94431;
+    padding-right: 20px;
+    font-size: 100%;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
-.edit {
-    color: #31708f;
+.icon-leftpad {
+    padding-left: 20px;
+    color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .vcenter {
@@ -101,11 +104,15 @@ button.close{
 .http-error {
     font-style: bold;
 }
-.soft-error {
+
+.http-error, .soft-error {
     font-style: italic;
     text-align: center;
 }
 
+.modal-content button, #main-content button, #main-content .dashboard-buttons a {
+    font-size: x-large;
+}
 
 /* categories */
 
@@ -118,11 +125,39 @@ button.close{
 .tooltip-main.top.in {
 	z-index:1 !important;
 }
-.close {
-	z-index: 3000 !important;
-}
 #catRating-out{
 	padding-left:10%
+}
+
+.categoryBtn {
+    padding: 5px;
+    margin:10px 0px !important;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    width: 100%;
+    overflow: hidden;
+}
+
+.categoryBtn>label {
+    font-weight: 400;
+    font-size: 65% !important;
+    cursor: pointer;
+}
+
+.categoryBtn:hover {
+    background-color: #337ab7;
+}
+
+.categoryBtn:hover >label {
+    color: #fff;
+}
+
+.inner-category {
+    padding: 0 20px;
+}
+
+.category-header {
+    margin-bottom: 30px;
 }
 
 /*realtorHome */
@@ -207,6 +242,7 @@ a.mail {
 .nav a{
 		background-color:transparent !important;
 }
+
 #bg-img {
   background: url(images/homepage_house.jpg) no-repeat center center;
   -webkit-background-size: cover;
@@ -227,4 +263,8 @@ a.mail {
 .registerbutton{
     padding: 20px 50px;
     font-size: 150%;
+}
+
+.about-row {
+    margin: 80px 0;
 }

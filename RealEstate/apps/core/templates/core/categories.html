@@ -2,13 +2,17 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
+{% block title %}
+  Categories
+{% endblock %}
+
 {% block style %}
   <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
 
 {% block header %}
   <div id="heading" class="header">
-    <h3><strong>Categories</strong></h3>
+    <h1><strong>Categories</strong></h1>
     <h4>How important are the categories below when choosing a home?</h4>
   </div>
 {% endblock header %}
@@ -25,11 +29,7 @@
         <div id="row_{{category.id}}" class="row category_row ">
           <!-- Category Summary -->
           <div class="col-md-4 vcenter summary-col">
-            <h4>{{category.summary}}
-              <span data-toggle="modal" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-              <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
-              <span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
-            </h4>
+            <h4 id='update_{{category.id}}'>{{category.summary}}</h4>
             {% if category.description %}
               <p>{{ category.description }}</p>
             {% endif %}
@@ -44,36 +44,59 @@
                 <span class="help-text" id="helptext-R">{{max_choice}}</span>
               </center>
             </div>
+           
           </div>
-
+           <div class="pull-right">
+                <span data-toggle="modal" title="Edit this category" data-target="#edit-modal" id='edit_{{category.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                <span data-toggle="modal" title="Delete this category" data-target="#confirmDelete" id='delete_{{category.id}}' class='glyphicon glyphicon-remove icon delete'></span>
+            </div>
         </div>
       </li>
     {% endfor %}
   </ul>
   <center>
-      <button type="button" style="margin-bottom:20px;" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
+      <button id="addCategoryBtn" type="button" style="margin-bottom:20px;" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
   </center>
 
-  <!-- Add Category Modal -->
-  <div id="addCategory" class="modal fade modalHeight" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h3 class="modal-title">Add another thing you care about</h3>
+<!-- Add Category Modal -->
+<div id="addCategory" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="row">
+          <button type="button" style="padding: 0px 30px;" class="close" data-dismiss="modal">&times;</button>
         </div>
-        <div class="modal-body">
-          <form action="" role="form" method="post">
-            {% bootstrap_form form %}
-            {% csrf_token %}
-            <center>
-              {% buttons submit='Save Category' %}{% endbuttons %}
-            </center>
-          </form>
-        </div>
+        <form action="" role="form" method="post">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="inner-category">
+                <h2 class="category-header">Select a few categories... </h2>
+                <div class="row">
+                  {% for checkbox in form.optional_categories %}
+                  <div class="col-xs-6" >
+                    <button type="button" class="btn categoryBtn">{{checkbox}}</button>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="inner-category">
+                <h2 class="category-header">... Or make up your own.</h2>
+                {% bootstrap_field form.summary %}
+                {% bootstrap_field form.description %}
+                {% csrf_token %}
+              </div>
+            </div>
+          </div>
+          <center>
+            {% buttons submit='Save Category' %}{% endbuttons %}
+          </center>
+        </form>
       </div>
     </div>
   </div>
+</div>
 
   <!-- Edit Category Modal -->
   <div id="edit-modal" class="modal fade modalHeight" role="dialog">
@@ -81,7 +104,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h3 class="modal-title">Edit your category!</h3>
+          <h1 class="modal-title">Edit your category!</h1>
         </div>
         <div class="modal-body">
           <form action="" role="form" method="post">
@@ -104,7 +127,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h3 class="modal-title">Are you sure about this?</h3>
+          <h1 class="modal-title">Are you sure about this?</h1>
         </div>
         <div class="modal-body">
           <p>You're about to delete this category and all associated house rankings.</p>
@@ -118,43 +141,89 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{% static "slide.min.js" %}"></script>
-  <script src="{% static "debounce.js" %}"></script>
-  <script src="{% static "base.js" %}"></script>
+<script src="{% static "slide.min.js" %}"></script>
+<script src="{% static "jquery.color.js" %}"></script>
+<script src="{% static "debounce.js" %}"></script>
+<script src="{% static "base.js" %}"></script>
 
-  <script>
-      var jsWeights = {{js_weight|safe}}
-      var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
-      $(".slide").slider({
-        formatter: function(value) {
-                return jsWeights[value] || "";
-        }
-      });
+<script>
+var jsWeights = {{js_weight|safe}}
+var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+$(".slide").slider({
+  formatter: function(value) {
+          return jsWeights[value] || "";
+  }
+});
 
-      // Provides user interaction when saving through ajax.
-      $(".slide").change($.debounce( 700, slideChange ));
+// Provides user interaction when saving through ajax.
+$(".slide").change($.debounce( 700, slideChange ));
 
-      // Shows edit and delete icons on div mouseenter.
-      $( ".category_row" ).bind( "mouseenter", hoverActions("category_row", "delete", "edit"));
+// Shows edit and delete icons on div mouseenter.
+$( ".category_row" ).bind( "mouseenter", hoverActions("category_row", "delete", "edit"));
 
-      // Handles sizing of columns and breaks columns at appropriate times.
-      $(window).on("resize", function () {
-        var divWidth = $(".row").width();
-        if(divWidth < 570){
-          $(".rating").css("width", "90%");
-          $(".help-text").hide();
-          $(".rating-col").css("min-width", "0");
+// Handles sizing of columns and breaks columns at appropriate times.
+$(window).on("resize", function () {
+  var divWidth = $(".row").width();
+  if(divWidth < 570){
+    $(".rating").css("width", "90%");
+    $(".help-text").hide();
+    $(".rating-col").css("min-width", "0");
+  }
+  else if(divWidth < 750){
+    $(".help-text").show();
+    $(".rating").css("width", "90%");
+    $(".rating-col").css("min-width", "500px");
+  }
+  else{
+    $(".help-text").show();
+    $(".rating").css("width", "60%").css("margin", "0 auto");
+    $(".rating-col").css("min-width", "500px");
+  }
+}).resize();
+
+$( "#addCategoryBtn" ).click(function(){
+    $.ajax({
+        type: "POST",
+        data: {
+            csrfmiddlewaretoken: document.getElementsByName('csrfmiddlewaretoken')[0].value,
+            type: "category"
+        },
+        success: function(data){
+            for (var i in data['category']) {
+                $("input[value="+data['category'][i]+"]").parent().parent().parent().css("display", "none");
+            }
         }
-        else if(divWidth < 750){
-          $(".help-text").show();
-          $(".rating").css("width", "90%");
-          $(".rating-col").css("min-width", "500px");
-        }
-        else{
-          $(".help-text").show();
-          $(".rating").css("width", "60%").css("margin", "0 auto");
-          $(".rating-col").css("min-width", "500px");
-        }
-      }).resize();
-  </script>
+    });
+});
+
+$(".categoryBtn").click(function(){
+  if( $(this).find("input").prop("checked") ){
+    $(this).css("background-color", "#fff");
+    $(this).find("input").prop("checked", false);
+    $(this).find("label").css("color", "rgb(40, 96, 144)");
+    $(this).hover(function(){
+        $(this).css("background-color", "#337ab7");
+        $(this).find("label").css("color", "#fff");
+    },function(){
+        $(this).css("background-color", "#fff");
+        $(this).find("label").css("color", "rgb(40, 96, 144)");
+    });
+  }
+  else{
+    $(this).css("background-color", "#337ab7");
+    $(this).find("input").prop("checked", true);
+    $(this).find("label").css("color", "#fff");
+    $(this).hover(function(){
+        $(this).css("background-color", "#337ab7");
+        $(this).find("label").css("color", "#fff");
+    },function(){
+        $(this).css("background-color", "#337ab7");
+        $(this).find("label").css("color", "#fff");
+    });
+  }
+});
+
+$("input[type=checkbox]").hide()
+</script>
+
 {% endblock %}

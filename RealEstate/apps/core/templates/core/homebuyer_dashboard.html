@@ -2,6 +2,10 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
+{% block title %}
+  Dashboard
+{% endblock %}
+
 {% block header %}
 {% comment %}
   <h2><strong>Dashboard</strong></h2>
@@ -32,35 +36,35 @@
     </div>
     <br>
   {% else %}
-    <h3 class="header"><strong>Houses</strong></h3>
+    <h1 class="header"><strong>Houses</strong></h1>
     <ul class="list-group">
       {% for house in houses %}
         <li class="list-group-item" id="li_{{house.id}}">
-          <div class="row home_row" id="row_{{house.id}}">
-            <div class="row-con">
-              <div class="col-sm-6">
+          <div class="row home_row " id="row_{{house.id}}">
+              <div class="col-sm-6 vcenter">
                 <h4>
                   {{house}}
-                  <span data-toggle="modal" data-target="#edit-modal" id='edit_{{house.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-                  <span data-toggle="modal" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
                 </h4>
                 {% for line in house.address_lines %}
                   <span>{{ line }}</span><br>
                 {% endfor %}
               </div>
-              <div class="hbdash-center">
-                <p>
+              <div class="col-sm-5 vcenter">
+                <center>
                   <a href="{{house.evaluation_url}}"> Rate House </a>
-                </p>
+                </center>
+              </div>
+              <div class="pull-right">
+                <span data-toggle="modal" title="Edit this house" data-target="#edit-modal" id='edit_{{house.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
+                <span data-toggle="modal" title="Delete this house" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
               </div>
             </div>
-          </div>
         </li>
       {% endfor %}
     </ul>
   {% endif %}
 
-  <div class="addButton">
+  <div class="addButton dashboard-buttons">
     <center>
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHouseModal">
         Add House
@@ -76,7 +80,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h3 class="modal-title">Are you sure about this?</h3>
+          <h1 class="modal-title">Are you sure about this?</h1>
         </div>
         <div class="modal-body">
           <p>You're about to delete this home and all associated evaluations.</p>
@@ -97,7 +101,7 @@
           <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">
               &times;
           </button>
-          <h4 class="modal-title">Edit your home</h4>
+          <h1 class="modal-title">Edit your home</h1>
         </div>
         <div class="modal-body">
           <form method="post" action="" role="editForm" class="uniForm">
@@ -119,7 +123,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
-          <h3 class="modal-title">Add House</h3>
+          <h1 class="modal-title">Add House</h1>
         </div>
         <div class="modal-body">
           <form method="post" action="" role="form" class="uniForm">

@@ -205,7 +205,7 @@ class APICategoryView(APIView):
 
         categories = []
         for c in category:
-            cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=category)
+            cweight = CategoryWeight.objects.filter(homebuyer__user=request.user, category=c)
 
             if cweight.count() < 1:
                 w = 'NAN'

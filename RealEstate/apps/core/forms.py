@@ -7,15 +7,22 @@ from django.contrib.auth.forms import (PasswordChangeForm, UserChangeForm,
 from django.core.exceptions import ValidationError
 
 from passwords.fields import PasswordField
-
+from RealEstate.apps.core import models
 from RealEstate.apps.core.models import Category, House, User
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
-class AddCategoryForm(forms.ModelForm):
-    class Meta:
-        model = Category
-        fields = ('summary', 'description')
+class AddCategoryForm(forms.Form):
+    choices = []
+    for key, value in models._CATEGORIES.items():
+        choices.append((key, value['summary']))
+    optional_categories = forms.MultipleChoiceField(
+        required=False, label='',
+        widget=forms.CheckboxSelectMultiple,
+        choices=choices)
+    summary = forms.CharField(max_length=128, required=False, label="Summary")
+    description = forms.CharField(required=False, label="Description",
+                                  widget=forms.Textarea)
 
 
 class AddCategoryFromEvalForm(forms.ModelForm):
@@ -95,7 +102,6 @@ class PasswordChangeForm(PasswordChangeForm):
 
     def clean(self):
         cleaned_data = super(PasswordChangeForm, self).clean()
-        new_password = cleaned_data.get('new_password1')
         if 'new_password1' in self.errors:
             self.errors['new_password1'] = [settings.PASSWORD_ERROR_MESSAGE]
         return cleaned_data
@@ -104,7 +110,6 @@ PasswordChangeForm.base_fields = OrderedDict(
     (k, PasswordChangeForm.base_fields[k])
     for k in ['old_password', 'new_password1', 'new_password2']
 )
-
 
 
 class RealtorSignupForm(BaseSignupForm):

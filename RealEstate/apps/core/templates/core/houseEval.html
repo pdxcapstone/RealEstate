@@ -2,13 +2,17 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
+{% block title %}
+  House Evaluation
+{% endblock %}
+
 {% block style %}
 <link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
 {% endblock %}
 
 {% block header %}
   <div class="header" id="heading">
-    <h3><strong> Evaluation for {{house}}</strong></h3>
+    <h1><strong> Evaluation for {{house}}</strong></h1>
     {% for line in house.address_lines %}
       <span>{{ line }}</span><br>
     {% endfor %}
@@ -23,9 +27,7 @@
 		<li class="list-group-item">
 			<div class="row">
 				<div class="col-sm-6 vcenter">
-					<h4>{{category.summary}}
-						<span id='update_{{category.id}}' class='glyphicon glyphicon-ok icon ok'></span>
-					</h4>
+					<h4 id='update_{{category.id}}'>{{category.summary}}</h4>
 					{% if category.description %}
 						<p>
 							{{ category.description }}
@@ -56,7 +58,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h3 class="modal-title">Add another thing you care about</h3>
+        <h1 class="modal-title">Add another thing you care about</h1>
       </div>
       <div class="modal-body">
         <form action="" role="form" method="post">
@@ -84,6 +86,7 @@
 
 {% block scripts %}
 <script src="{% static "slide.min.js" %}"></script>
+<script src="{% static "jquery.color.js" %}"></script>
 <script src="{% static "debounce.js" %}"></script>
 <script src="{% static "base.js" %}"></script>
 
