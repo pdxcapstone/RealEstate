@@ -161,7 +161,7 @@ class PendingHomebuyer(BaseModel):
         registered.
         """
         if self.registered:
-            return None
+            return True
 
         app_name = settings.APP_NAME
         subject = u"{app_name} Invitation".format(app_name=app_name)
@@ -169,8 +169,12 @@ class PendingHomebuyer(BaseModel):
             name=self.first_name,
             app_name=app_name,
             signup_link=self._signup_link(request.get_host()))
-        return send_mail(subject, message, settings.EMAIL_HOST_USER,
-                         [self.email], fail_silently=False)
+        try:
+            send_mail(subject, message, settings.EMAIL_HOST_USER, [self.email],
+                      fail_silently=False)
+        except:
+            return False
+        return True
 
     class Meta:
         ordering = ['email']
