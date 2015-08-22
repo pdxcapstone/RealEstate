@@ -154,13 +154,7 @@
   <script src="{% static "base.js" %}"></script>
   <script>
       $(document).ready(function() {
-          // Show modal on page load if there were invite submission errors
-          var $errorMessages = $('#inviteHomebuyers .alert.alert-danger');
-          var $helpBlocks = $('#inviteHomebuyers span.help-block');
-
-          if ($errorMessages.length || $helpBlocks.length) {
-              $('#inviteHomebuyers').modal();
-          }
+          openModalOnError('inviteHomebuyers');
       });
 
       $(".add-home").click(function() {

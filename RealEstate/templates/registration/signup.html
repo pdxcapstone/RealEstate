@@ -14,7 +14,7 @@
     {{ block.super }}
   </div>
   <div class="container" style="margin-bottom: 50px;">
-      
+
       <div class="row about-row">
           <div class="col-md-6" style="margin-bottom: 40px">
               <h2 style="margin-bottom: 40px;">Individual preferences, combined</h2>
@@ -36,7 +36,7 @@
               <center>
               <img src="{% static "RateHouse.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(46, 204, 113,0.9);" width=85%/>
               </center>
-              
+
           </div>
       </div>
         <div class="row about-row" style="margin-bottom: 40px">
@@ -60,7 +60,7 @@
               <img src="{% static "Dashboard.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(231, 76, 60,0.6);" width=90%/>
               </center>
           </div>
-          
+
         </div>
       <div class="row about-row">
           <div class="col-md-7" style="margin-bottom: 40px">
@@ -74,7 +74,7 @@
           </div>
       </div>
   </div>
-    
+
 {% endblock main %}
 
 {% block body %}
@@ -107,7 +107,7 @@
               {% csrf_token %}
               {% bootstrap_form signup_form %}
                <center>
-                  {% buttons submit='Registar' %}{% endbuttons %}
+                  {% buttons submit='Register' %}{% endbuttons %}
                 </center>
             </form>
           </div>
@@ -115,3 +115,12 @@
     </div>
     </div>
 {% endblock %}
+
+{% block scripts %}
+  <script src="{% static "base.js" %}"></script>
+  <script>
+      $(document).ready(function () {
+          openModalOnError('SignupModal');
+      });
+  </script>
+{% endblock scripts %}
