@@ -41,23 +41,26 @@
       {% for house in houses %}
         <li class="list-group-item" id="li_{{house.id}}">
           <div class="row home_row " id="row_{{house.id}}">
-              <div class="col-sm-6 vcenter">
+              <div class="col-sm-1 vcenter " style="min-width:150px">
+                  <div style="padding: 20px 0; min-width: 150px ">
+                  <a title="Rate this house" class='text-nowrap glyphicon glyphicon-pencil icon-leftpad edit' href="{{house.evaluation_url}}" style="text-decoration: none;"> Rate</a>
+                <span data-toggle="modal" title="Edit this house" data-target="#edit-modal" id='edit_{{house.id}}' class='text-nowrap glyphicon glyphicon-wrench icon-leftpad edit'> Edit</span>
+                <span data-toggle="modal" title="Delete this house" data-target="#confirmDelete" id='delete_{{house.id}}' class=' text-nowrap glyphicon glyphicon-remove icon-leftpad delete'> Delete</span>
+                </div>
+              </div>
+              <!--<div class="col-xs-2 vcenter"  ></div>-->
+              <div class="col-xs-9 vcenter"  style="margin-left:20px" >
                 <h4>
                   {{house}}
                 </h4>
+                <div class="wrap">
                 {% for line in house.address_lines %}
                   <span>{{ line }}</span><br>
                 {% endfor %}
+                </div>
               </div>
-              <div class="col-sm-5 vcenter">
-                <center>
-                  <a href="{{house.evaluation_url}}"> Rate House </a>
-                </center>
-              </div>
-              <div class="pull-right">
-                <span data-toggle="modal" title="Edit this house" data-target="#edit-modal" id='edit_{{house.id}}' class='glyphicon glyphicon-pencil icon edit'></span>
-                <span data-toggle="modal" title="Delete this house" data-target="#confirmDelete" id='delete_{{house.id}}' class='glyphicon glyphicon-remove icon delete'></span>
-              </div>
+
+              
             </div>
         </li>
       {% endfor %}

@@ -51,13 +51,13 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-    padding-right: 20px;
+    padding-left: 20px;
     font-size: 100%;
     color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .icon-leftpad {
-    padding-left: 20px;
+    padding: 10px 20px;
     color: rgb(40, 96, 144);
     cursor: pointer;
 }
