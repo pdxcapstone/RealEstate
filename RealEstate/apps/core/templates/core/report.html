@@ -103,26 +103,26 @@
 
             <div>
                 <div class="header row">
-                    <div class="col-md-6">
+                    <div class="col-xs-6">
                         <h2 id="report-title" ><center>HOME NAME</center></h2>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-xs-3">
                         <h2 id="report-title"><center>OVERALL SCORE</center></h2>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-xs-3">
                         <h2 id="report-title"><center>FINAL GRADE</center></h2>
                     </div>
                 </div>
 
                 {% for key, value in totalScore.items %}
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-xs-6">
                             <h3><center>{{key}}</center></h3>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-xs-3">
                             <h3><center>{{value}}</center></h3>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-xs-3">
                             {% if value >= 3.5 %}
                                 <h3 class="finalGrade-ref" id="finalGrade-Ap"><center>A+</center></h3>
                             {% elif value >= 3.0 %}

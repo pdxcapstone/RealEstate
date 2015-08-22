@@ -329,6 +329,7 @@ a.mail {
     border-radius: 0.5em; /* Comment out if you prefer squarish samples */
     margin-right: 0.5em;
 }
+
 .nav-tabs > li > a {
     background-color: #ddd !important;
 }
@@ -346,4 +347,8 @@ a.mail {
     margin-bottom:-2px;
     min-width: 730px;
     overflow: hidden;
+}
+
+h2{
+    font-size: 1.4em;
 }
