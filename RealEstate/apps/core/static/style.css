@@ -3,7 +3,9 @@
 html, body, #main-content {
 	height: 100%;
 }
-
+.descrip-col {
+    margin: 900px;
+}
 #main-content {
     overflow-y: auto;
     overflow-x: hidden;
@@ -237,10 +239,10 @@ a.mail {
 	font-size:150%;
 }
 .nav a:hover{
-		background-color:transparent !important;
+	background-color:transparent !important;
 }
 .nav a{
-		background-color:transparent !important;
+	background-color:transparent !important;
 }
 
 #bg-img {
@@ -265,6 +267,10 @@ a.mail {
     font-size: 150%;
 }
 
+
+
 .about-row {
     margin: 80px 0;
 }
+
+
