@@ -1,5 +1,6 @@
 import json
 import time
+import math
 
 from django.conf import settings
 from django.contrib import messages
@@ -698,6 +699,7 @@ class ReportView(BaseView):
     Homebuyer that is part of the Couple instance, and display the results.
     """
     template_name = 'core/report.html'
+    incomplete_template_name = 'core/incomplete_report.html'
 
     def _permission_check(self, request, role, *args, **kwargs):
         """
@@ -709,4 +711,140 @@ class ReportView(BaseView):
         return role.can_view_report_for_couple(couple_id)
 
     def get(self, request, *args, **kwargs):
-        return render(request, self.template_name, {})
+        couple_id = int(kwargs.get('couple_id', 0))
+        couple = Couple.objects.get(id=couple_id)
+        registered = couple.registered
+        categories = couple.category_set.all()
+        houses = couple.house_set.all()
+        if not all([registered, categories.exists(), houses.exists()]):
+            context = {
+                'categories': categories,
+                'houses': houses,
+                'registered': registered,
+            }
+            return render(request, self.incomplete_template_name, context)
+
+        homebuyers = couple.homebuyer_set.all()
+        first = 0
+        second = 1
+        largestScore = 0.01
+        data1 = homebuyers[first].report_data
+        data2 = homebuyers[second].report_data
+        data3 = homebuyers[first].home_report_data
+        data4 = homebuyers[second].home_report_data
+        colors = ["#286090", "#9BCE7D", "#639BF1", "#3D3C3A", "#98002F", "#B6A754", "#0193B7",
+                  "#5F6024", "#856941", "#ED6639", "#AB3334", "#0FB493", "#262C3A", "#57102C"]
+
+        categoryImportance = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            categoryImportance.append((category, weight1, weight2))
+
+        weightsAve = []
+        weights1 = []
+        weights2 = []
+        index1 = 0
+        index2 = 0
+        for category in data1:
+            weightAve = (float(data1[category]["weight"]) + float(data2[category]["weight"])) / (homebuyers[first].category_weight_total + homebuyers[second].category_weight_total)
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
+            weightsAve.append((colors[index1], category, int(weightAve * 100)))
+            weights1.append((colors[index1], category, int(weight1 * 100)))
+            index1 = (index1 + 1) % len(colors)
+            weights2.append((colors[index2], category, int(weight2 * 100)))
+            index2 = (index2 + 1) % len(colors)
+
+        categoryData = []
+        for category in data1:
+            weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
+            weight2 = float(data1[category]["weight"]) / homebuyers[second].category_weight_total
+            scores = []
+            for house in data1[category]["houses"]:
+                score1 = round((data1[category]["houses"][house] * weight1), 2)
+                score2 = round((data2[category]["houses"][house] * weight2), 2)
+                averageScore = round(((score1 + score2) / 2), 2)
+                scores.append((house, averageScore, colors[index1]))
+                index1 = (index1 + 1) % len(colors)
+
+            for houses, score, color in scores:
+                if score > largestScore:
+                    largestScore = score
+
+            categoryData.append((category, scores))
+
+        index3 = 0
+        index4 = 0
+        weights3 = []
+        weights4 = []
+        for houses in data3:
+            weight3 = float(data3[houses]["weight"]) / homebuyers[first].category_weight_total
+            weight4 = float(data4[houses]["weight"]) / homebuyers[second].category_weight_total
+            weights3.append((colors[index3], category, int(weight3 * 100)))
+            index3 = (index3 + 1) % len(colors)
+            weights4.append((colors[index4], category, int(weight4 * 100)))
+            index4 = (index4 + 1) % len(colors)
+
+        houseData = []
+        for houses in data3:
+            weight3 = float(data3[houses]["weight"]) / homebuyers[first].category_weight_total
+            weight4 = float(data4[houses]["weight"]) / homebuyers[second].category_weight_total
+            scores = []
+            for category in data3[houses]["categories"]:
+                score3 = round((data3[houses]["categories"][category] * weight3), 2)
+                score4 = round((data4[houses]["categories"][category] * weight4), 2)
+                averageScore = round(((score3 + score4) / 2), 2)
+                scores.append((category, averageScore, colors[index3]))
+                index3 = (index3 + 1) % len(colors)
+
+            houseData.append((houses, scores))
+
+        minVal = 5.0
+        maxVal = 0.0
+        totalScore = {}
+        for category, homes in categoryData:
+            for home, score, color in homes:
+                if(home in totalScore.keys()):
+                    totalScore[home] += score
+                else:
+                    totalScore[home] = score
+
+        for home in totalScore:
+            if minVal > totalScore[home]:
+                minVal = totalScore[home]
+            if maxVal < totalScore[home]:
+                maxVal = totalScore[home]
+
+
+        minVal = minVal - 1
+        maxVal = maxVal + 0.5
+
+        if minVal < 0:
+            minVal = 0.0
+
+        if maxVal > 5:
+            maxVal = 5.0
+
+        houseNum = (int(math.ceil(0.7* len(data1.values()[0].values()[0])))
+            if data1 is not None else 0)
+        houseWidth = (len(data1.values()[0].values()[0]) * 65 if data1 is
+            not None else 0 )
+
+        context = {
+            'homebuyer1': homebuyers[0],
+            'homebuyer2': homebuyers[1],
+            'categoryImportance': categoryImportance,
+            'pieAve': weightsAve,
+            'categoryData': categoryData,
+            'houseData': houseData,
+            'totalScore': totalScore,
+            'largestScore': largestScore,
+            'categoryNum': int(math.ceil(0.7*len(data1))),
+            'categoryWidth': len(data1) * 65,
+            'houseNum': houseNum,
+            'houseWidth': houseWidth,
+            'minVal': minVal,
+            'maxVal': maxVal
+        }
+        return render(request, self.template_name, context)

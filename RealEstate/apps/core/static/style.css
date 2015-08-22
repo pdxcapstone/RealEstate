@@ -74,6 +74,9 @@ ul.list-group {
 .slider-selection {
 	background: #BABABA;
 }
+#home > div > .slider-handle {
+    background-image: linear-gradient(to bottom, rgba(46, 204, 113,1) 0%, rgba(39, 174, 96,1.0) 100%) !important;
+}
 #helptext-L{
 	padding-right: 15px;
 }
@@ -104,7 +107,7 @@ button.close{
 }
 
 .http-error {
-    font-style: bold;
+    font-weight: bold;
 }
 
 .http-error, .soft-error {
@@ -202,7 +205,7 @@ a.mail {
 .login-text{
 	margin-top:50px;
 	margin-left:15px;
-	font-style: bold;
+	font-weight: bold;
 	color:#e4e4e4;
 }
 .login-form{
@@ -238,12 +241,7 @@ a.mail {
 	color:#696969;
 	font-size:150%;
 }
-.nav a:hover{
-	background-color:transparent !important;
-}
-.nav a{
-	background-color:transparent !important;
-}
+
 
 #bg-img {
   background: url(images/homepage_house.jpg) no-repeat center center;
@@ -266,11 +264,113 @@ a.mail {
     padding: 20px 50px;
     font-size: 150%;
 }
-
-
-
 .about-row {
     margin: 80px 0;
 }
 
+/* report */
+.finalGrade-ref{
+    font-weight: bold;
+    font-size: 64px;
+    vertical-align: middle;
+}
+#finalGrade-Ap{
+    color: #00CC00;
+}
+#finalGrade-A{
+    color: #009900;
+}
+#finalGrade-B{
+    color: #CCCC00;
+}
+#finalGrade-C{
+    color: #FF9900;
+}
+#finalGrade-D{
+    color: #FF6600;
+}
+#finalGrade-F{
+    color: #FF0000;
+}
 
+#padding-after{
+	padding-bottom: 50px;
+}
+
+#report-title{
+	text-decoration: underline;
+}
+
+#legend{
+    outline: solid;
+    outline-color: #bbb;
+    outline-width: 1px;
+    min-height:100px;
+}
+.row-height{
+	max-height:250px;
+}
+#hb-1{
+	background-color:rgba(217, 95, 73, 0.9);
+}
+#hb-2{
+	background-color:rgba(237, 194, 51, 0.9);
+}
+.weight-chart{
+	min-height:400px;
+	width: 100%;
+}
+
+#fork {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+}
+
+.legend {
+    width: 10em;
+    border: 1px solid black;
+    padding: 5px;
+    padding-top:8px;
+}
+
+.legend .title {
+    display: block;
+    margin-bottom: 0.5em;
+    line-height: 1.2em;
+    padding: 0 0.3em;
+}
+
+.legend .color-sample {
+    display: block;
+    float: left;
+    width: 1em;
+    height: 1em;
+    border: 2px solid; /* Comment out if you don't want to show the fillColor */
+    border-radius: 0.5em; /* Comment out if you prefer squarish samples */
+    margin-right: 0.5em;
+}
+
+.nav-tabs > li > a {
+    background-color: #ddd !important;
+}
+
+.nav-tabs > li > a:hover {
+    background-color: #ccc !important;
+    border-color: #ccc;
+}
+
+.nav-tabs>li {
+    z-index: 100;
+}
+
+.nav-tabs-responsive {
+    margin-bottom:-2px;
+    min-width: 730px;
+    overflow: hidden;
+}
+
+h2{
+    font-size: 1.4em;
+}
