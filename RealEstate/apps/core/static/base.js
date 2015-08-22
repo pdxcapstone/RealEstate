@@ -111,3 +111,14 @@ function renderDeleteMessage(objectText) {
                  .html("&times;");
     div.append("Successfully deleted '"+objectText+"'");
 }
+
+// Show modal on page load if there were modal submission errors
+function openModalOnError(id) {
+    id = '#'+id;
+    var $errorMessages = $(id + ' .alert.alert-danger');
+    var $helpBlocks = $(id + ' .help-block');
+
+    if ($errorMessages.length || $helpBlocks.length) {
+        $(id).modal();
+    }
+}

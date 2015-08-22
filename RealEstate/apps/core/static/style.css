@@ -3,7 +3,9 @@
 html, body, #main-content {
 	height: 100%;
 }
-
+.descrip-col {
+    margin: 900px;
+}
 #main-content {
     overflow-y: auto;
     overflow-x: hidden;
@@ -19,6 +21,7 @@ html, body, #main-content {
 
 .bs-blue-background {
     background-color: rgb(40, 96, 144);
+    border-color:#aaa;
 }
 
 .bs-blue, #main-content .header, .modal-content label, .modal-header {
@@ -239,14 +242,30 @@ a.mail {
 	font-size:150%;
 }
 
+
 #bg-img {
-  background: url(images/homepage_house.jpg) no-repeat center center fixed;
+  background: url(images/homepage_house.jpg) no-repeat center center;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
   width:inherit;
-  height:100%;
+  height:45em;
+}
+.tagline {
+	color: #fff;
+	text-align: center;
+	font-size: 400%;
+	text-shadow: 1px 1px #444;
+	margin-bottom: 100px;
+}
+
+.registerbutton{
+    padding: 20px 50px;
+    font-size: 150%;
+}
+.about-row {
+    margin: 80px 0;
 }
 
 /* report */

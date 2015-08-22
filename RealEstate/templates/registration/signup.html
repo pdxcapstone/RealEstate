@@ -1,42 +1,125 @@
 {% extends "core/base.html" %}
 {% load bootstrap3 %}
+{% load staticfiles %}
 
 {% block override_title %}
   <title>{{ app_name }}</title>
 {% endblock %}
 
 {% block header %}
-  <div class="col-sm-2"></div>
-  <div class="col-sm-8">
-    <h1><strong>Sign up as a Realtor</strong></h1>
-  </div>
-  <div class="col-sm-2"></div>
 {% endblock header %}
 
 {% block main %}
   <div id="bg-img" class="img-responsive">
     {{ block.super }}
   </div>
+  <div class="container" style="margin-bottom: 50px;">
+
+      <div class="row about-row">
+          <div class="col-md-6" style="margin-bottom: 40px">
+              <h2 style="margin-bottom: 40px;">Individual preferences, combined</h2>
+              Even though we have a lot in common with our partners, we value things differently when searching for the right home. David may prefer a large workshop space and big kitchen, while Sandy may care most about distance to entertainment and commute to work. Homezzo records all the unique preferences each person has and then asks each partner to rate their relative importance. The result is a powerful measure of shared preferences.
+
+          </div>
+          <div class="col-md-6">
+              <center>
+              <img src="{% static "Categories.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(52, 152, 219,0.9);" width=90%/>
+              </center>
+          </div>
+        </div>
+        <div class="row about-row">
+          <div class="col-md-6 col-md-push-6" style="margin-bottom: 40px">
+              <h2 style="margin-bottom: 40px;">Easily rate the important features of each home.</h2>
+              Homezzo provides homebuyers the opportunity to rate how well each home performs relative to each couple's shared preferences. You can even add and rate new preferences on the fly, as looking at the unique features of a particular home may reveal hidden desires.
+          </div>
+          <div class="col-md-6 col-md-pull-6">
+              <center>
+              <img src="{% static "RateHouse.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(46, 204, 113,0.9);" width=85%/>
+              </center>
+
+          </div>
+      </div>
+        <div class="row about-row" style="margin-bottom: 40px">
+          <div class="col-md-6" style="margin-bottom: 40px">
+              <h2 style="margin-bottom: 40px;">See which homes come out on top.</h2>
+              Our easy to interpret report includes a grade and score for each home you've rated together! Scores are derived from each couple's shared preferences and how each home stacks up relative to them.
+          </div>
+          <div class="col-md-6">
+              <center>
+              <img src="{% static "Results.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(241, 196, 15, 0.5);" width=100%/>
+              </center>
+          </div>
+      </div>
+      <div class="row about-row">
+          <div class="col-md-6  col-md-push-6" style="margin-bottom: 40px">
+              <h2 style="margin-bottom: 40px;">Keep track of the houses you love.</h2>
+              You can easily see all the homes under consideration, and Homezzo lets you easily add, delete, or change the descriptions for any of them.
+          </div>
+          <div class="col-md-6 col-md-pull-6">
+              <center>
+              <img src="{% static "Dashboard.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(231, 76, 60,0.6);" width=90%/>
+              </center>
+          </div>
+
+        </div>
+      <div class="row about-row">
+          <div class="col-md-7" style="margin-bottom: 40px">
+              <h2 style="margin-bottom: 40px;" >Take us with you.</h2>
+              Our handy Android app lets you add new homes, rate their importance, and see how they stack up relative to the homes you've already rated. This makes Homezzo your ultimate home shopping companion on the go!
+          </div>
+          <div class="col-md-5">
+              <center>
+              <img src="{% static "mobile.png" %}" class="img-responsive img-rounded" style="border: 15px solid rgba(127, 140, 141,0.8);" width=65%/>
+              </center>
+          </div>
+      </div>
+  </div>
+
 {% endblock main %}
 
 {% block body %}
   <div class="row" id="heading">
     <div class="col-sm-2"></div>
     <div class="col-sm-8">
-      {% bootstrap_messages %}
-      <div class="well-alt" >
-        <form class="login-form" action="" role="form" method="post">
-          {% csrf_token %}
-          {% bootstrap_form signup_form %}
-          <div class="pull-right login-margin">
-            <button class="btn btn-lr btn-primary" id="regForm" type="submit">Register</button>
-          </div>
-        </form>
-      </div>
-      <div class="create-text">
+    <div class="col-sm-2"></div>
+    <h1 class="tagline">Together, we can find the right home.</h1>
+      <center>
+       <button type="button" class="registerbutton btn btn-primary" data-toggle="modal" data-target="#SignupModal">Register</button>
+      </center>
+    <div class="create-text">
           ...or <a href="#" data-toggle="modal" data-target="#modal-login">Login</a>
           to an existing account
       </div>
     </div>
   </div>
+
+<div id="SignupModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Signup" aria-hidden="true">
+    <div class="modal-dialog">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Sign up window" aria-hidden ="true">&times;</button>
+                <h4 class = "modal-title">Welcome</h4>
+            </div>
+            <div class="modal-body">
+                <form class="login-form" action="" role="form" method="post">
+              {% csrf_token %}
+              {% bootstrap_form signup_form %}
+               <center>
+                  {% buttons submit='Register' %}{% endbuttons %}
+                </center>
+            </form>
+          </div>
+        </div>
+    </div>
+    </div>
 {% endblock %}
+
+{% block scripts %}
+  <script src="{% static "base.js" %}"></script>
+  <script>
+      $(document).ready(function () {
+          openModalOnError('SignupModal');
+      });
+  </script>
+{% endblock scripts %}
