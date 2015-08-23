@@ -2,104 +2,132 @@
 {% load bootstrap3 %}
 {% load staticfiles %}
 
-{% block style %}
-<link rel="stylesheet" type="text/css" href="{% static "slide.css" %}">
-<style>
-.slider-selection {
-	background: #BABABA;
-}
-.vcenter {
-	display: inline-block;
-	vertical-align: middle;
-	float: none;
-	margin-left:-3px;
-}
-.alert-success {
-	margin-top: 30px;
-}
-ul {
-	margin-top:50px;
-}
-.inner-rating {
-	padding:20px 0;
-}
-</style>
+{% block title %}
+  House Evaluation
 {% endblock %}
+
+{% block style %}
+<link rel="stylesheet" type="text/css" href="{% static 'slide.min.css' %}" />
+{% endblock %}
+
+{% block header %}
+  <div class="header" id="heading">
+    <h1><strong> Evaluation for {{house}}</strong></h1>
+    {% for line in house.address_lines %}
+      <span>{{ line }}</span><br>
+    {% endfor %}
+  </div>
+{% endblock header %}
 
 {% block body %}
-	<h2><strong> Evaluation for {{house}}</strong> </h2>
-	<h4><em>{{house.address}}</em></h4>
-	<ul class="list-group">
-		{% for category, score in grades %}
-			<li class="list-group-item">
-				<div class="row">
-					<div class="col-sm-6 vcenter">
-						<h4>{{category.summary}}</h4>
-						{% if category.description %}
-							<p>
-								{{ category.description }}
-							</p>
-						{% endif %}
-					</div>
-					<div class="col-sm-6 vcenter rating">
-						<div class="inner-rating" >
-							<center>
-								<span class="help-text" style="padding-right: 15px">Bad </span>
-									<input id="category_{{category.id}}" class='slide' data-slider-id='slide' type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="{% if not score %}3{% else %}{{ score }}{% endif %}"/>
-								<span class="help-text" style="padding-left: 15px">Good</span>
-							</center>
-						</div>
-					</div>
+{% csrf_token %}
+<p id="save-status" class="pull-right"></p>
+<ul class="list-group">
+	{% for category, score in grades %}
+		<li class="list-group-item">
+			<div class="row" style="margin: 20px 0;">
+			    <div class="col-sm-6 vcenter description">
+					<h4 id='update_{{category.id}}'>{{category.summary}}</h4>
+					{% if category.description %}
+						<p>
+							{{ category.description }}
+						</p>
+					{% endif %}
 				</div>
-			</li>
-		{% endfor %}
-	</ul>
-	<form style="margin-bottom:20px" action="" role="form" method="post">
-		{% bootstrap_form form%}
-		{% csrf_token %}
-		<div style="margin-top: 40px">
-			<center>
-				{% buttons submit='Save Evaluation' %}{% endbuttons %}
-				{% bootstrap_messages %}
+				<div class="col-lg-6 vcenter rating center-block" >
+					    <div class="inner-rating">
+							<span class="help-text" id="helptext-L">{{min_choice}}</span>
+							<input id="category_{{category.id}}" class='slide score-slide' data-slider-id='home' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+							<span class="help-text" id="helptext-R">{{max_choice}}</span>
+					</div>
+					
+				</div>
 
-			</center>
-		</div>
-	</form>
+			</div>
+		</li>
+	{% endfor %}
+</ul>
+
+<center>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategory">Add Category</button>
+</center>
+
+<!-- Add Category Modal -->
+<div id="addCategory" class="modal fade modalHeight" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h1 class="modal-title">Add another thing you care about</h1>
+      </div>
+      <div class="modal-body">
+        <form action="" role="form" method="post">
+            {% bootstrap_form form %}
+            {% csrf_token %}
+            <div style="margin-bottom: 30px">
+            <label class="control-label" for="id_description">Importance</label>
+            <center>
+                <span class="help-text" id="helptext-L">{{min_weightchoice}}</span>
+                <input id="category" class='slide weight-slide' data-slider-id='slide' type="text" data-slider-min={{min_weight}} data-slider-max={{max_weight}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
+                <span class="help-text" id="helptext-R">{{max_weightchoice}}</span>
+            </center>
+            </div>
+            <center>
+                {% buttons submit='Save Category' %}{% endbuttons %}
+            </center>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
+
+
 {% block scripts %}
-<script src="{% static "slide.js" %}"></script>
+<script src="{% static "slide.min.js" %}"></script>
+<script src="{% static "jquery.color.js" %}"></script>
+<script src="{% static "debounce.js" %}"></script>
+<script src="{% static "base.js" %}"></script>
+
 <script>
-	$(".slide").slider({
-		formatter: function(value) {
-			switch(value){
-				case 1: return "Very Bad";
-				case 2: return "Bad";
-				case 3: return "Average";
-				case 4: return "Good";
-				default: return "Very Good";
-			}
-		}
-	});
-	$(".slide").on("change", function(slideEvt) {
-		var categoryID = $(this).attr("id").toString().replace(/category_/i, "");
-		console.log(categoryID);
-		$("#id_"+categoryID).val( slideEvt.value.newValue );
-	});
-	$(window).on("resize", function () {
-		var divWidth = $(".row").width();
-		if(divWidth < 400){
-			$(".rating").css("width", "90%");
-			$(".help-text").hide();
-		}
-		else if(divWidth < 730){
-			$(".help-text").show();
-			$(".rating").css("width", "90%");
-		}
-		else{
-			$(".help-text").show();
-			$(".rating").css("width", "45%").css("margin", "0 auto");
-		}
-	}).resize();
+var jsScores = {{js_scores|safe}}
+var jsWeights = {{js_weight|safe}}
+$(".score-slide").slider({
+	formatter: function(value) {
+          return jsScores[value] || "";
+	}
+});
+$(".weight-slide").slider({
+	formatter: function(value) {
+          return jsWeights[value] || "";
+	}
+});
+
+$(".score-slide").change($.debounce( 700, slideChange));
+$(".weight-slide").change( function(evt) {
+    $('input[name="weight"]').val(evt.value.newValue);
+});
+
+$(window).on("resize", function () {
+	var divWidth = $(".row").width();
+	if(divWidth < 450){
+		$(".help-text").hide();
+		$(".description").css("width", "100%");
+		$(".rating").css("min-width", "100%").css("margin", "0 auto");
+	}
+	else if(divWidth < 800){
+	    $(".help-text").show();
+	    $(".description").css("width", "95%");
+		$(".rating").css("min-width", "100%")
+	}
+	else {
+		$(".help-text").show();
+		$(".description").css("width", "40%");
+		$(".rating").css("min-width", "400px");
+	}
+}).resize();
+
+
 </script>
 {% endblock %}

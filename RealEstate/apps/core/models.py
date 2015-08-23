@@ -1,14 +1,149 @@
+import itertools
+
 from django.conf import settings
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
-from django.db import IntegrityError, models
+from django.db import IntegrityError, models, transaction
+from django.dispatch import receiver
+from django.utils.crypto import get_random_string, hashlib
 
 __all__ = ['BaseModel', 'Category', 'CategoryWeight', 'Couple', 'Grade',
            'Homebuyer', 'House', 'Realtor', 'User']
+
+
+_CATEGORIES = {
+    'condition': {
+        'summary': 'Condition',
+        'description': 'Rate the overall condition of the house',
+    },
+    'location': {
+        'summary': 'Location',
+        'description': ('Rate the neighborhood, walkability, commute, and '
+                        'nearby attractions')
+    },
+    'mortgage': {
+        'summary': 'Mortgage',
+        'description': ('Rate the mortgage based on price alone, not relative '
+                        'to other rating categories')
+    },
+    'schools': {
+        'summary': 'Schools',
+        'description': 'Quality of school district'
+    },
+    'mastersuite': {
+        'summary': 'Master Suite',
+        'description': 'Condition of main bedroom and ensuite'
+    },
+    'kitchen': {
+        'summary': 'Kitchen',
+        'description': 'How nice the space is where food happens'
+    },
+    'naturallight': {
+        'summary': 'Natural Light',
+        'description': 'How bright and light it is during the day'
+    },
+    'gardening': {
+        'summary': 'Gardening',
+        'description': ('Potential to grow fruits, plants, vegetables, '
+                        'and flowers')
+    },
+    'greatroom': {
+        'summary': 'Great Room',
+        'description': ('Presence and quality of a space to gather '
+                        'and relax socially')
+    },
+    'privacy': {
+        'summary': 'Privacy',
+        'description': 'Proximity and shielding from neighbors'
+    },
+    'outdoorplayspace': {
+        'summary': 'Outdoor Playspace',
+        'description': 'Ability to relax and play outside'
+    },
+    'laundry': {
+        'summary': 'Laundry',
+        'description': 'Located conveniently, in a sensible space'
+    },
+    'noise': {
+        'summary': 'Noise',
+        'description': 'Noise levels throughout the day'
+    }
+    # ....
+}
+
+_DEFAULT_CATEGORIES = [
+    _CATEGORIES['condition'],
+    _CATEGORIES['location'],
+    _CATEGORIES['mortgage']
+]
+
+
+@receiver(models.signals.post_save)
+def _add_default_categories(sender, instance, created, **kwargs):
+    """
+    Add default categories for a couple when the first Homebuyer registers.
+    """
+    if created and sender == Couple:
+        couple = instance
+        categories = [Category(couple_id=couple.id, **category_data)
+                      for category_data in _DEFAULT_CATEGORIES]
+        with transaction.atomic():
+            created_categories = Category.objects.bulk_create(categories)
+            homebuyers = couple.homebuyer_set.all()
+            category_weights = [
+                CategoryWeight(category=category, homebuyer=homebuyer)
+                for category in created_categories
+                for homebuyer in homebuyers]
+            CategoryWeight.objects.bulk_create(category_weights)
+    return
+
+
+@receiver(models.signals.post_save)
+def _add_default_weights_and_grades(sender, instance, created, **kwargs):
+    """
+    When a Homebuyer, Category, or House gets created/saved, make sure
+    CategoryWeight/Grade instances exist for all Homebuyers and all
+    Category/House combinations.
+    """
+    homebuyers = []
+    if sender == Homebuyer:
+        homebuyers = [instance]
+    elif sender in [Category, House]:
+        homebuyers = instance.couple.homebuyer_set.all()
+
+    with transaction.atomic():
+        for homebuyer in homebuyers:
+            unweighted_categories = homebuyer.unweighted_categories()
+            if unweighted_categories:
+                category_weights = map(
+                    lambda category: CategoryWeight(category=category,
+                                                    homebuyer=homebuyer),
+                    unweighted_categories)
+                CategoryWeight.objects.bulk_create(category_weights)
+
+            ungraded_house_categories = homebuyer.ungraded_house_categories()
+            if ungraded_house_categories:
+                def _grade_mapper(house_category):
+                    house, category = house_category
+                    return Grade(house=house, category=category,
+                                 homebuyer=homebuyer)
+
+                grades = map(_grade_mapper, ungraded_house_categories)
+                Grade.objects.bulk_create(grades)
+    return
+
+
+def _generate_email_confirmation_token():
+    while True:
+        token = hashlib.sha256(
+            get_random_string(length=64)).hexdigest()
+        if not User.objects.filter(email_confirmation_token=token).exists():
+            return token
 
 
 class ValidateCategoryCoupleMixin(object):
@@ -76,8 +211,17 @@ class Person(BaseModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="User")
 
     def __unicode__(self):
-        name = self.full_name
-        return name if name else self.email
+        name = self.full_name or '?'
+        return u"{name} <{email}>".format(name=name, email=self.email)
+
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Returns a boolean indicating whether or not the Person instance can
+        view the report for a given Couple.  This behavior will differ for the
+        different subclasses (Homebuyer/Realtor), so the implementations
+        should be defined there.
+        """
+        raise NotImplementedError
 
     @property
     def email(self):
@@ -99,7 +243,7 @@ class Category(BaseModel):
     """
     _SUMMARY_MIN_LENGTH = 1
 
-    summary = models.CharField(max_length=128, verbose_name="Summary")
+    summary = models.CharField(max_length=128, verbose_name="Category Name")
     description = models.TextField(blank=True, verbose_name="Description")
 
     couple = models.ForeignKey('core.Couple', verbose_name="Couple")
@@ -133,14 +277,19 @@ class CategoryWeight(BaseModel):
     fields.
     """
     weight = models.PositiveSmallIntegerField(
-        help_text="0-100",
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        choices=((1, 'Unimportant'),
+                 (2, 'Below Average'),
+                 (3, 'Average'),
+                 (4, 'Above Average'),
+                 (5, 'Important')),
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name="Weight")
     homebuyer = models.ForeignKey('core.Homebuyer', verbose_name="Homebuyer")
     category = models.ForeignKey('core.Category', verbose_name="Category")
 
     def __unicode__(self):
-        return u"{homebuyer} gives {category} a weight of {weight}.".format(
+        return u"{homebuyer} gives {category} a weight of {weight}".format(
             homebuyer=self.homebuyer,
             category=self.category,
             weight=self.weight)
@@ -193,6 +342,27 @@ class Couple(BaseModel):
             homebuyers = (homebuyers.first(), None)
         return homebuyers
 
+    def emails(self):
+        return ','.join(
+            self.homebuyer_set.values_list('user__email', flat=True))
+
+    @property
+    def registered(self):
+        return self.homebuyer_set.count() == 2
+
+    @property
+    def report_data(self):
+        """
+        Report data for all homebuyers for this Couple, keyed by email.
+        """
+        return {homebuyer.email: homebuyer.report_data
+                for homebuyer in self.homebuyer_set.all()}
+
+    def report_url(self):
+        if not self.id:
+            return None
+        return reverse('report', kwargs={'couple_id': self.id})
+
     class Meta:
         ordering = ['realtor']
         verbose_name = "Couple"
@@ -206,11 +376,11 @@ class Grade(BaseModel):
     specific house/category combination.
     """
     score = models.PositiveSmallIntegerField(
-        choices=((1, '1'),
-                 (2, '2'),
-                 (3, '3'),
-                 (4, '4'),
-                 (5, '5')),
+        choices=((1, 'Poor'),
+                 (2, 'Below Average'),
+                 (3, 'Average'),
+                 (4, 'Above Average'),
+                 (5, 'Excellent')),
         default=3,
         verbose_name="Score")
 
@@ -258,6 +428,21 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
                                         through='core.CategoryWeight',
                                         verbose_name="Categories")
 
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Homebuyers can only see their own report.
+        """
+        return self.couple_id == couple_id
+
+    @property
+    def category_weight_total(self):
+        """
+        Sums up all the weight properties for each CategoryWeight object on the
+        Homebuyer.
+        """
+        total = self.categoryweight_set.aggregate(models.Sum('weight'))
+        return total.get('weight__sum') or 0
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
@@ -298,8 +483,87 @@ class Homebuyer(Person, ValidateCategoryCoupleMixin):
         return related_homebuyers.first()
 
     @property
+    def report_data(self):
+        """
+        Dumps out the homebuyer statistics into a dictionary.  The top level is
+        keyed by Category summaries, meaning an empty dict would be returned
+        for a Homebuyer with no related Category instances.  For each Category,
+        a weight property is given, along with a nested dict of Houses with
+        corresponding grades for that Category/House.
+        """
+        category_weights = self.categoryweight_set.select_related('category')
+        grades = self.grade_set.select_related('category', 'house')
+        data = {
+            category_weight.category.summary: {
+                'weight': category_weight.weight,
+                'houses': {}
+            }
+            for category_weight in category_weights
+        }
+        for grade in grades:
+            summary = grade.category.summary
+            house_nickname = grade.house.nickname
+            data[summary]['houses'][house_nickname] = grade.score
+        return data
+
+    @property
+    def home_report_data(self):
+        """
+        Dumps out the homebuyer statistics into a dictionary.  The top level is
+        keyed by Category summaries, meaning an empty dict would be returned
+        for a Homebuyer with no related Category instances.  For each Category,
+        a weight property is given, along with a nested dict of Houses with
+        corresponding grades for that Category/House.
+        """
+        category_weights = self.categoryweight_set.select_related('category')
+        grades = self.grade_set.select_related('house', 'category')
+        data = {
+            grade.house.nickname:
+            {
+                'weight': 0,
+                'categories': {}
+            }
+            for grade in grades
+        }
+        for grade in grades:
+            summary = grade.category.summary
+            house_nickname = grade.house.nickname
+            for category_weight in category_weights:
+                if category_weight.category.summary == summary:
+                    data[house_nickname]['weight'] = category_weight.weight
+            data[house_nickname]['categories'][summary] = grade.score
+
+        return data
+
+    def report_url(self):
+        return self.couple.report_url()
+
+    @property
     def role_type(self):
         return 'Homebuyer'
+
+    def ungraded_house_categories(self):
+        """
+        Returns a list of (<House>, <Category>) tuples for which this Homebuyer
+        has no corresponding Grade instance.
+        """
+        houses = self.couple.house_set.all()
+        categories = self.couple.category_set.all()
+        grades = self.grade_set.values_list('house_id', 'category_id')
+        house_categories = itertools.product(houses, categories)
+
+        def _ungraded_filter(house_category):
+            house, category = house_category
+            return (house.id, category.id) not in grades
+
+        return filter(_ungraded_filter, house_categories)
+
+    def unweighted_categories(self):
+        """
+        Returns a Category queryset for which the Homebuyer does not have a
+        corresponding CategoryWeight.
+        """
+        return self.couple.category_set.exclude(categoryweight__homebuyer=self)
 
     class Meta:
         ordering = ['user__email']
@@ -326,6 +590,9 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
     def __unicode__(self):
         return self.nickname
 
+    def address_lines(self):
+        return map(lambda line: line.strip(), self.address.split('\n'))
+
     def clean(self):
         """
         Ensure that all related categories are for the correct Couple.
@@ -341,6 +608,12 @@ class House(BaseModel, ValidateCategoryCoupleMixin):
         self._validate_min_length('nickname', self._NICKNAME_MIN_LENGTH)
         return super(House, self).clean_fields(exclude=exclude)
 
+    def evaluation_url(self):
+        """
+        Returns the URL to the evaluation page for a specific house.
+        """
+        return reverse('eval', kwargs={'house_id': self.id})
+
     class Meta:
         ordering = ['nickname']
         unique_together = (('nickname', 'couple'),)
@@ -353,6 +626,12 @@ class Realtor(Person):
     Represents a realtor.  Each Couple instance has a required foreign key to
     Realtor, so each Realtor serves zero or more couples.
     """
+    def can_view_report_for_couple(self, couple_id):
+        """
+        Realtors can view all reports for their client Couples.
+        """
+        return self.couple_set.filter(id=couple_id).exists()
+
     def clean(self):
         """
         Homebuyers and Realtors are mutually exclusive.  User instances have
@@ -364,6 +643,19 @@ class Realtor(Person):
                                   "have a Realtor relation."
                                   .format(user=self.user))
         return super(Realtor, self).clean()
+
+    def get_couples_and_pending_couples(self):
+        """
+        Returns a 2-tuple where the first item is a queryset of Couple
+        instances, and the second item is a queryset of PendingCouple instances
+        for the realtor.  The Couple query is filtered to exclude those where
+        only one of the homebuyers has registered.
+        """
+        pending_couples = self.pendingcouple_set.all()
+        emails = pending_couples.values_list(
+            'pendinghomebuyer__email', flat=True)
+        couples = self.couple_set.exclude(homebuyer__user__email__in=emails)
+        return (couples, pending_couples)
 
     @property
     def role_type(self):
@@ -404,10 +696,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model which uses email instead of a username for logging in.
     """
+    _EMAIL_CONFIRMATION_MESSAGE = u"""
+        Hello {name},
+
+        Thank you for registering for {app_name}!
+        Please login and then click the link below to complete registration:
+            {email_confirmation_link}
+
+    """
     email = models.EmailField(
         unique=True,
         verbose_name="Email Address",
-        help_text="Required.  Please enter a valid email address.",
         error_messages={
             'unique': ("A user with this email already "
                        "exists.")
@@ -434,6 +733,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text=("Designates whether this user should be treated as "
                    "active. Unselect this instead of deleting accounts."),
         verbose_name="Active")
+    email_confirmed = models.BooleanField(
+        default=False,
+        help_text=("Designates if this user has confirmed their email "
+                   "address or not."),
+        verbose_name="Email Confirmed")
+    email_confirmation_token = models.CharField(
+        max_length=64,
+        default=_generate_email_confirmation_token,
+        editable=False,
+        unique=True,
+        verbose_name="Email Confirmation Token")
 
     objects = UserManager()
 
@@ -492,3 +802,29 @@ class User(AbstractBaseUser, PermissionsMixin):
         elif has_realtor:
             return self.realtor
         return None
+
+    def send_email_confirmation(self, request):
+        """
+        Sends out the email confirmation link to a new user.  Does nothing if
+        the email is already confirmed.
+        """
+        if self.email_confirmed:
+            return True
+
+        app_name = settings.APP_NAME
+        subject = u"{app_name} Email Confirmation".format(app_name=app_name)
+        email_kwargs = {
+            'email_confirmation_token': self.email_confirmation_token
+        }
+        email_confirmation_link = (
+            request.get_host() + reverse('confirm-email', kwargs=email_kwargs))
+        message = self._EMAIL_CONFIRMATION_MESSAGE.format(
+            name=self.get_short_name(),
+            app_name=app_name,
+            email_confirmation_link=email_confirmation_link)
+        try:
+            self.email_user(subject, message,
+                            from_email=settings.EMAIL_HOST_USER)
+        except:
+            return False
+        return True

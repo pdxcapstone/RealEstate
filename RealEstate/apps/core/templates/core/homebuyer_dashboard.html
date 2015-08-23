@@ -1,0 +1,147 @@
+{% extends "core/base.html" %}
+{% load bootstrap3 %}
+{% load staticfiles %}
+
+{% block title %}
+  Dashboard
+{% endblock %}
+
+{% block header %}
+{% comment %}
+  <h2><strong>Dashboard</strong></h2>
+{% endcomment %}
+{% endblock header %}
+
+{% block body %}
+  {% if not homebuyer.partner %}
+    <div class="soft-error">
+      <p>Your partner has not yet registered!</p>
+      <p>Please remind them to register for the app.</p>
+    </div>
+    <br>
+  {% endif %}
+
+  {% if not couple.category_set.exists %}
+    <div class="soft-error">
+      <p>You have not selected any Categories.</p>
+      <p><a href={% url 'categories' %}>Click Here</a> to add the categories that are important to you.</p>
+    </div>
+    <br>
+  {% endif %}
+
+  {% if not houses.exists %}
+    <div class="soft-error">
+      <p>You have not yet added any houses.</p>
+      <p>Click the 'Add House' button below to add a house.</p>
+    </div>
+    <br>
+  {% else %}
+    <h1 class="header"><strong>Houses</strong></h1>
+    <ul class="list-group">
+      {% for house in houses %}
+        <li class="list-group-item" id="li_{{house.id}}">
+          <div class="row home_row " id="row_{{house.id}}">
+              <div class="col-sm-1 vcenter " style="min-width:150px">
+                  <div style="padding: 20px 0; min-width: 150px ">
+                  <a title="Rate this house" class='text-nowrap glyphicon glyphicon-tasks icon-leftpad edit' href="{{house.evaluation_url}}" style="text-decoration: none;"> Rate</a>
+                <span data-toggle="modal" title="Edit this house" data-target="#edit-modal" id='edit_{{house.id}}' class='text-nowrap glyphicon glyphicon-pencil icon-leftpad edit'> Edit</span>
+                <span data-toggle="modal" title="Delete this house" data-target="#confirmDelete" id='delete_{{house.id}}' class=' text-nowrap glyphicon glyphicon-remove icon-leftpad delete'> Delete</span>
+                </div>
+              </div>
+              <div class="col-xs-9 vcenter"  style="margin-left:10px" >
+                <h4>
+                  {{house}}
+                </h4>
+                <div class="wrap">
+                {% for line in house.address_lines %}
+                  <span>{{ line }}</span><br>
+                {% endfor %}
+                </div>
+              </div>
+            </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <div class="addButton dashboard-buttons">
+    <center>
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#AddHouseModal">
+        Add House
+      </button>
+      <a href={% url 'categories' %} role="button" class="btn btn-primary">Edit Categories</a>
+      <a href={{ couple.report_url }} role="button" class="btn btn-primary">Generate Report</a>
+    </center>
+  </div>
+
+  <!-- Confirm Delete Modal -->
+  <div id="confirmDelete" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h1 class="modal-title">Are you sure about this?</h1>
+        </div>
+        <div class="modal-body">
+          <p>You're about to delete this home and all associated evaluations.</p>
+          <center>
+            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="deleteData($('#confirmDelete').data('id'));">I'm sure!</button>
+          </center>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit home modal -->
+  <div id="edit-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Edit House" aria-hidden="true">
+    <div class="modal-dialog">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">
+              &times;
+          </button>
+          <h1 class="modal-title">Edit your home</h1>
+        </div>
+        <div class="modal-body">
+          <form method="post" action="" role="editForm" class="uniForm">
+            {% bootstrap_form editForm %}
+            {% csrf_token %}
+            <center>
+              {% buttons submit='Update House' %}{% endbuttons %}
+            </center>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add House Modal -->
+  <div id="AddHouseModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="Add House" aria-hidden="true">
+    <div class="modal-dialog">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Add House Window" aria-hidden ="true">&times;</button>
+          <h1 class="modal-title">Add House</h1>
+        </div>
+        <div class="modal-body">
+          <form method="post" action="" role="form" class="uniForm">
+            {% bootstrap_form form %}
+            {% csrf_token %}
+            <center>{% buttons submit='Save House' %}{% endbuttons %}</center>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static "debounce.js" %}"></script>
+  <script src="{% static "base.js" %}"></script>
+
+  <script>
+      $( ".home_row" ).bind( "mouseenter", hoverActions("home_row", "delete", "edit"));
+  </script>
+{% endblock %}

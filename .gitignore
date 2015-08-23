@@ -62,3 +62,6 @@ target/
 
 # Idea settings
 .idea/
+
+# Config file(s)
+*.conf

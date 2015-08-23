@@ -1,8 +1,0 @@
-{% extends "core/base.html" %}
-
-{% block body %}
-    <h2><strong> Dashboard </strong> </h2>
-    {% for home in house %}
-      <p>{{home}} | {{home.address}}</p>
-    {% endfor %}
-{% endblock %}

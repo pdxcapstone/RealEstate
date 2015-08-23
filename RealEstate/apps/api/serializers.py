@@ -50,7 +50,7 @@ class APIGradeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.score = validated_data.get('score', instance.score)
-        instance.update()
+        instance.save()
         return instance
 
     class Meta:
@@ -121,3 +121,23 @@ class APIHouseFullParamSerializer(APIHouseParamSerializer):
             code = 204
             msg = 'No such category under current user'
             return {'code': code, 'message': msg}
+
+class APICategoryParamSerializer(serializers.Serializer):
+    category = serializers.IntegerField(required=True)
+    weight = serializers.IntegerField(required=True)
+
+    def create(self, validated_data):
+        # Do nothing
+        return None
+
+    def update(self, instance, validated_data):
+        # Do nothing
+        return None
+
+    def val(self):
+
+        couple = Couple.objects.filter(homebuyer__user=self.context['request'].user)
+        cat = Category.objects.filter(couple=couple, pk=self.data['category'])
+
+        if cat.count() < 1:
+                return {'code': 202, 'message': 'No such category under the user.'}

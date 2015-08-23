@@ -1,0 +1,396 @@
+/* common */
+
+html, body, #main-content {
+	height: 100%;
+}
+.descrip-col {
+    margin: 900px;
+}
+#main-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#main-content, .modal-content {
+    background-color: #EEE;
+}
+
+#bg-img #main-content {
+    background-color: inherit;
+}
+
+.bs-blue-background {
+    background-color: rgb(40, 96, 144);
+    border-color:#aaa;
+}
+
+.password-change .login-margin button {
+    background-color: rgb(40, 96, 144);
+    color: white;
+}
+
+.bs-blue, #main-content .header, .modal-content label, .modal-header, .password-change label {
+    color: rgb(40, 96, 144);
+}
+
+nav.navbar * {
+    color: white !important;
+}
+.navbar-default .navbar-toggle span.icon-bar {
+    background-color: white;
+}
+.nav a:hover{
+		background-color:transparent !important;
+}
+.nav a{
+		background-color:transparent !important;
+}
+#main-content .header, .modal-header {
+    text-align:center;
+}
+
+.modal-body .header {
+    margin-bottom: 24px;
+}
+
+ul.list-group {
+	padding-top:30px;
+}
+#heading {
+	padding-bottom: 30px;
+}
+.icon {
+    padding-left: 20px;
+    font-size: 100%;
+    color: rgb(40, 96, 144);
+    cursor: pointer;
+}
+.icon-leftpad {
+    padding: 10px 20px 10px 10px;
+    color: rgb(40, 96, 144);
+    cursor: pointer;
+}
+.vcenter {
+	display: inline-block;
+	vertical-align: middle;
+	float: none;
+	margin-left:-3px;
+}
+.rating{
+    display: inline-block;
+}
+.inner-rating {
+    text-align: center;
+    display: block;
+	/*padding:20px 0;*/
+	/*padding-left:10%*/
+}
+.description{
+    
+}
+.slider-selection {
+	background: #BABABA;
+}
+#home > div > .slider-handle {
+    background-image: linear-gradient(to bottom, rgba(46, 204, 113,1) 0%, rgba(39, 174, 96,1.0) 100%) !important;
+}
+#helptext-L{
+	padding-right: 15px;
+}
+#helptext-R{
+	padding-left: 15px;
+}
+button.btn, a.btn {
+	margin:20px;
+}
+button.close{
+	margin:auto;
+}
+.modalHeight{
+	height:auto;
+}
+.row-con{
+   display:table;
+   width:100%;
+}
+.hbdash-center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align:center;
+    width: 30%;
+}
+.signUpHeader{
+	margin-top:50px;
+}
+
+.http-error {
+    font-weight: bold;
+}
+
+.http-error, .soft-error {
+    font-style: italic;
+    text-align: center;
+}
+
+.modal-content button, #main-content button, #main-content .dashboard-buttons a {
+    font-size: x-large;
+}
+
+/* categories */
+
+.rating-col {
+	min-width: 500px;
+}
+.tooltip-main.top.in {
+	z-index:1 !important;
+}
+#catRating-out{
+	padding-left:10%
+}
+.summary-col {
+    padding-left: 20px;
+}
+.categoryBtn {
+    padding: 5px;
+    margin:10px 0px !important;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    width: 100%;
+    overflow: hidden;
+}
+
+.categoryBtn>label {
+    font-weight: 400;
+    font-size: 65% !important;
+    cursor: pointer;
+}
+
+.categoryBtn:hover {
+    background-color: #337ab7;
+}
+
+.categoryBtn:hover >label {
+    color: #fff;
+}
+
+.inner-category {
+    padding: 0 20px;
+}
+
+.category-header {
+    margin-bottom: 30px;
+}
+
+.category_row {
+    margin: 20px 0;
+}
+
+/*realtorHome */
+
+.email {
+    color: #cccccc;
+    display: none;
+}
+.email:hover {
+	color: #337ab7;
+}
+a.mail {
+	text-decoration: none;
+}
+.report-container {
+ min-width: 300px;
+}
+.couple-container {
+	min-width: 400px;
+}
+.red-alert {
+	color: #e74c3c;
+}
+
+/* realtorSignup */
+
+#regForm {
+	margin: 10px 0;
+}
+
+/* login */
+
+.well-alt {
+	min-height: 20px;
+    padding: 19px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    margin: 10px 0;
+    color:#e4e4e4;
+}
+.login-text{
+	margin-top:50px;
+	margin-left:15px;
+	font-weight: bold;
+	color:#e4e4e4;
+}
+.login-form{
+	margin-bottom:20px;
+}
+.create-text{
+	margin-top:100px;
+	text-align: center;
+	color:#e4e4e4;
+}
+.create-text a{
+	color:#66CCFF;
+}
+.login-margin {
+	margin-top: 30px;
+}
+.login-margin button{
+	background-color:#e4e4e4;
+	color:#696969;
+	border:1px solid #e4e4e4;
+}
+
+/* base */
+.navbar-alt {
+	position: relative;
+    min-height: 50px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid black;
+    padding-top:20px;
+    padding-bottom:20px;
+}
+.navbar-alt a{
+	color:#696969;
+	font-size:150%;
+}
+
+
+#bg-img {
+  background: url(images/homepage_house.jpg) no-repeat center center;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width:inherit;
+  height:45em;
+}
+.tagline {
+	color: #fff;
+	text-align: center;
+	font-size: 400%;
+	text-shadow: 1px 1px #444;
+	margin-bottom: 100px;
+}
+
+.registerbutton{
+    padding: 20px 50px;
+    font-size: 150%;
+}
+.about-row {
+    margin: 80px 0;
+}
+
+/* report */
+.finalGrade-ref{
+    font-weight: bold;
+    font-size: 64px;
+    vertical-align: middle;
+}
+#finalGrade-Ap{
+    color: #00CC00;
+}
+#finalGrade-A{
+    color: #009900;
+}
+#finalGrade-B{
+    color: #CCCC00;
+}
+#finalGrade-C{
+    color: #FF9900;
+}
+#finalGrade-D{
+    color: #FF6600;
+}
+#finalGrade-F{
+    color: #FF0000;
+}
+
+#padding-after{
+	padding-bottom: 50px;
+}
+
+#report-title{
+	text-decoration: underline;
+}
+
+#legend{
+    outline: solid;
+    outline-color: #bbb;
+    outline-width: 1px;
+    min-height:100px;
+}
+.row-height{
+	max-height:250px;
+}
+#hb-1{
+	background-color:rgba(217, 95, 73, 0.9);
+}
+#hb-2{
+	background-color:rgba(237, 194, 51, 0.9);
+}
+.weight-chart{
+	min-height:400px;
+	width: 100%;
+}
+
+#fork {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border: 0;
+}
+
+.legend {
+    width: 10em;
+    border: 1px solid black;
+    padding: 5px;
+    padding-top:8px;
+}
+
+.legend .title {
+    display: block;
+    margin-bottom: 0.5em;
+    line-height: 1.2em;
+    padding: 0 0.3em;
+}
+
+.legend .color-sample {
+    display: block;
+    float: left;
+    width: 1em;
+    height: 1em;
+    border: 2px solid; /* Comment out if you don't want to show the fillColor */
+    border-radius: 0.5em; /* Comment out if you prefer squarish samples */
+    margin-right: 0.5em;
+}
+
+.nav-tabs > li > a {
+    background-color: #ddd !important;
+}
+
+.nav-tabs > li > a:hover {
+    background-color: #ccc !important;
+    border-color: #ccc;
+}
+
+.nav-tabs>li {
+    z-index: 100;
+}
+
+.nav-tabs-responsive {
+    margin-bottom:-2px;
+    min-width: 730px;
+    overflow: hidden;
+}
+
+h2{
+    font-size: 1.4em;
+}

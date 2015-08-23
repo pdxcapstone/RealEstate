@@ -1,73 +1,52 @@
 from django import forms
 from django.core.exceptions import ValidationError
+from django.forms.models import BaseModelFormSet
 
+from RealEstate.apps.core.forms import BaseSignupForm
 from RealEstate.apps.core.models import User
 from RealEstate.apps.pending.models import PendingHomebuyer
 
 
-class InviteHomebuyerForm(forms.Form):
-    """
-    This form is used by Realtors to invite potential Homebuyers to the app.
-    """
-    first_email = forms.EmailField(label="Email")
-    second_email = forms.EmailField(label="Email")
+class HomebuyerSignupForm(BaseSignupForm):
+    class Meta(BaseSignupForm.Meta):
+        fields = ('first_name', 'last_name', 'phone', 'password',
+                  'password_confirmation')
 
-    def _confirm_unique(self, cleaned_data, email_fieldname):
-        """
-        Ensure the email does not match an existing User or PendingHomebuyer.
-        If it does, add an error to that email field.
-        """
-        email = cleaned_data.get(email_fieldname)
-        if email:
-            for model in (User, PendingHomebuyer):
-                if model.objects.filter(email=email).exists():
-                    self.add_error(
-                        email_fieldname,
-                        ValidationError("A user with this email already "
-                                        "exists or has been invited."))
+
+class InviteHomebuyerForm(forms.Form):
+    homebuyer1_first = forms.CharField(max_length=30, label="First Name")
+    homebuyer1_last = forms.CharField(max_length=30, label="Last Name")
+    homebuyer1_email = forms.EmailField(max_length=254, label="Email")
+    homebuyer2_first = forms.CharField(max_length=30, label="First Name")
+    homebuyer2_last = forms.CharField(max_length=30, label="Last Name")
+    homebuyer2_email = forms.EmailField(max_length=254, label="Email")
+
+    def _clean_email(self, field):
+        email = self.cleaned_data.get(field, None)
+        if not email:
+            return None
+
+        for model in (User, PendingHomebuyer):
+            if model.objects.filter(email=email).exists():
+                self.add_error(
+                    field,
+                    ValidationError("A user with this email already "
+                                    "exists or has been invited."))
         return email
 
-    def clean(self):
-        """
-        Make sure the two emails are distinct and that the entered emails
-        do not already exist in User or PendingHomebuyer instances.
-        """
-        cleaned_data = super(InviteHomebuyerForm, self).clean()
-        first_email = self._confirm_unique(cleaned_data, 'first_email')
-        second_email = self._confirm_unique(cleaned_data, 'second_email')
-        if first_email and second_email and first_email == second_email:
-            self.add_error(None, ValidationError("Emails must be distinct."))
-        return cleaned_data
+    def clean_homebuyer1_email(self):
+        return self._clean_email('homebuyer1_email')
 
-
-class SignupForm(forms.ModelForm):
-    """
-    Potential homebuyers will use this form to sign up.  The view that uses
-    this form will then create their User/Homebuyer instances.
-    """
-    password_confirmation = forms.CharField(label="Password Confirmation",
-                                            widget=forms.PasswordInput)
-
-    class Meta:
-        model = User
-        fields = ('password', 'password_confirmation', 'first_name',
-                  'last_name', 'phone')
-        widgets = {
-            'password': forms.PasswordInput,
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(SignupForm, self).__init__(*args, **kwargs)
+    def clean_homebuyer2_email(self):
+        return self._clean_email('homebuyer2_email')
 
     def clean(self):
         """
         Ensure password matches password_confirmation.
         """
-        cleaned_data = super(SignupForm, self).clean()
-        password = cleaned_data.get('password')
-        password_confirmation = cleaned_data.get('password_confirmation')
-        if (password and password_confirmation and
-                password != password_confirmation):
-            self.add_error('password_confirmation',
-                           ValidationError("Passwords do not match."))
+        cleaned_data = super(InviteHomebuyerForm, self).clean()
+        email1 = cleaned_data.get('homebuyer1_email')
+        email2 = cleaned_data.get('homebuyer2_email')
+        if (email1 and email2 and email1 == email2):
+            self.add_error(None, ValidationError("Emails must not match"))
         return cleaned_data
