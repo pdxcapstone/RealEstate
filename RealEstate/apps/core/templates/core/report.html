@@ -17,7 +17,7 @@
         <li role="presentation"><a href="#categoriesPerHouse" role="tab" data-toggle="tab">Categories Per House</a></li>
         <li role="presentation"><a href="#housesPerCat" role="tab" data-toggle="tab">Houses Per Category</a></li>
         <li role="presentation"><a href="#finalGrade" role="tab" data-toggle="tab">Overall Score</a></li>
-        <!--<li role="presentation"><a role="tab" data-toggle="tab" href="#numbers">Numbers</a></li>-->
+        <li role="presentation"><a role="tab" data-toggle="tab" href="#numbers">Numbers</a></li>
     </ul>
 
 
@@ -144,36 +144,36 @@
     </div>
 
     <!--NUMBERS TAB!!-->
-    <!--<div id="numbers" class="tab-pane" role="tabpanel">-->
-        <!--<h3>NUMBERS</h3>-->
-        <!--<p>For the nerd within. Read though all the data in its raw, numeric format.</p>-->
-            <!--{{houseData }}-->
-        <!--<h2>Weighting</h2>-->
-        <!--{% for category, weight1, weight2 in categoryImportance %}-->
-            <!--<h4>{{category}}</h4>-->
-            <!--<h5>{{weight1}} | {{weight2}}</h5>-->
-        <!--{% endfor %}-->
+    <div id="numbers" class="tab-pane" role="tabpanel">
+        <h3>NUMBERS</h3>
+        <p>For the nerd within. Read though all the data in its raw, numeric format.</p>
+            {{houseData }}
+        <h2>Weighting</h2>
+        {% for category, weight1, weight2 in categoryImportance %}
+            <h4>{{category}}</h4>
+            <h5>{{weight1}} | {{weight2}}</h5>
+        {% endfor %}
 
-        <!--<h2>Homebuyer Pie Chart Data</h2>-->
-        <!--{% for homebuyer, weights in homebuyerPies %}-->
-            <!--<h4>{{homebuyer}}</h4>-->
-            <!--<h5>{{weights}}</h5>-->
-        <!--{% endfor %}-->
+        <h2>Homebuyer Pie Chart Data</h2>
+        {% for homebuyer, weights in homebuyerPies %}
+            <h4>{{homebuyer}}</h4>
+            <h5>{{weights}}</h5>
+        {% endfor %}
 
-        <!--<h2>Category Data</h2>-->
-        <!--{% for category, homes in categoryData %}-->
-            <!--<h4>{{category}}</h4>-->
-            <!--{% for home, score in homes %}-->
-            <!--<h5>{{home}} &ndash;&gt; {{score}}</h5>-->
-            <!--{%  endfor %}-->
-        <!--{% endfor %}-->
+        <h2>Category Data</h2>
+        {% for category, homes in categoryData %}
+            <h4>{{category}}</h4>
+            {% for home, score in homes %}
+            <h5>{{home}} --> {{score}}</h5>
+            {%  endfor %}
+        {% endfor %}
 
-        <!--<h2>Total Score</h2>-->
-        <!--{% for key, value in totalScore.items %}-->
-            <!--<h4>{{key}}</h4>-->
-            <!--{{value}}-->
-        <!--{% endfor %}-->
-    <!--</div>-->
+        <h2>Total Score</h2>
+        {% for key, value in totalScore.items %}
+            <h4>{{key}}</h4>
+            {{value}}
+        {% endfor %}
+    </div>
 
 {% endblock body %}
 
@@ -235,8 +235,8 @@
 
       <!--WEIGHTING!!-->
       var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
-      var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
-      var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data1 = [{% for category, weight1, weight2 in categoryImportance %}Math.round((({{weight1}} / {{largestWeight}}) * 1000)) / 100{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data2 = [{% for category, weight1, weight2 in categoryImportance %}Math.round((({{weight2}} / {{largestWeight}}) * 1000)) / 100{% if not forloop.last %},{% endif %}{% endfor %}];
       var data = {
           labels: catLabel,
           datasets: [

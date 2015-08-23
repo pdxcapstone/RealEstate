@@ -741,6 +741,7 @@ class ReportView(BaseView):
         first = 0
         second = 1
         largestScore = 0.01
+        largestWeight = 0.01
         data1 = homebuyers[first].report_data
         data2 = homebuyers[second].report_data
         data3 = homebuyers[first].home_report_data
@@ -753,6 +754,12 @@ class ReportView(BaseView):
             weight1 = float(data1[category]["weight"]) / homebuyers[first].category_weight_total
             weight2 = float(data2[category]["weight"]) / homebuyers[second].category_weight_total
             categoryImportance.append((category, weight1, weight2))
+
+            if weight1 > largestWeight:
+                largestWeight = weight1
+
+            if weight2 > largestWeight:
+                largestWeight = weight2
 
         weightsAve = []
         weights1 = []
@@ -853,6 +860,7 @@ class ReportView(BaseView):
             'houseData': houseData,
             'totalScore': totalScore,
             'largestScore': largestScore,
+            'largestWeight': largestWeight,
             'categoryNum': int(math.ceil(0.7*len(data1))),
             'categoryWidth': len(data1) * 65,
             'houseNum': houseNum,
