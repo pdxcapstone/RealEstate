@@ -28,7 +28,7 @@ function hoverActions () {
                 });
             });
             $("#delete_"+id).click( function(){
-                var sum = $(this).parent().text();
+                var sum = $(this).parent().parent().parent().find('h4').text();
                 $("#confirmDelete").data("id", id );
                 $("#confirmDelete .btn-danger").text("Delete " + sum);
             });

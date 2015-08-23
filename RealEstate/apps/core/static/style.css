@@ -36,11 +36,15 @@ html, body, #main-content {
 nav.navbar * {
     color: white !important;
 }
-
 .navbar-default .navbar-toggle span.icon-bar {
     background-color: white;
 }
-
+.nav a:hover{
+		background-color:transparent !important;
+}
+.nav a{
+		background-color:transparent !important;
+}
 #main-content .header, .modal-header {
     text-align:center;
 }
@@ -56,13 +60,13 @@ ul.list-group {
 	padding-bottom: 30px;
 }
 .icon {
-    padding-right: 20px;
+    padding-left: 20px;
     font-size: 100%;
     color: rgb(40, 96, 144);
     cursor: pointer;
 }
 .icon-leftpad {
-    padding-left: 20px;
+    padding: 10px 20px 10px 10px;
     color: rgb(40, 96, 144);
     cursor: pointer;
 }
@@ -72,9 +76,17 @@ ul.list-group {
 	float: none;
 	margin-left:-3px;
 }
+.rating{
+    display: inline-block;
+}
 .inner-rating {
-	padding:20px 0;
-	padding-left:10%
+    text-align: center;
+    display: block;
+	/*padding:20px 0;*/
+	/*padding-left:10%*/
+}
+.description{
+    
 }
 .slider-selection {
 	background: #BABABA;
@@ -129,16 +141,15 @@ button.close{
 .rating-col {
 	min-width: 500px;
 }
-.summary-col{
-	min-width: 150px;
-}
 .tooltip-main.top.in {
 	z-index:1 !important;
 }
 #catRating-out{
 	padding-left:10%
 }
-
+.summary-col {
+    padding-left: 20px;
+}
 .categoryBtn {
     padding: 5px;
     margin:10px 0px !important;
@@ -168,6 +179,10 @@ button.close{
 
 .category-header {
     margin-bottom: 30px;
+}
+
+.category_row {
+    margin: 20px 0;
 }
 
 /*realtorHome */
