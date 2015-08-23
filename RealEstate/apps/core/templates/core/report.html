@@ -235,8 +235,8 @@
 
       <!--WEIGHTING!!-->
       var catLabel = [{% for category, weight1, weight2 in categoryImportance %}'{{category}}'{% if not forloop.last %},{% endif %}{% endfor %}];
-      var data1 = [{% for category, weight1, weight2 in categoryImportance %}{{weight1}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
-      var data2 = [{% for category, weight1, weight2 in categoryImportance %}{{weight2}}*100{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data1 = [{% for category, weight1, weight2 in categoryImportance %}Math.round((({{weight1}} / {{largestWeight}}) * 1000)) / 100{% if not forloop.last %},{% endif %}{% endfor %}];
+      var data2 = [{% for category, weight1, weight2 in categoryImportance %}Math.round((({{weight2}} / {{largestWeight}}) * 1000)) / 100{% if not forloop.last %},{% endif %}{% endfor %}];
       var data = {
           labels: catLabel,
           datasets: [
