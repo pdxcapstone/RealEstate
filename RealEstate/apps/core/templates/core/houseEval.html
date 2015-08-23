@@ -25,8 +25,8 @@
 <ul class="list-group">
 	{% for category, score in grades %}
 		<li class="list-group-item">
-			<div class="row">
-				<div class="col-sm-6 vcenter">
+			<div class="row" style="margin: 20px 0;">
+			    <div class="col-sm-6 vcenter description">
 					<h4 id='update_{{category.id}}'>{{category.summary}}</h4>
 					{% if category.description %}
 						<p>
@@ -34,15 +34,15 @@
 						</p>
 					{% endif %}
 				</div>
-    				<div class="col-sm-6 vcenter rating">
-					<div class="inner-rating">
-						<center>
+				<div class="col-lg-6 vcenter rating center-block" >
+					    <div class="inner-rating">
 							<span class="help-text" id="helptext-L">{{min_choice}}</span>
 							<input id="category_{{category.id}}" class='slide score-slide' data-slider-id='home' type="text" data-slider-min={{min_score}} data-slider-max={{max_score}} data-slider-step="1" data-slider-value="{% if not score %}{{default_score}}{% else %}{{ score }}{% endif %}"/>
 							<span class="help-text" id="helptext-R">{{max_choice}}</span>
-						</center>
 					</div>
+					
 				</div>
+
 			</div>
 		</li>
 	{% endfor %}
@@ -111,18 +111,23 @@ $(".weight-slide").change( function(evt) {
 
 $(window).on("resize", function () {
 	var divWidth = $(".row").width();
-	if(divWidth < 400){
-		$(".rating").css("width", "90%");
+	if(divWidth < 450){
 		$(".help-text").hide();
+		$(".description").css("width", "100%");
+		$(".rating").css("min-width", "100%").css("margin", "0 auto");
 	}
-	else if(divWidth < 730){
-		$(".help-text").show();
-		$(".rating").css("width", "90%");
+	else if(divWidth < 800){
+	    $(".help-text").show();
+	    $(".description").css("width", "95%");
+		$(".rating").css("min-width", "100%")
 	}
-	else{
+	else {
 		$(".help-text").show();
-		$(".rating").css("width", "45%").css("margin", "0 auto");
+		$(".description").css("width", "40%");
+		$(".rating").css("min-width", "400px");
 	}
 }).resize();
+
+
 </script>
 {% endblock %}
