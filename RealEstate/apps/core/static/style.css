@@ -24,7 +24,12 @@ html, body, #main-content {
     border-color:#aaa;
 }
 
-.bs-blue, #main-content .header, .modal-content label, .modal-header {
+.password-change .login-margin button {
+    background-color: rgb(40, 96, 144);
+    color: white;
+}
+
+.bs-blue, #main-content .header, .modal-content label, .modal-header, .password-change label {
     color: rgb(40, 96, 144);
 }
 
